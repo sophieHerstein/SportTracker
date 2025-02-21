@@ -32,6 +32,83 @@ const dummyData = [
         strecke: 3,
         dauer: 15
     },
+    {
+        id: 4,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 5,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 6,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 7,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 8,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 9,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 10,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 11,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 12,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 13,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    },
+    {
+        id: 14,
+        datum: "20.02.2025",
+        name: "Laufen",
+        strecke: 3,
+        dauer: 15
+    }
 ];
 
 export default function AusdauersportScreen(){

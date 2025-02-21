@@ -1,13 +1,26 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import IconButton from "./IconButton";
 
-export default function KraftsportListItem(){
+export default function KraftsportListItem({item, onDelete}) {
     return (
-        <Pressable style={styles.container} onPress={()=>alert("Kraftsport")}>
+        <View style={styles.container}>
             <View style={styles.info}>
-                <Text style={styles.name}>TEXT</Text>
-                <Text style={styles.email}>TEXT2</Text>
+                <Text style={styles.name}>{item.gruppe} ({item.datum})</Text>
+                {item.uebungen.map((uebung, index) => (
+                    <View key={index}>
+                        <Text style={styles.uebung}>{uebung.name}</Text>
+
+                        {/* Iteriere über alle Sätze der Übung */}
+                        {uebung.saetze.map((satz, satzIndex) => (
+                            <Text key={satzIndex} style={styles.satz}>
+                                Satz {satzIndex + 1}: {satz.gewicht} kg, {satz.widerholung} Wiederholungen
+                            </Text>
+                        ))}
+                    </View>
+                ))}
             </View>
-        </Pressable>
+            <IconButton icon='delete' style={styles.delete} onPress={() => onDelete(item.id)}></IconButton>
+        </View>
     );
 }
 
@@ -15,23 +28,22 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         height: 70,
         gap: 10,
         padding: 10,
-    },
-    image: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
     },
     info: {
         justifyContent: 'space-evenly',
     },
     name: {
-        fontSize: 20
+        fontSize: 20,
     },
-    email: {
-        fontSize: 16,
+    satz: {
+        fontSize: 12,
         fontWeight: 100
+    },
+    uebung: {
+        fontSize: 14,
     }
 });
