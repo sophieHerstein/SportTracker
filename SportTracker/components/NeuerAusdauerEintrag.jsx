@@ -62,7 +62,7 @@ export default function NeuerAusdauerEintrag({visible, onCancel, onSave}) {
     return (
         <Modal visible={visible} animationType="slide" onRequestClose={onCancel}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding": "height"} style={styles.container}>
-                <IconButton onPress={cancelEditing} icon='arrow-back' style={styles.back}/>
+                <IconButton size={36} color='royalblue' onPress={cancelEditing} icon='arrow-back' style={styles.back}/>
                 <Text style={styles.title}>Neuen Eintrag hinzufügen</Text>
                 <View style={styles.inputContainer}>
                     <View style={styles.row}>

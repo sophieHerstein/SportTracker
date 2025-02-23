@@ -19,7 +19,7 @@ export default function KraftsportListItem({item, onDelete}) {
                     </View>
                 ))}
             </View>
-            <IconButton icon='delete' style={styles.delete} onPress={() => onDelete(item.id)}></IconButton>
+            <IconButton size={36} color='royalblue' icon='delete' style={styles.delete} onPress={() => onDelete(item.id)}></IconButton>
         </View>
     );
 }
@@ -29,9 +29,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: 70,
         gap: 10,
         padding: 10,
+        margin: 5,
+        borderRadius: 10,
+        backgroundColor: 'lightskyblue'
     },
     info: {
         justifyContent: 'space-evenly',

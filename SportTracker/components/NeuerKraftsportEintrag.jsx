@@ -1,94 +1,72 @@
-import {KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, View} from "react-native";
+import { useState } from 'react';
+import {Text, StyleSheet, View, Pressable, TextInput} from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import IconButton from "./IconButton";
-import BigButton from "./BigButton";
 
+export default function NeuerKraftsportEintrag({navigation}) {
+    const [datum, setDatum] = useState(new Date());
+    const [showInput, setShowInput] = useState(false);
+    const [additionalGruppe, setAdditionalGruppe] = useState('');
+    const [gruppen, setGruppen] = useState([
+        'Arme',
+        'Beine',
+        'Rücken',
+    ]);
 
-export default function NeuerKraftsportEintrag({visible, onCancel, onSave}) {
-
-    function cancelEditing(){
-        onCancel();
+    function addGruppeToList(){
+        if(!gruppen.includes(additionalGruppe) && additionalGruppe.trim() !== ''){
+            const neueGruppen = [...gruppen];
+            neueGruppen.push(additionalGruppe);
+            setGruppen(neueGruppen);
+            setAdditionalGruppe('');
+            setShowInput(false);
+        } else {
+            setAdditionalGruppe('');
+            setShowInput(false);
+        }
     }
 
-
-    function saveEintrag(){
-        alert('Speichern');
+    function onDateChange(event, selectedDate){
+        setDatum(selectedDate);
     }
-
 
     return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onCancel}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding": "height"} style={styles.container}>
-            <IconButton onPress={cancelEditing} icon='arrow-back' style={styles.back}/>
-            <Text style={styles.title}>Neuen Eintrag hinzufügen</Text>
-            {/*<View style={styles.inputContainer}>*/}
-            {/*    <View style={styles.row}>*/}
-            {/*        <Text style={styles.label}>Datum:</Text>*/}
-            {/*        <DateTimePicker*/}
-            {/*            testID="dateTimePicker"*/}
-            {/*            value={datum}*/}
-            {/*            mode='date'*/}
-            {/*            onChange={onDateChange}*/}
-            {/*        />*/}
-            {/*    </View>*/}
-            {/*    <View style={styles.pickerRow}>*/}
-            {/*        <Text style={styles.label}>Sportart:</Text>*/}
-            {/*        <DropDownPicker style={styles.picker} dropDownContainerStyle={styles.picker}*/}
-            {/*                        open={open}*/}
-            {/*                        value={name}*/}
-            {/*                        items={sportarten}*/}
-            {/*                        setOpen={setOpen}*/}
-            {/*                        setValue={setName}*/}
-            {/*                        setItems={setSportarten}*/}
-            {/*                        searchable={true}*/}
-            {/*                        addCustomItem={true}*/}
-            {/*                        searchPlaceholder="Suche ..."*/}
-            {/*        />*/}
-            {/*    </View>*/}
-            {/*    <View style={styles.row}>*/}
-            {/*        <Text style={styles.label}>Strecke:</Text>*/}
-            {/*        <View style={styles.inputStuff}>*/}
-            {/*            <TextInput*/}
-            {/*                style={styles.input}*/}
-            {/*                onChangeText={setStrecke}/>*/}
-            {/*            <Text style={styles.label}>km</Text>*/}
-            {/*        </View>*/}
-            {/*    </View>*/}
-            {/*    <View style={styles.row}>*/}
-            {/*        <Text style={styles.label}>Zeit:</Text>*/}
-            {/*        <View style={styles.inputStuff}>*/}
-            {/*            <TextInput*/}
-            {/*                style={styles.input}*/}
-            {/*                onChangeText={setDauer}/>*/}
-            {/*            <Text style={styles.label}>min</Text>*/}
-            {/*        </View>*/}
-            {/*    </View>*/}
-            {/*</View>*/}
-            <BigButton style={styles.speichern} title='Speichern' onPress={()=> saveEintrag()}></BigButton>
-        </KeyboardAvoidingView>
-    </Modal>
-);
+        <View style={styles.container}>
+            <View style={styles.inputContainer}>
+                <View style={styles.row}>
+                    <Text style={styles.label}>Datum:</Text>
+                    <DateTimePicker
+                        testID="dateTimePicker"
+                        value={datum}
+                        mode='date'
+                        onChange={onDateChange}
+                    />
+                </View>
+            </View>
+            <View style={styles.uebungContainer}>
+                {gruppen.map((gruppe, index) => (
+                    <Pressable key={index} style={styles.uebung} onPress={()=> navigation.navigate('kraftsportUebungenScreen', {gruppe, datum: datum.toLocaleDateString('de-DE')})}><Text style={styles.uebungText}>{gruppe}</Text></Pressable>
+                ))}
+            </View>
+            <IconButton size={36} icon='add-circle' color='royalblue' onPress={()=> setShowInput(true)}></IconButton>
+            {showInput && (
+                <TextInput placeholder='Gruppe'
+                           style={styles.input}
+                           returnKeyType='done'
+                           onChangeText={setAdditionalGruppe}
+                           onSubmitEditing={()=> addGruppeToList()}>
+                </TextInput>
+            )}
+        </View>
+    );
 }
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
-    },
-    picker: {
-        borderWidth: 1,
-        borderColor: 'lightsteelblue',
-        padding: 10,
-        margin: 10,
-        width: '72%',
-        borderRadius: 5,
-        fontSize: 20,
-        marginStart: 26
-    },
-    pickerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: 'white',
     },
     inputContainer: {
         justifyContent: 'center',
@@ -104,32 +82,35 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center'
     },
-    inputStuff: {
-        width: '75%',
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: 'lightsteelblue',
-        padding: 10,
-        margin: 10,
-        width: '75%',
-        borderRadius: 5,
-        fontSize: 20
-    },
-    back: {
-        position: 'absolute',
-        top: 50,
-        left: 20
-    },
     title: {
         fontSize: 20,
         fontWeight: 'bold',
         paddingBottom: 20,
         color: 'royalblue',
     },
-    speichern: {
-        marginTop: 20
-    }
+    uebungContainer: {
+        paddingTop: 20,
+        paddingBottom: 20
+    },
+    uebung: {
+        backgroundColor: 'lightskyblue',
+        margin: 5,
+        fontSize: 20,
+        padding: 10,
+        borderRadius: 10,
+        width: 200,
+        alignItems: 'center',
+    },
+    uebungText: {
+        fontSize: 20,
+    },
+    input: {
+    borderWidth: 1,
+        borderColor: 'darkslateblue',
+        padding: 10,
+        margin: 10,
+        width: '80%',
+        borderRadius: 5,
+        fontSize: 20
+},
 });

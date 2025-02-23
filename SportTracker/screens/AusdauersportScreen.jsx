@@ -131,6 +131,8 @@ export default function AusdauersportScreen(){
     return (
         <View style={styles.container}>
             <IconButton
+                size={36}
+                color='royalblue'
                 onPress={() => setShowNewDialog(true)}
                 style={styles.new}
                 icon='add-circle'>
@@ -144,7 +146,6 @@ export default function AusdauersportScreen(){
                           <AusdauersportListItem item={item} onDelete={(id) => removeEintragFromList(id)}/>
                       )}
                       keyExtractor={(item)=> item.id}
-                      ItemSeparatorComponent={<View style={styles.listSeperators}/>}
                       ListEmptyComponent={<Text style={styles.listEmpty}>Keine Daten geladen</Text>}
             />
         </View>
