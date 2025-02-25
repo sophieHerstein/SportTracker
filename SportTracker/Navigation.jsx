@@ -6,6 +6,8 @@ import KraftsportScreen from "./screens/KraftsportScreen";
 import UebungenScreen from "./screens/UebungenScreen";
 import AusdauersportScreen from "./screens/AusdauersportScreen";
 import NeuerKraftsportEintrag from "./components/NeuerKraftsportEintrag";
+import NeuerAusdauerEintrag from "./components/NeuerAusdauerEintrag";
+import AusdauerStatistikScreen from "./screens/AusdauerStatistikScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -19,6 +21,16 @@ function KraftsportStack() {
                 const gruppe = route.params.gruppe;
                 return {title: gruppe}
             }}></Stack.Screen>
+        </Stack.Navigator>
+    );
+}
+
+function AusdauerStack() {
+    return (
+        <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: 'aliceblue'}}}>
+            <Stack.Screen name="ausdauerScreen" component={AusdauersportScreen} options={{title: "Ausdauer"}}/>
+            <Stack.Screen name="neuerAusdauerEintragScreen" component={NeuerAusdauerEintrag} options={{title: "Neuer Eintrag"}}></Stack.Screen>
+            <Stack.Screen name="ausdauerStatistikScreen" component={AusdauerStatistikScreen} options={{title: "Ausdauer Statistik"}}></Stack.Screen>
         </Stack.Navigator>
     );
 }
@@ -53,7 +65,7 @@ export default function Navigation() {
                 />
                 <Tab.Screen
                     name="ausdauer"
-                    component={AusdauersportScreen}
+                    component={AusdauerStack}
                     options={
                         {
                             title: 'Ausdauer',

@@ -8,7 +8,7 @@ export default function AusdauersportListItem({item, onDelete}) {
             <View style={styles.info}>
                 <Text style={styles.name}>{item.name} ({item.datum})</Text>
                 <Text style={styles.details}>Strecke: {item.strecke}km ; Zeit: {item.dauer}min</Text>
-                <Text style={styles.details}>Durchschnittsgeschwindigkeit: {item.strecke/(item.dauer/60)} km/h</Text>
+                <Text style={styles.details}>Durchschnittsgeschwindigkeit: {Math.round(item.strecke/(item.dauer/60))} km/h</Text>
             </View>
             <IconButton size={36} color='royalblue' icon='delete' style={styles.delete} onPress={() => onDelete(item.id)}></IconButton>
         </View>

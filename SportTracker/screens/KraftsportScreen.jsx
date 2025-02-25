@@ -1,7 +1,6 @@
 import {FlatList, StyleSheet, Text, View} from 'react-native';
 import IconButton from "../components/IconButton";
 import { useState, useEffect } from 'react';
-import NeuerKraftsportEintrag from "../components/NeuerKraftsportEintrag";
 import KraftsportListItem from "../components/KraftsportListItem";
 
 // TODO:

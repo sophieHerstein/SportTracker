@@ -45,7 +45,11 @@ export default function NeuerKraftsportEintrag({navigation}) {
             </View>
             <View style={styles.uebungContainer}>
                 {gruppen.map((gruppe, index) => (
-                    <Pressable key={index} style={styles.uebung} onPress={()=> navigation.navigate('kraftsportUebungenScreen', {gruppe, datum: datum.toLocaleDateString('de-DE')})}><Text style={styles.uebungText}>{gruppe}</Text></Pressable>
+                    <Pressable key={index} style={styles.uebung} onPress={()=> navigation.navigate('kraftsportUebungenScreen', {gruppe, datum: datum.toLocaleDateString('de-DE', {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric"
+                        })})}><Text style={styles.uebungText}>{gruppe}</Text></Pressable>
                 ))}
             </View>
             <IconButton size={36} icon='add-circle' color='royalblue' onPress={()=> setShowInput(true)}></IconButton>

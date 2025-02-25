@@ -1,26 +1,33 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import {Text, KeyboardAvoidingView, Modal, Platform, StyleSheet, TextInput, View} from 'react-native';
 import BigButton from './BigButton';
 import IconButton from './IconButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from "react-native-dropdown-picker";
+import * as SQLite from "expo-sqlite";
 
-export default function NeuerAusdauerEintrag({visible, onCancel, onSave}) {
+const database = SQLite.openDatabaseSync('training.db');
+
+export default function NeuerAusdauerEintrag({navigation, route}) {
     const [datum, setDatum] = useState(new Date());
     const [name, setName] = useState('Laufen');
     const [strecke, setStrecke] = useState('0');
     const [dauer, setDauer] = useState('0');
-    const [sportarten, setSportarten] = useState([
-        {label: 'Laufen', value: 'Laufen'},
-        {label: 'Schwimmen', value: 'Schwimmen'},
-        {label: 'Fahrrad fahren', value: 'Fahrrad fahren'}
-    ]);
+    const [sportarten, setSportarten] = useState([]);
 
     const [open, setOpen] = useState(false);
 
+    useEffect(() => {
+        const trainingsTypen = route.params.trainingsTypen;
+        const trainigstypenMapping = trainingsTypen.map((tt)=>{
+            return {label: tt.name, value: tt.name}
+        })
+        setSportarten(trainigstypenMapping);
+    }, [])
+
     function isNumberValid(numberString) {
         const number = parseFloat(numberString);
-        return !isNaN(number) && number > 0;
+        return !isNaN(numberString) && number > 0;
     }
 
     function isStreckeValid() {
@@ -31,7 +38,7 @@ export default function NeuerAusdauerEintrag({visible, onCancel, onSave}) {
         return isNumberValid(dauer);
     }
 
-    function saveEintrag(){
+    async function saveEintrag(){
         if(!isDauerValid()){
             alert('Bitte die Dauer überprüfen');
             return;
@@ -40,19 +47,26 @@ export default function NeuerAusdauerEintrag({visible, onCancel, onSave}) {
             alert('Bitte die Strecke überprüfen');
             return;
         }
-        onSave(datum.toLocaleDateString('de-DE'), name, strecke, dauer);
-        setName('Laufen');
-        setDatum(new Date());
-        setStrecke('0');
-        setDauer('0');
+
+        try {
+            await saveEintragInDB()
+            navigation.goBack();
+        } catch (error) {
+            console.error("Fehler beim Speichern: ", error);
+            alert("Fehler beim Speichern des Eintrags.");
+        }
     }
 
-    function cancelEditing(){
-        onCancel();
-        setName('Laufen');
-        setDatum(new Date());
-        setStrecke('0');
-        setDauer('0');
+    async function saveEintragInDB() {
+        if(!trainingsTypExists(name)){
+            await database.runAsync('INSERT INTO Trainingstyp (id, name) VALUES (?, ?)', datum.getTime(), name);
+        }
+        const trainigsTypId = await database.getFirstAsync('SELECT id FROM Trainingstyp WHERE name=?', name);
+        await database.runAsync('INSERT INTO Ausdauertrainingseinheit (id, trainingstyp_id, datum, dauer_minuten, strecke_km) VALUES (?, ?,?,?,?)', datum.getTime(), trainigsTypId.id, datum.getTime(), dauer, strecke);
+    }
+
+    function trainingsTypExists(trainigstypName){
+        return route.params.trainingsTypen.filter((tt) => tt.label === trainigstypName).length > 0;
     }
 
     function onDateChange(event, selectedDate){
@@ -60,23 +74,21 @@ export default function NeuerAusdauerEintrag({visible, onCancel, onSave}) {
     }
 
     return (
-        <Modal visible={visible} animationType="slide" onRequestClose={onCancel}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? "padding": "height"} style={styles.container}>
-                <IconButton size={36} color='royalblue' onPress={cancelEditing} icon='arrow-back' style={styles.back}/>
-                <Text style={styles.title}>Neuen Eintrag hinzufügen</Text>
-                <View style={styles.inputContainer}>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Datum:</Text>
-                        <DateTimePicker
-                            testID="dateTimePicker"
-                            value={datum}
-                            mode='date'
-                            onChange={onDateChange}
-                        />
-                    </View>
-                    <View style={styles.pickerRow}>
-                        <Text style={styles.label}>Sportart:</Text>
-                        <DropDownPicker style={styles.picker} dropDownContainerStyle={styles.picker}
+        <View style={styles.container}>
+            <Text style={styles.title}>Neuen Eintrag hinzufügen</Text>
+            <View style={styles.inputContainer}>
+                <View style={styles.row}>
+                    <Text style={styles.label}>Datum:</Text>
+                    <DateTimePicker
+                        testID="dateTimePicker"
+                        value={datum}
+                        mode='date'
+                        onChange={onDateChange}
+                    />
+                </View>
+                <View style={styles.pickerRow}>
+                    <Text style={styles.label}>Sportart:</Text>
+                    <DropDownPicker style={styles.picker} dropDownContainerStyle={styles.picker}
                             open={open}
                             value={name}
                             items={sportarten}
@@ -86,30 +98,29 @@ export default function NeuerAusdauerEintrag({visible, onCancel, onSave}) {
                             searchable={true}
                             addCustomItem={true}
                             searchPlaceholder="Suche ..."
-                        />
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Strecke:</Text>
-                        <View style={styles.inputStuff}>
-                            <TextInput
+                    />
+                </View>
+                <View style={styles.row}>
+                    <Text style={styles.label}>Strecke:</Text>
+                    <View style={styles.inputStuff}>
+                        <TextInput
                             style={styles.input}
                             onChangeText={setStrecke}/>
-                            <Text style={styles.label}>km</Text>
-                        </View>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Zeit:</Text>
-                        <View style={styles.inputStuff}>
-                            <TextInput
-                                style={styles.input}
-                                onChangeText={setDauer}/>
-                            <Text style={styles.label}>min</Text>
-                        </View>
+                        <Text style={styles.label}>km</Text>
                     </View>
                 </View>
-                <BigButton style={styles.speichern} title='Speichern' onPress={()=> saveEintrag()}></BigButton>
-            </KeyboardAvoidingView>
-        </Modal>
+                <View style={styles.row}>
+                    <Text style={styles.label}>Zeit:</Text>
+                    <View style={styles.inputStuff}>
+                        <TextInput
+                            style={styles.input}
+                            onChangeText={setDauer}/>
+                        <Text style={styles.label}>min</Text>
+                    </View>
+                </View>
+            </View>
+            <BigButton style={styles.speichern} title='Speichern' onPress={()=> saveEintrag()}></BigButton>
+        </View>
     );
 }
 
