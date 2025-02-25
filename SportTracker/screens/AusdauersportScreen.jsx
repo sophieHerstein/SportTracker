@@ -6,10 +6,6 @@ import * as SQLite from 'expo-sqlite'
 import {useFocusEffect} from "@react-navigation/native";
 import { useCallback } from 'react';
 
-// TODO:   Charts
-//         Trends
-//         Empfehlungen oder ähnliches oder Analysen sowas halt
-
 const database = SQLite.openDatabaseSync('training.db');
 
 export default function AusdauersportScreen({navigation, route}) {
@@ -73,7 +69,7 @@ export default function AusdauersportScreen({navigation, route}) {
             <IconButton
                 size={36}
                 color='royalblue'
-                onPress={() => navigation.navigate('ausdauerStatistikScreen')}
+                onPress={() => navigation.navigate('ausdauerStatistikScreen', {ausdauerData})}
                 style={styles.statistics}
                 icon='bar-chart'>
             </IconButton>
