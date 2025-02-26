@@ -1,28 +1,98 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, FlatList, Pressable, StyleSheet } from "react-native";
+import React, {useEffect, useState} from "react";
+import {View, Text, TextInput, Button, FlatList, Pressable, StyleSheet, Alert, ActivityIndicator} from "react-native";
 import BigButton from "../components/BigButton";
 import {MaterialIcons} from "@expo/vector-icons";
+import * as SQLite from "expo-sqlite";
+
+const database = SQLite.openDatabaseSync('training.db');
 
 export default function UebungenScreen({navigation, route}) {
-    const [uebungen, setUebungen] = useState([]);
+    const { datum, gruppe } = route.params;
+    const [uebungen, setUebungen] = useState(() => []);    const [removedExercises, setRemovedExercises] = useState({});
 
-    const addUebung = () => {
+    useEffect(() => {
+        loadExistingTraining();
+    }, []);
+
+    // Prüfen, ob bereits Trainings für diese Muskelgruppe existieren
+    async function loadExistingTraining(){
+        try {
+            const existingTrainings = await database.getAllAsync(
+                `SELECT e.name, es.weight, COUNT(es.id) as sets
+                 FROM training t
+                          JOIN exercise_training et ON t.id = et.training_id
+                          JOIN exercise e ON et.exercise_id = e.id
+                          JOIN exercise_set es ON et.id = es.exercise_training_id
+                 WHERE t.muscle_group_id = (SELECT id FROM muscle_group WHERE name = ?)
+                   AND t.date = (SELECT MAX(date) FROM training WHERE muscle_group_id = t.muscle_group_id) -- Letztes Training
+                 GROUP BY e.name, es.weight
+                 ORDER BY t.date DESC;`,
+                gruppe
+            );
+
+            if (existingTrainings.length > 0) {
+                // Bestehende Übungen mit Gewicht & Sätze vorbelegen
+                const newExercises = existingTrainings.map((ex, index) => ({
+                    id: Date.now()+index, // Temporäre ID für die UI
+                    name: ex.name,
+                    saetze: Array.from({ length: ex.sets }, () => ({ gewicht: ex.weight, wdh: "", id: new Date().getTime() + Math.random() * 1000 })),
+                }));
+
+                setUebungen(newExercises);
+            }
+        } catch (error) {
+            console.error("Fehler beim Laden der Trainingsdaten:", error);
+        }
+    }
+
+    function addUebung() {
         setUebungen([...uebungen, { id: Date.now(), name: "", saetze: [] }]);
-    };
+    }
 
-    const deleteUebung = (uebungId) => {
-        setUebungen(uebungen.filter((uebung) => uebung.id !== uebungId));
-    };
+    function deleteUebung(uebungId){
+        const updatedExercises = uebungen.filter((uebung) => uebung.id !== uebungId);
+        setUebungen(updatedExercises);
 
-    const updateUebungName = (uebungId, newName) => {
+        setRemovedExercises((prev) => {
+            const newCount = (prev[name] || 0) + 1;
+
+            if (newCount >= 5) {
+                Alert.alert(
+                    "Übung dauerhaft entfernen?",
+                    `Diese Übung wurde bereits ${newCount} Mal entfernt. Soll sie dauerhaft aus der Muskelgruppe gelöscht werden?`,
+                    [
+                        { text: "Nein", style: "cancel" },
+                        {
+                            text: "Ja",
+                            onPress: async () => {
+                                try {
+                                    await database.runAsync(
+                                        "DELETE FROM exercise_muscle_group WHERE exercise_id = (SELECT id FROM exercise WHERE name = ?) AND muscle_group_id = (SELECT id FROM muscle_group WHERE name = ?)",
+                                        name, gruppe
+                                    );
+                                    Alert.alert("Übung dauerhaft entfernt!");
+                                } catch (error) {
+                                    console.error("Fehler beim dauerhaften Löschen:", error);
+                                }
+                            }
+                        }
+                    ]
+                );
+            }
+
+            return { ...prev, [name]: newCount };
+        });
+    }
+
+    function updateUebungName(uebungId, newName) {
         setUebungen(
             uebungen.map((uebung) =>
                 uebung.id === uebungId ? { ...uebung, name: newName } : uebung
             )
         );
-    };
+    }
 
-    const addSatz = (uebungId) => {
+    function addSatz(uebungId) {
         setUebungen(
             uebungen.map((uebung) =>
                 uebung.id === uebungId
@@ -33,9 +103,9 @@ export default function UebungenScreen({navigation, route}) {
                     : uebung
             )
         );
-    };
+    }
 
-    const deleteSatz = (uebungId, satzId) => {
+    function deleteSatz(uebungId, satzId){
         setUebungen(
             uebungen.map((uebung) =>
                 uebung.id === uebungId
@@ -43,9 +113,9 @@ export default function UebungenScreen({navigation, route}) {
                     : uebung
             )
         );
-    };
+    }
 
-    const updateSatz = (uebungId, satzId, field, value) => {
+    function updateSatz(uebungId, satzId, field, value) {
         setUebungen(
             uebungen.map((uebung) =>
                 uebung.id === uebungId
@@ -58,16 +128,77 @@ export default function UebungenScreen({navigation, route}) {
                     : uebung
             )
         );
-    };
+    }
 
-    function speichernUndZurueck(){
-        const fullData = {
-            id: Date.now().toString(),
-            datum: route.params.datum,
-            gruppe: route.params.gruppe,
-            uebungen
+    // Training speichern
+    async function saveTraining() {
+        try {
+            // Muskelgruppen-ID abrufen
+            const muscleGroupIdResult = await database.getFirstAsync(
+                "SELECT id FROM muscle_group WHERE name=?",
+                gruppe
+            );
+
+            const muscleGroupId = muscleGroupIdResult?.id;
+
+            if (!muscleGroupId) {
+                Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
+                return;
+            }
+
+            // Neues Training einfügen
+            const trainingInsert = await database.runAsync(
+                "INSERT INTO training (date, muscle_group_id) VALUES (?, ?)",
+                datum, muscleGroupId
+            );
+            const trainingId = trainingInsert.lastInsertRowId;
+
+            // Übungen & Sätze speichern
+            for (const uebung of uebungen) {
+                // Prüfen, ob die Übung bereits existiert, sonst hinzufügen
+                const existingExercise = await database.getFirstAsync(
+                    "SELECT id FROM exercise WHERE name = ?",
+                    uebung.name
+                );
+
+                let exerciseId;
+                if (existingExercise) {
+                    exerciseId = existingExercise.id;
+                } else {
+                    const insertExercise = await database.runAsync(
+                        "INSERT INTO exercise (name) VALUES (?)",
+                        uebung.name
+                    );
+                    exerciseId = insertExercise.lastInsertRowId;
+                }
+
+                // Übung mit Muskelgruppe verknüpfen (falls nicht vorhanden)
+                await database.runAsync(
+                    "INSERT OR IGNORE INTO exercise_muscle_group (muscle_group_id, exercise_id) VALUES (?, ?)",
+                    muscleGroupId, exerciseId
+                );
+
+                // Übung mit Training verknüpfen
+                const exerciseTrainingInsert = await database.runAsync(
+                    "INSERT INTO exercise_training (training_id, exercise_id) VALUES (?, ?)",
+                    trainingId, exerciseId
+                );
+                const exerciseTrainingId = exerciseTrainingInsert.lastInsertRowId;
+
+                // Sätze speichern
+                for (const satz of uebung.saetze) {
+                    await database.runAsync(
+                        "INSERT INTO exercise_set (exercise_training_id, weight, repetitions) VALUES (?, ?, ?)",
+                        exerciseTrainingId, satz.gewicht, satz.wdh
+                    );
+                }
+            }
+
+            Alert.alert("Training gespeichert!");
+            navigation.goBack();
+        } catch (error) {
+            console.error("Fehler beim Speichern:", error);
         }
-        navigation.navigate("kraftsportScreen", { gespeicherteUebungen: fullData });
     }
 
     return (
@@ -78,8 +209,8 @@ export default function UebungenScreen({navigation, route}) {
             </Pressable>
 
             <FlatList
-                data={uebungen}
-                keyExtractor={(uebung) => uebung.id.toString()}
+                data={uebungen || []} // Falls undefined, dann leeres Array nutzen
+                keyExtractor={(item, index) => (item?.id ? item.id.toString() : index.toString())} // 🔥 Index als Fallback
                 renderItem={({ item: uebung }) => (
                     <View style={styles.uebungContainer}>
                         <TextInput
@@ -91,7 +222,7 @@ export default function UebungenScreen({navigation, route}) {
 
                         <FlatList
                             data={uebung.saetze}
-                            keyExtractor={(satz) => satz.id.toString()}
+                            keyExtractor={(satz) => satz.id}
                             renderItem={({ item: satz }) => (
                                 <View style={styles.satzContainer}>
                                     <TextInput
@@ -105,7 +236,7 @@ export default function UebungenScreen({navigation, route}) {
                                         style={styles.satzInput}
                                         placeholder="Gewicht"
                                         keyboardType="numeric"
-                                        value={satz.gewicht}
+                                        value={satz.gewicht.toString()}
                                         onChangeText={(text) => updateSatz(uebung.id, satz.id, "gewicht", text)}
                                     />
                                     <Pressable onPress={() => deleteSatz(uebung.id, satz.id)}>
@@ -126,7 +257,7 @@ export default function UebungenScreen({navigation, route}) {
                     </View>
                 )}
             />
-            <BigButton style={styles.fertigButton} title='Fertig' onPress={()=> speichernUndZurueck()}></BigButton>
+            <BigButton style={styles.fertigButton} title='Fertig' onPress={()=> saveTraining()}></BigButton>
         </View>
     );
 };

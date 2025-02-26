@@ -1,23 +1,36 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import {Text, StyleSheet, View, Pressable, TextInput} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IconButton from "./IconButton";
+import * as SQLite from "expo-sqlite";
+import {openDatabaseSync} from "expo-sqlite";
+
+const database = SQLite.openDatabaseSync('training.db');
 
 export default function NeuerKraftsportEintrag({navigation}) {
     const [datum, setDatum] = useState(new Date());
     const [showInput, setShowInput] = useState(false);
     const [additionalGruppe, setAdditionalGruppe] = useState('');
-    const [gruppen, setGruppen] = useState([
-        'Arme',
-        'Beine',
-        'Rücken',
-    ]);
+    const [gruppen, setGruppen] = useState([]);
 
-    function addGruppeToList(){
+    useEffect(() => {
+        getMuskelgruppe();
+    }, []);
+
+    async function getMuskelgruppe(){
+        const databaseData = await database.getAllAsync('SELECT * FROM muscle_group');
+        const muscleGroups = databaseData.map((row) => {
+            return row.name;
+        })
+        setGruppen(muscleGroups);
+    }
+
+    async function addGruppeToList(){
         if(!gruppen.includes(additionalGruppe) && additionalGruppe.trim() !== ''){
             const neueGruppen = [...gruppen];
             neueGruppen.push(additionalGruppe);
             setGruppen(neueGruppen);
+            await database.runAsync("INSERT INTO muscle_group (name) VALUES (?)",additionalGruppe)
             setAdditionalGruppe('');
             setShowInput(false);
         } else {

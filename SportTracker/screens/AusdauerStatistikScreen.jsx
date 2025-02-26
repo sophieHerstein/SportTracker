@@ -16,9 +16,7 @@ export default function AusdauerStatistikScreen({route}) {
             return acc;
         }, {});
         const result = Object.values(grouped);
-        result.forEach((item) => {
-            console.log(item);
-        })
+
         setData(result);
     }, [])
 
