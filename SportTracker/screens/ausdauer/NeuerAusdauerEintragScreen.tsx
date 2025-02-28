@@ -1,7 +1,6 @@
 import {useEffect, useState} from 'react';
-import {Text, KeyboardAvoidingView, Modal, Platform, StyleSheet, TextInput, View} from 'react-native';
+import {Text, StyleSheet, TextInput, View} from 'react-native';
 import BigButton from '../../components/BigButton';
-import IconButton from '../../components/IconButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from "react-native-dropdown-picker";
 import * as SQLite from "expo-sqlite";
@@ -22,8 +21,8 @@ const database = SQLite.openDatabaseSync('training.db');
 export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAusdauerEintragScreenProps) {
     const [datum, setDatum] = useState(new Date());
     const [name, setName] = useState('Laufen');
-    const [strecke, setStrecke] = useState(0);
-    const [dauer, setDauer] = useState(0);
+    const [strecke, setStrecke] = useState('');
+    const [dauer, setDauer] = useState('');
     const [sportarten, setSportarten] = useState<ITrainingstypDropdown[]>([]);
 
     const [open, setOpen] = useState(false);
@@ -36,12 +35,16 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         setSportarten(trainigstypenMapping);
     }, [])
 
+    function isStringValidNumber(value: string) {
+        return !Number.isNaN(parseFloat(value)) && parseFloat(value) > 0;
+    }
+
     function isStreckeValid() {
-        return strecke > 0
+        return isStringValidNumber(strecke);
     }
 
     function isDauerValid() {
-        return dauer > 0;
+        return isStringValidNumber(dauer);
     }
 
     async function saveEintrag(){
@@ -65,17 +68,16 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
 
     async function saveEintragInDB() {
         if(!trainingsTypExists(name)){
-            await database.runAsync(addTrainingsTypToTable(datum.getTime(), name));
+            await database.runAsync(addTrainingsTypToTable(name));
         }
-        const trainigsTypId: {id: number}| null = await database.getFirstAsync(getIdForTrainingsTyp(name));
-        if(!!trainigsTypId){
-            await database.runAsync(addAusdauertrainingsEinheitToTable(datum.getTime(), trainigsTypId.id, datum.getTime(), dauer, strecke));
+        const trainingsTypId: {id: number}| null = await database.getFirstAsync(getIdForTrainingsTyp(name));
+        if(!!trainingsTypId){
+            await database.runAsync(addAusdauertrainingsEinheitToTable(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke)));
         }
     }
 
-    //TODO: nochma genauer angucken
-    function trainingsTypExists(trainigstypName: string){
-        return route.params.trainingsTypen.filter((tt: ITrainigstypDatabaseResult) => tt.name === trainigstypName).length > 0;
+    function trainingsTypExists(trainingstypName: string){
+        return route.params.trainingsTypen.filter((tt: ITrainigstypDatabaseResult) => tt.name === trainingstypName).length > 0;
     }
 
     return (
@@ -110,7 +112,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                     <View style={styles.inputStuff}>
                         <TextInput
                             style={styles.input}
-                            onChangeText={setStrecke.toString}/>
+                            onChangeText={setStrecke}/>
                         <Text style={styles.label}>km</Text>
                     </View>
                 </View>
@@ -119,7 +121,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                     <View style={styles.inputStuff}>
                         <TextInput
                             style={styles.input}
-                            onChangeText={setDauer.toString}/>
+                            onChangeText={setDauer}/>
                         <Text style={styles.label}>min</Text>
                     </View>
                 </View>

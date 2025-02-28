@@ -6,10 +6,16 @@ import * as SQLite from "expo-sqlite";
 import {useFocusEffect} from "@react-navigation/native";
 import {EAppPaths} from "../../utils/constants";
 import {
-    createExerciseMuscleGroupTable, createExerciseSetTable,
-    createExerciseTable, createExerciseTrainingTable,
+    createExerciseMuscleGroupTable,
+    createExerciseSetTable,
+    createExerciseTable,
+    createExerciseTrainingTable,
     createMuscleGroupTable,
-    createTrainingTable, deleteTrainingWithId, getKraftsportHomeScreenData
+    createTrainingTable,
+    deleteTrainingWithId1,
+    deleteTrainingWithId2,
+    deleteTrainingWithId3, deleteTrainingWithId4,
+    getKraftsportHomeScreenData
 } from "../../utils/database-querys";
 import {IKraftsportData, IKraftsportDatabaseResult, ISatz} from "../../utils/interfaces";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -22,7 +28,6 @@ import {NativeStackScreenProps} from "@react-navigation/native-stack";
 //         Empfehlungen oder ähnliches oder Analysen sowas halt
 //         globale Stylings/einheitliches Styling
 //         Bugfixes
-//         Datentypen und va ids nochmal prüfen
 
 type KraftsportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_HOME>;
 
@@ -34,23 +39,37 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
 
     useFocusEffect(useCallback(() => {
         setupDatabase();
-        fetchTrainings();
+        // dropDatabase();
         }, []
     ));
 
-    async function setupDatabase(){
+    async function setupDatabase() {
+        setLoading(true);
         try {
             await database.runAsync(createMuscleGroupTable);
-
             await database.runAsync(createExerciseTable);
-
             await database.runAsync(createExerciseMuscleGroupTable);
-
             await database.runAsync(createTrainingTable);
-
             await database.runAsync(createExerciseTrainingTable);
-
             await database.runAsync(createExerciseSetTable);
+
+            await fetchTrainings();
+        } catch (error) {
+            console.error("❌ Fehler beim Einrichten der Datenbank:", error);
+        }
+        setLoading(false);
+    }
+
+    async function dropDatabase(){
+        try {
+            await database.runAsync('DROP TABLE IF EXISTS training');
+            await database.runAsync('DROP TABLE IF EXISTS exercise_set');
+            await database.runAsync('DROP TABLE IF EXISTS exercise_training');
+            await database.runAsync('DROP TABLE IF EXISTS exercise_muscle_group');
+            await database.runAsync('DROP TABLE IF EXISTS exercise');
+            await database.runAsync('DROP TABLE IF EXISTS muscle_group');
+            await database.runAsync('DROP TABLE IF EXISTS trainingstyp');
+            await database.runAsync('DROP TABLE IF EXISTS ausdauertrainingseinheit');
         } catch (error) {
             console.error("Fehler beim Einrichten der Datenbank:", error);
         }
@@ -59,18 +78,18 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     function transformTrainingData(dataBaseData: IKraftsportDatabaseResult[]): IKraftsportData[] {
         const transformedData: Record<string, {
             id: number;
-            datum: string;
+            datum: number;
             gruppe: string;
             uebungen: Record<string, ISatz[]>;
         }> = {};
 
         dataBaseData.forEach((entry: IKraftsportDatabaseResult) => {
-            const key = `${entry.date}-${entry.muscle_group}`;
+            const key = `${entry.training_id}`;
 
             if (!transformedData[key]) {
                 transformedData[key] = {
                     id: entry.training_id,
-                    datum: entry.date,
+                    datum: entry.datum,
                     gruppe: entry.muscle_group,
                     uebungen: {}
                 };
@@ -81,7 +100,7 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
             }
 
             transformedData[key].uebungen[entry.exercise].push({
-                id: new Date().getTime() + Math.random() * 1000,
+                id: entry.exercise_set_id,
                 gewicht: entry.weight,
                 wiederholungen: entry.repetitions
             });
@@ -89,7 +108,12 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
 
         return Object.values(transformedData).map(training => ({
             training_id: training.id,
-            datum: training.datum,
+            datum: new Date(training.datum).toLocaleDateString('de-DE', {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }),
+            datum_as_timestamp: training.datum,
             gruppe: training.gruppe,
             uebungen: Object.entries(training.uebungen).map(([name, saetze]) => ({
                 name,
@@ -101,7 +125,10 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
 
     async function deleteTraining(id: string){
         try {
-            await database.runAsync(deleteTrainingWithId(id));
+            await database.runAsync(deleteTrainingWithId1(id));
+            await database.runAsync(deleteTrainingWithId2(id));
+            await database.runAsync(deleteTrainingWithId3(id));
+            await database.runAsync(deleteTrainingWithId4(id));
             await fetchTrainings();
         } catch (error) {
             console.error("Fehler beim Löschen des Trainings:", error);
@@ -109,13 +136,17 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     }
 
     async function fetchTrainings() {
-        setLoading(true)
+        setLoading(true);
         try {
             const results: IKraftsportDatabaseResult[] = await database.getAllAsync(getKraftsportHomeScreenData);
-            const transformedData: IKraftsportData[] = transformTrainingData(results)
-            setData(transformedData);
+
+            if (results.length > 0) {
+                const transformedData: IKraftsportData[] = transformTrainingData(results);
+                transformedData.sort((a, b) => b.datum_as_timestamp - a.datum_as_timestamp);
+                setData(transformedData);
+            }
         } catch (error) {
-            console.error("Fehler beim Abrufen der Trainings:", error);
+            console.error("❌ Fehler beim Abrufen der Trainings:", error);
         }
         setLoading(false);
     }

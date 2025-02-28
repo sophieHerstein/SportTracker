@@ -1,18 +1,19 @@
 import {TextStyle, ViewStyle} from "react-native";
-import {GlyphMap} from "@expo/vector-icons/build/createIconSet";
 
 export interface IKraftsportDatabaseResult {
-    date: string,
+    datum: number,
     exercise: string,
     muscle_group: string,
     repetitions: number,
     training_id: number,
+    exercise_set_id: number,
     weight: number
 }
 
 export interface IKraftsportData {
     training_id: number,
     datum: string,
+    datum_as_timestamp: number,
     gruppe: string,
     uebungen: IUebung[]
 }
@@ -71,8 +72,10 @@ export interface IIconButtonProps {
 
 export interface ITrainingDatabase {
     name: string,
-    sets: number,
-    weight: number,
+    last_sets: number,
+    last_weight: number,
+    id: number,
+    last_training_date: number
 }
 
 export interface IKraftsportListItemProps {
@@ -132,4 +135,9 @@ export interface IAusdauerScatterPlotProps{
 
 export interface IAusdauerStatistikListItemProps {
     item: IAusdauerData[]
+}
+
+export interface IGewichtUebung {
+    satz_anzahl: number,
+    weight: number
 }

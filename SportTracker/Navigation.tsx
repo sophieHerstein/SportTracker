@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import KraftsportScreen from "./screens/kraftsport/KraftsportScreen";
 import KraftsportUebungenScreen from "./screens/kraftsport/KraftsportUebungenScreen";
-import AusdauersportScreen from "./screens/ausdauer/AusdauersportScreen";
+import AusdauerScreen from "./screens/ausdauer/AusdauerScreen";
 import KraftsportGruppeWaehlenScreen from "./screens/kraftsport/KraftsportGruppeWaehlenScreen";
 import NeuerAusdauerEintragScreen from "./screens/ausdauer/NeuerAusdauerEintragScreen";
 import AusdauerStatistikScreen from "./screens/ausdauer/AusdauerStatistikScreen";
@@ -16,7 +16,7 @@ export type NavigatorParamList = {
     [EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN]: undefined;
     [EAppPaths.KRAFTSPORT_UEBUNGEN]: {
         gruppe: string;
-        datum: string;
+        datum: number;
     };
     [EAppPaths.AUSDAUER_HOME]: undefined;
     [EAppPaths.AUSDAUER_EINTRAG]: {
@@ -48,7 +48,7 @@ function KraftsportStack() {
 function AusdauerStack() {
     return (
         <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: 'aliceblue'}}}>
-            <Stack.Screen name={EAppPaths.AUSDAUER_HOME} component={AusdauersportScreen} options={{title: "Ausdauer"}}/>
+            <Stack.Screen name={EAppPaths.AUSDAUER_HOME} component={AusdauerScreen} options={{title: "Ausdauer"}}/>
             <Stack.Screen name={EAppPaths.AUSDAUER_EINTRAG} component={NeuerAusdauerEintragScreen} options={{title: "Neuer Eintrag"}}></Stack.Screen>
             <Stack.Screen name={EAppPaths.AUSDAUER_STATISTIK} component={AusdauerStatistikScreen} options={{title: "Ausdauer Statistik"}}></Stack.Screen>
         </Stack.Navigator>

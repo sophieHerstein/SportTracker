@@ -1,5 +1,5 @@
 import {FlatList, StyleSheet, View} from 'react-native';
-import AusdauersportListItem from "./components/AusdauersportListItem";
+import AusdauerListItem from "./components/AusdauerListItem";
 import IconButton from "../../components/IconButton";
 import {useState} from 'react';
 import * as SQLite from 'expo-sqlite'
@@ -25,7 +25,7 @@ type AusdauersportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppP
 
 const database = SQLite.openDatabaseSync('training.db');
 
-export default function AusdauersportScreen({navigation, route}: AusdauersportScreenProps) {
+export default function AusdauerScreen({navigation, route}: AusdauersportScreenProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [ausdauerData, setData] = useState<IAusdauerData[]>([]);
     const [trainingsTypen, setTrainingsTypen] = useState<ITrainigstypDatabaseResult[]>([]);
@@ -97,7 +97,7 @@ export default function AusdauersportScreen({navigation, route}: AusdauersportSc
             </IconButton>
             <FlatList data={ausdauerData}
                       renderItem={({item})=> (
-                          <AusdauersportListItem item={item} onDelete={(id: number) => removeEintragFromList(id)}/>
+                          <AusdauerListItem item={item} onDelete={(id: number) => removeEintragFromList(id)}/>
                       )}
                       keyExtractor={(item)=> item.id.toString()}
                       ListEmptyComponent={EmptyList}

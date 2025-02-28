@@ -6,15 +6,15 @@ import {
     addExerciseToTraining, addSatzToDatabase,
     addTrainig, addUebungToDatabase, connectMuscleGroupAndUebung,
     deleteUebungReferenzFromGruppe, getIdForUebung,
-    getLastUebungDataForGruppe,
-    getMuscleGroupIdForName
+    getLastUebungDataForGruppe, getLastWeightForUebung,
+    getMuscleGroupIdForName, shouldExerciseAndMuscleGroupBeUnlinked
 } from "../../utils/database-querys";
 import TextIconButton from "../../components/TextIconButton";
 import KraftsportUebungListItem from "./components/KraftsportUebungListItem";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
 import {EAppPaths} from "../../utils/constants";
-import {ITrainingDatabase, IUebung} from "../../utils/interfaces";
+import {IGewichtUebung, ISatz, ITrainingDatabase, IUebung} from "../../utils/interfaces";
 
 type KraftsportUebungenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_UEBUNGEN>;
 
@@ -33,9 +33,14 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             const existingTrainings: ITrainingDatabase[] = await database.getAllAsync(getLastUebungDataForGruppe(gruppe));
             if (existingTrainings.length > 0) {
                 const newExercises: IUebung[] = existingTrainings.map((ex, index) => ({
-                    id: Date.now()+index, // Temporäre ID für die UI
+                    id: ex.id,
                     name: ex.name,
-                    saetze: Array.from({ length: ex.sets }, () => ({ gewicht: ex.weight, wiederholungen: 0, id: new Date().getTime() + Math.random() * 1000 })),
+                    saetze: Array.from({ length: ex.last_sets },
+                        (): ISatz => ({
+                            gewicht: ex.last_weight,
+                            wiederholungen: 0,
+                            id: new Date().getTime() + Math.random() * 1000  // Temporäre ID für die UI
+                        })),
                 }));
 
                 setUebungen(newExercises);
@@ -52,23 +57,62 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     function deleteUebung(uebungId: number) {
         const updatedExercises = uebungen.filter((uebung) => uebung.id !== uebungId);
         setUebungen(updatedExercises);
+
+        const result: {should_unlink: number}|null = database.getFirstSync(shouldExerciseAndMuscleGroupBeUnlinked(uebungId));
+
+        if(result?.should_unlink === 1){
+            Alert.alert(
+                "Übung aus Gruppe entfernen?",
+                "Soll die Übung dauerhaft aus diser Muskelgruppe entfernt werden?",
+                [{text: "Nein"},{text: "Ja", style: "destructive", onPress:()=> deleteUebungFromMuscleGroup(uebungId)}]
+            )
+        }
+    }
+
+    async function deleteUebungFromMuscleGroup(uebungId: number) {
+        await database.runAsync(deleteUebungReferenzFromGruppe(uebungId, gruppe));
     }
 
     function updateUebungName(uebungId: number, newName: string) {
-        setUebungen(
-            uebungen.map((uebung) =>
-                uebung.id === uebungId ? { ...uebung, name: newName } : uebung
-            )
-        );
+        const uebungData: IGewichtUebung|null = database.getFirstSync(getLastWeightForUebung(newName))
+        if(!!uebungData){
+            setUebungen(
+                uebungen.map((uebung) =>
+                    uebung.id === uebungId
+                        ? {
+                            ...uebung,
+                            name: newName,
+                            saetze: Array.from({ length: uebungData.satz_anzahl },
+                                (): ISatz => ({
+                                    gewicht: uebungData.weight,
+                                    wiederholungen: 0,
+                                    id: new Date().getTime() + Math.random() * 1000  // Temporäre ID für die UI
+                                })),
+                        }
+                        : uebung
+                )
+            );
+        } else {
+            setUebungen(
+                uebungen.map((uebung) =>
+                    uebung.id === uebungId ? { ...uebung, name: newName } : uebung
+                )
+            );
+        }
     }
 
     function addSatz(uebungId: number) {
+        let gewicht = 0;
+        const saetzeFromUebung = uebungen.filter((uebung) => uebung.id === uebungId)[0].saetze;
+        if(saetzeFromUebung && saetzeFromUebung.length >= 1){
+            gewicht = saetzeFromUebung[saetzeFromUebung.length-1].gewicht;
+        }
         setUebungen(
             uebungen.map((uebung) =>
                 uebung.id === uebungId
                     ? {
                         ...uebung,
-                        saetze: [...uebung.saetze, { id: Date.now(), wiederholungen: 0, gewicht: 0 }],
+                        saetze: [...uebung.saetze, { id: Date.now(), wiederholungen: 0, gewicht: gewicht }],
                     }
                     : uebung
             )
@@ -129,14 +173,11 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
                 const exerciseTrainingInsert = await database.runAsync(addExerciseToTraining(trainingId, exerciseId));
                 const exerciseTrainingId = exerciseTrainingInsert.lastInsertRowId;
-
                 for (const satz of uebung.saetze) {
                     await database.runAsync(addSatzToDatabase(exerciseTrainingId, satz.gewicht, satz.wiederholungen));
                 }
             }
-
-            Alert.alert("Training gespeichert!");
-            navigation.goBack();
+            navigation.popToTop();
         } catch (error) {
             console.error("Fehler beim Speichern:", error);
         }

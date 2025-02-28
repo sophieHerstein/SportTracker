@@ -65,8 +65,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                         style={styles.uebung}
                         onPress={()=> navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
                             gruppe,
-                            datum: datum.toLocaleDateString('de-DE', {day: "2-digit", month: "2-digit", year: "numeric"
-                            })})}>
+                            datum: datum.getTime()})}>
                         <Text style={styles.uebungText}>{gruppe}</Text>
                     </Pressable>
                 ))}

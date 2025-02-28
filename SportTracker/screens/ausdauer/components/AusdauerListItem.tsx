@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import IconButton from "../../../components/IconButton";
 import {IAusdauersportListItemProps} from "../../../utils/interfaces";
 
-export default function AusdauersportListItem({item, onDelete}: IAusdauersportListItemProps) {
+export default function AusdauerListItem({item, onDelete}: IAusdauersportListItemProps) {
 
     return (
         <View style={styles.container}>
