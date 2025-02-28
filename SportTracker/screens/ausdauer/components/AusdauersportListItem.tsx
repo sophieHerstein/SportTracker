@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
-import IconButton from "./IconButton";
+import IconButton from "../../../components/IconButton";
+import {IAusdauersportListItemProps} from "../../../utils/interfaces";
 
-export default function AusdauersportListItem({item, onDelete}) {
+export default function AusdauersportListItem({item, onDelete}: IAusdauersportListItemProps) {
 
     return (
         <View style={styles.container}>
@@ -10,7 +11,7 @@ export default function AusdauersportListItem({item, onDelete}) {
                 <Text style={styles.details}>Strecke: {item.strecke}km ; Zeit: {item.dauer}min</Text>
                 <Text style={styles.details}>Durchschnittsgeschwindigkeit: {Math.round(item.strecke/(item.dauer/60))} km/h</Text>
             </View>
-            <IconButton size={36} color='royalblue' icon='delete' style={styles.delete} onPress={() => onDelete(item.id)}></IconButton>
+            <IconButton size={36} color='royalblue' icon='delete' onPress={() => onDelete(item.id)}></IconButton>
         </View>
     );
 }

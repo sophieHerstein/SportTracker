@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
+import {IBigButtonProps} from "../utils/interfaces";
 
-export default function BigButton({onPress, title, style}) {
+export default function BigButton({onPress, title, style}: IBigButtonProps) {
     return (
         <Pressable
             onPress={onPress}

@@ -1,41 +1,47 @@
 import {useEffect, useState} from 'react';
 import {Text, KeyboardAvoidingView, Modal, Platform, StyleSheet, TextInput, View} from 'react-native';
-import BigButton from './BigButton';
-import IconButton from './IconButton';
+import BigButton from '../../components/BigButton';
+import IconButton from '../../components/IconButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from "react-native-dropdown-picker";
 import * as SQLite from "expo-sqlite";
+import {
+    addAusdauertrainingsEinheitToTable,
+    addTrainingsTypToTable,
+    getIdForTrainingsTyp
+} from "../../utils/database-querys";
+import {ITrainigstypDatabaseResult, ITrainingstypDropdown} from "../../utils/interfaces";
+import {NativeStackScreenProps} from "@react-navigation/native-stack";
+import {NavigatorParamList} from "../../Navigation";
+import {EAppPaths} from "../../utils/constants";
+
+type NeuerAusdauerEintragScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_EINTRAG>;
 
 const database = SQLite.openDatabaseSync('training.db');
 
-export default function NeuerAusdauerEintrag({navigation, route}) {
+export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAusdauerEintragScreenProps) {
     const [datum, setDatum] = useState(new Date());
     const [name, setName] = useState('Laufen');
-    const [strecke, setStrecke] = useState('0');
-    const [dauer, setDauer] = useState('0');
-    const [sportarten, setSportarten] = useState([]);
+    const [strecke, setStrecke] = useState(0);
+    const [dauer, setDauer] = useState(0);
+    const [sportarten, setSportarten] = useState<ITrainingstypDropdown[]>([]);
 
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
         const trainingsTypen = route.params.trainingsTypen;
-        const trainigstypenMapping = trainingsTypen.map((tt)=>{
+        const trainigstypenMapping: ITrainingstypDropdown[] = trainingsTypen.map((tt: ITrainigstypDatabaseResult)=>{
             return {label: tt.name, value: tt.name}
         })
         setSportarten(trainigstypenMapping);
     }, [])
 
-    function isNumberValid(numberString) {
-        const number = parseFloat(numberString);
-        return !isNaN(numberString) && number > 0;
-    }
-
     function isStreckeValid() {
-        return isNumberValid(strecke);
+        return strecke > 0
     }
 
     function isDauerValid() {
-        return isNumberValid(dauer);
+        return dauer > 0;
     }
 
     async function saveEintrag(){
@@ -59,18 +65,17 @@ export default function NeuerAusdauerEintrag({navigation, route}) {
 
     async function saveEintragInDB() {
         if(!trainingsTypExists(name)){
-            await database.runAsync('INSERT INTO Trainingstyp (id, name) VALUES (?, ?)', datum.getTime(), name);
+            await database.runAsync(addTrainingsTypToTable(datum.getTime(), name));
         }
-        const trainigsTypId = await database.getFirstAsync('SELECT id FROM Trainingstyp WHERE name=?', name);
-        await database.runAsync('INSERT INTO Ausdauertrainingseinheit (id, trainingstyp_id, datum, dauer_minuten, strecke_km) VALUES (?, ?,?,?,?)', datum.getTime(), trainigsTypId.id, datum.getTime(), dauer, strecke);
+        const trainigsTypId: {id: number}| null = await database.getFirstAsync(getIdForTrainingsTyp(name));
+        if(!!trainigsTypId){
+            await database.runAsync(addAusdauertrainingsEinheitToTable(datum.getTime(), trainigsTypId.id, datum.getTime(), dauer, strecke));
+        }
     }
 
-    function trainingsTypExists(trainigstypName){
-        return route.params.trainingsTypen.filter((tt) => tt.label === trainigstypName).length > 0;
-    }
-
-    function onDateChange(event, selectedDate){
-        setDatum(selectedDate);
+    //TODO: nochma genauer angucken
+    function trainingsTypExists(trainigstypName: string){
+        return route.params.trainingsTypen.filter((tt: ITrainigstypDatabaseResult) => tt.name === trainigstypName).length > 0;
     }
 
     return (
@@ -83,7 +88,7 @@ export default function NeuerAusdauerEintrag({navigation, route}) {
                         testID="dateTimePicker"
                         value={datum}
                         mode='date'
-                        onChange={onDateChange}
+                        onChange={(_, datum) => setDatum(datum ?? new Date())}
                     />
                 </View>
                 <View style={styles.pickerRow}>
@@ -105,7 +110,7 @@ export default function NeuerAusdauerEintrag({navigation, route}) {
                     <View style={styles.inputStuff}>
                         <TextInput
                             style={styles.input}
-                            onChangeText={setStrecke}/>
+                            onChangeText={setStrecke.toString}/>
                         <Text style={styles.label}>km</Text>
                     </View>
                 </View>
@@ -114,7 +119,7 @@ export default function NeuerAusdauerEintrag({navigation, route}) {
                     <View style={styles.inputStuff}>
                         <TextInput
                             style={styles.input}
-                            onChangeText={setDauer}/>
+                            onChangeText={setDauer.toString}/>
                         <Text style={styles.label}>min</Text>
                     </View>
                 </View>

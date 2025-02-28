@@ -1,25 +1,31 @@
 import {useEffect, useState} from 'react';
 import {Text, StyleSheet, View, Pressable, TextInput} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import IconButton from "./IconButton";
+import IconButton from "../../components/IconButton";
 import * as SQLite from "expo-sqlite";
-import {openDatabaseSync} from "expo-sqlite";
+import {EAppPaths} from "../../utils/constants";
+import {addMuscleGroupToTable, getMuscleGroupData} from "../../utils/database-querys";
+import {NativeStackScreenProps} from "@react-navigation/native-stack";
+import {NavigatorParamList} from "../../Navigation";
+import {IMuscleGroupDatabaseResult} from "../../utils/interfaces";
+
+type KraftsportGruppeWaehlenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN>;
 
 const database = SQLite.openDatabaseSync('training.db');
 
-export default function NeuerKraftsportEintrag({navigation}) {
+export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGruppeWaehlenScreenProps) {
     const [datum, setDatum] = useState(new Date());
     const [showInput, setShowInput] = useState(false);
     const [additionalGruppe, setAdditionalGruppe] = useState('');
-    const [gruppen, setGruppen] = useState([]);
+    const [gruppen, setGruppen] = useState<string[]>([]);
 
     useEffect(() => {
         getMuskelgruppe();
     }, []);
 
     async function getMuskelgruppe(){
-        const databaseData = await database.getAllAsync('SELECT * FROM muscle_group');
-        const muscleGroups = databaseData.map((row) => {
+        const databaseData: IMuscleGroupDatabaseResult[] = await database.getAllAsync(getMuscleGroupData);
+        const muscleGroups = databaseData.map((row: IMuscleGroupDatabaseResult) => {
             return row.name;
         })
         setGruppen(muscleGroups);
@@ -30,17 +36,13 @@ export default function NeuerKraftsportEintrag({navigation}) {
             const neueGruppen = [...gruppen];
             neueGruppen.push(additionalGruppe);
             setGruppen(neueGruppen);
-            await database.runAsync("INSERT INTO muscle_group (name) VALUES (?)",additionalGruppe)
+            await database.runAsync(addMuscleGroupToTable(additionalGruppe));
             setAdditionalGruppe('');
             setShowInput(false);
         } else {
             setAdditionalGruppe('');
             setShowInput(false);
         }
-    }
-
-    function onDateChange(event, selectedDate){
-        setDatum(selectedDate);
     }
 
     return (
@@ -52,20 +54,30 @@ export default function NeuerKraftsportEintrag({navigation}) {
                         testID="dateTimePicker"
                         value={datum}
                         mode='date'
-                        onChange={onDateChange}
+                        onChange={(_, datum)=> setDatum(datum ?? new Date())}
                     />
                 </View>
             </View>
             <View style={styles.uebungContainer}>
                 {gruppen.map((gruppe, index) => (
-                    <Pressable key={index} style={styles.uebung} onPress={()=> navigation.navigate('kraftsportUebungenScreen', {gruppe, datum: datum.toLocaleDateString('de-DE', {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric"
-                        })})}><Text style={styles.uebungText}>{gruppe}</Text></Pressable>
+                    <Pressable
+                        key={index}
+                        style={styles.uebung}
+                        onPress={()=> navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
+                            gruppe,
+                            datum: datum.toLocaleDateString('de-DE', {day: "2-digit", month: "2-digit", year: "numeric"
+                            })})}>
+                        <Text style={styles.uebungText}>{gruppe}</Text>
+                    </Pressable>
                 ))}
             </View>
-            <IconButton size={36} icon='add-circle' color='royalblue' onPress={()=> setShowInput(true)}></IconButton>
+            <IconButton
+                size={36}
+                icon='add'
+                color='royalblue'
+                style={{}}
+                onPress={()=> setShowInput(true)}>
+            </IconButton>
             {showInput && (
                 <TextInput placeholder='Gruppe'
                            style={styles.input}

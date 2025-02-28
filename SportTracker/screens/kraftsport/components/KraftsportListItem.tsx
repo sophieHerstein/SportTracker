@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
-import IconButton from "./IconButton";
+import IconButton from "../../../components/IconButton";
+import {IKraftsportListItemProps} from "../../../utils/interfaces";
 
-export default function KraftsportListItem({item, onDelete}) {
+export default function KraftsportListItem({item, onDelete}: IKraftsportListItemProps) {
     return (
         <View style={styles.container}>
             <View style={styles.info}>
@@ -10,16 +11,15 @@ export default function KraftsportListItem({item, onDelete}) {
                     <View key={index}>
                         <Text style={styles.uebung}>{uebung.name}</Text>
 
-                        {/* Iteriere über alle Sätze der Übung */}
                         {uebung.saetze.map((satz, satzIndex) => (
                             <Text key={satzIndex} style={styles.satz}>
-                                Satz {satzIndex + 1}: {satz.gewicht} kg, {satz.widerholung} Wiederholungen
+                                Satz {satzIndex + 1}: {satz.gewicht} kg, {satz.wiederholungen} Wiederholungen
                             </Text>
                         ))}
                     </View>
                 ))}
             </View>
-            <IconButton size={36} color='royalblue' icon='delete' style={styles.delete} onPress={() => onDelete(item.id)}></IconButton>
+            <IconButton size={36} color='royalblue' icon='delete' onPress={() => onDelete(item.training_id.toString())}></IconButton>
         </View>
     );
 }
