@@ -17,7 +17,7 @@ export const getKraftsportHomeScreenData = 'SELECT t.id AS training_id, t.datum,
 export const deleteTrainingWithId1 = (id: string)=>  `DELETE FROM exercise_set WHERE exercise_training_id IN (SELECT id FROM exercise_training WHERE training_id = ${id})`
 export const deleteTrainingWithId2 = (id: string)=>  `DELETE FROM exercise_training WHERE training_id = ${id}`
 export const deleteTrainingWithId3 = (id: string)=>  `DELETE FROM training WHERE id = ${id}`
-export const deleteTrainingWithId4 = (id: string)=>  `DELETE FROM exercise_training WHERE training_id NOT IN (SELECT id FROM training)`
+export const deleteTrainingWithId4 = ()=>  `DELETE FROM exercise_training WHERE training_id NOT IN (SELECT id FROM training)`
 
 export const getMuscleGroupData = 'SELECT * FROM muscle_group';
 
@@ -29,7 +29,7 @@ export const deleteUebungReferenzFromGruppe = (uebungId: number, gruppe: string)
 
 export const getMuscleGroupIdForName = (name: string) => `SELECT id FROM muscle_group WHERE name='${name}'`;
 
-export const addTrainig = (datum: number, muscleGroupId: number) => `INSERT INTO training (datum, muscle_group_id) VALUES (${datum}, ${muscleGroupId})`
+export const addTraining = (datum: number, muscleGroupId: number) => `INSERT INTO training (datum, muscle_group_id) VALUES (${datum}, ${muscleGroupId})`
 
 export const getIdForUebung = (name: string) => `SELECT id FROM exercise WHERE name = '${name}'`
 
@@ -55,79 +55,26 @@ export const addTrainingsTypToTable = (trainingstyp: string) => `INSERT INTO Tra
 
 export const getIdForTrainingsTyp = (trainingstyp: string) => `SELECT id FROM Trainingstyp WHERE name='${trainingstyp}'`
 
-export const addAusdauertrainingsEinheitToTable = (trainigsTypId: number, datum: number, dauer: number, strecke: number) => `INSERT INTO Ausdauertrainingseinheit (trainingstyp_id, datum, dauer_minuten, strecke_km) VALUES (${trainigsTypId},${datum},${dauer},${strecke})`
+export const addAusdauertrainingsEinheitToTable = (trainingsTypId: number, datum: number, dauer: number, strecke: number) => `INSERT INTO Ausdauertrainingseinheit (trainingstyp_id, datum, dauer_minuten, strecke_km) VALUES (${trainingsTypId},${datum},${dauer},${strecke})`
 
 export const getLastWeightForUebung = (uebung: string) => `SELECT es.weight, COUNT(es.id) AS satz_anzahl FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN exercise e ON et.exercise_id = e.id WHERE e.name = '${uebung}' AND et.training_id = (SELECT et2.training_id FROM exercise_training et2 JOIN training t ON et2.training_id = t.id WHERE et2.exercise_id = (SELECT id FROM exercise WHERE name = '${uebung}') ORDER BY t.id DESC LIMIT 1) GROUP BY es.exercise_training_id ORDER BY es.id DESC LIMIT 1`
 
-export const shouldExerciseAndMuscleGroupBeUnlinked = (uebungId: number) => `WITH last_training AS (SELECT id
-                                                                                                    FROM training
-                                                                                                    WHERE
-                                                                                                        muscle_group_id =
-                                                                                                        (SELECT muscle_group_id
-                                                                                                         FROM training
-                                                                                                         WHERE id IN
-                                                                                                               (SELECT training_id
-                                                                                                                FROM exercise_training
-                                                                                                                WHERE exercise_id = ${uebungId}))
-                                                                                                    ORDER BY datum DESC
-                                                                                 LIMIT 1
-                                                                                 )
-                                                                                , previous_training AS (
-                                                                             SELECT id
-                                                                             FROM training
-                                                                             WHERE muscle_group_id = (
-                                                                                 SELECT muscle_group_id FROM training
-                                                                                 WHERE id IN (SELECT training_id FROM exercise_training WHERE exercise_id = ${uebungId})
-                                                                                 )
-                                                                               AND id
-                                                                                 < (SELECT id FROM last_training) -- Verhindert, dass das gleiche Training genutzt wird
-                                                                             ORDER BY datum DESC
-                                                                                 LIMIT 1
-                                                                                 ),
-                                                                                 last_5_trainings AS (
-                                                                             SELECT id
-                                                                             FROM training
-                                                                             WHERE muscle_group_id = (
-                                                                                 SELECT muscle_group_id FROM training
-                                                                                 WHERE id IN (SELECT training_id FROM exercise_training WHERE exercise_id = ${uebungId})
-                                                                                 )
-                                                                             ORDER BY datum DESC
-                                                                                 LIMIT 5
-                                                                                 ),
-                                                                                 exercise_last_training AS (
-                                                                             SELECT 1
-                                                                             FROM exercise_training
-                                                                             WHERE exercise_id = ${uebungId}
-                                                                               AND training_id = (SELECT id FROM last_training)
-                                                                                 )
-                                                                                 , exercise_previous_training AS (
-                                                                             SELECT 1
-                                                                             FROM exercise_training
-                                                                             WHERE exercise_id = ${uebungId}
-                                                                               AND training_id = (SELECT id FROM previous_training)
-                                                                                 )
-                                                                                 , exercise_last_5_trainings AS (
-                                                                             SELECT COUNT (*) as count
-                                                                             FROM exercise_training
-                                                                             WHERE exercise_id = ${uebungId}
-                                                                               AND training_id IN (SELECT id FROM last_5_trainings)
-                                                                                 )
-SELECT CASE
-           -- 1️⃣ Falls kein \`last_training\` existiert, kann nichts unlinked werden
-           WHEN NOT EXISTS (SELECT 1 FROM last_training) THEN 0
+export const shouldExerciseAndMuscleGroupBeUnlinked = (uebungId: number) => `WITH last_training AS (SELECT id FROM training  WHERE muscle_group_id = (SELECT muscle_group_id FROM training  WHERE id IN (SELECT training_id  FROM exercise_training WHERE exercise_id = ${uebungId})) ORDER BY datum DESC LIMIT 1 ) , previous_training AS ( SELECT id FROM training  WHERE muscle_group_id = ( SELECT muscle_group_id FROM training  WHERE id IN (SELECT training_id FROM exercise_training WHERE exercise_id = ${uebungId}) )  AND id < (SELECT id FROM last_training)  ORDER BY datum DESC LIMIT 1 ), last_5_trainings AS ( SELECT id FROM training WHERE muscle_group_id = ( SELECT muscle_group_id FROM training WHERE id IN (SELECT training_id FROM exercise_training WHERE exercise_id = ${uebungId}) ) ORDER BY datum DESC LIMIT 5 ), exercise_last_training AS ( SELECT 1 FROM exercise_training WHERE exercise_id = ${uebungId} AND training_id = (SELECT id FROM last_training)), exercise_previous_training AS ( SELECT 1 FROM exercise_training WHERE exercise_id = ${uebungId} AND training_id = (SELECT id FROM previous_training)), exercise_last_5_trainings AS (SELECT COUNT (*) as count FROM exercise_training WHERE exercise_id = ${uebungId} AND training_id IN (SELECT id FROM last_5_trainings)) SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM last_training) THEN 0 WHEN EXISTS (SELECT 1 FROM exercise_last_training) AND NOT EXISTS (SELECT 1 FROM exercise_previous_training) THEN 1 WHEN (SELECT count FROM exercise_last_5_trainings) = 0 THEN 1 ELSE 0 END AS should_unlink`
 
-           -- 2️⃣ Die Übung wurde im letzten Training hinzugefügt, aber war nicht im vorherigen Training vorhanden
-           WHEN EXISTS (SELECT 1 FROM exercise_last_training)
-               AND NOT EXISTS (SELECT 1 FROM exercise_previous_training)
-               THEN 1
+export const shouldWeightBeIncreased = (uebungName: string)=> `WITH last_weights AS (SELECT es.weight, es.repetitions, t.id AS training_id FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id WHERE et.exercise_id = (SELECT id FROM exercise WHERE name = '${uebungName}') ORDER BY t.id DESC LIMIT 6 ) SELECT CASE WHEN COUNT(*) = 6 AND MIN(weight) = MAX(weight) AND AVG(repetitions) >= 12 THEN 1 ELSE 0 END AS increaseWeight FROM last_weights;`
 
-           -- 3️⃣ Die Übung wurde in den letzten 5 Trainings nicht mehr gemacht
-           WHEN (SELECT count FROM exercise_last_5_trainings) = 0
-               THEN 1
+export const dropExerciseSetTable = "DROP TABLE IF EXISTS exercise_set"
 
-           -- 4️⃣ Standardfall: Die Übung ist noch aktiv, also nicht unlinken
-           ELSE 0
-           END AS should_unlink`
-// export const shouldExerciseAndMuscleGroupBeUnlinked = (uebungId: number) => `WITH last_training AS (SELECT id FROM training WHERE muscle_group_id = (SELECT muscle_group_id FROM exercise_training WHERE exercise_id = ${uebungId} LIMIT 1) ORDER BY datum DESC LIMIT 1), previous_training AS (SELECT id FROM training WHERE muscle_group_id = (SELECT muscle_group_id FROM exercise_training WHERE exercise_id = ${uebungId} LIMIT 1) ORDER BY datum DESC LIMIT 1 OFFSET 1), last_5_trainings AS (SELECT id FROM training WHERE muscle_group_id = (SELECT muscle_group_id FROM exercise_training WHERE exercise_id = ${uebungId} LIMIT 1) ORDER BY datum DESC LIMIT 5),exercise_last_training AS (SELECT 1 FROM exercise_training WHERE exercise_id = ${uebungId} AND training_id = (SELECT id FROM last_training)), exercise_previous_training AS (SELECT 1 FROM exercise_training WHERE exercise_id = ${uebungId} AND training_id = (SELECT id FROM previous_training)), exercise_last_5_trainings AS (SELECT COUNT(*) as count FROM exercise_training WHERE exercise_id = ${uebungId} AND training_id IN (SELECT id FROM last_5_trainings)) SELECT CASE WHEN EXISTS (SELECT 1 FROM exercise_last_training) AND NOT EXISTS (SELECT 1 FROM exercise_previous_training) THEN 1 WHEN (SELECT count FROM exercise_last_5_trainings) = 0 THEN 1  ELSE 0 END AS should_unlink;`
+export const dropTrainingTable = "DROP TABLE IF EXISTS training"
 
-export const shouldWeightBeAdapted = (uebungName: string)=> `WITH last_weights AS (SELECT es.weight, es.repetitions, t.id AS training_id FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id WHERE et.exercise_id = (SELECT id FROM exercise WHERE name = '${uebungName}') ORDER BY t.id DESC LIMIT 3 ) SELECT CASE WHEN COUNT(*) = 3 AND MIN(weight) = MAX(weight) AND AVG(repetitions) >= 12 THEN 1 ELSE 0 END AS sollte_gewicht_erhoeht_werden FROM last_weights;`
+export const dropExerciseTrainingTable = 'DROP TABLE IF EXISTS exercise_training';
+
+export const dropExerciseMuscleGroupTable = 'DROP TABLE IF EXISTS exercise_muscle_group';
+
+export const dropExerciseTable = 'DROP TABLE IF EXISTS exercise';
+
+export const dropMuscleGroupTable = 'DROP TABLE IF EXISTS muscle_group';
+
+export const dropTrainingstypTable = 'DROP TABLE IF EXISTS trainingstyp';
+
+export const dropAusdauertrainingseinheitTable = 'DROP TABLE IF EXISTS ausdauertrainingseinheit'

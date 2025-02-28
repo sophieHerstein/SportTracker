@@ -1,4 +1,4 @@
-import {FlatList, StyleSheet, View} from 'react-native';
+import {FlatList, View} from 'react-native';
 import {useEffect, useState} from "react";
 import AusdauerStatistikListItem from "./components/AusdauerStatistikListItem";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
@@ -40,8 +40,3 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
         </View>
     );
 }
-
-
-const styles =  StyleSheet.create({
-
-});

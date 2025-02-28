@@ -4,10 +4,10 @@ import BigButton from "../../components/BigButton";
 import * as SQLite from "expo-sqlite";
 import {
     addExerciseToTraining, addSatzToDatabase,
-    addTrainig, addUebungToDatabase, connectMuscleGroupAndUebung,
+    addTraining, addUebungToDatabase, connectMuscleGroupAndUebung,
     deleteUebungReferenzFromGruppe, getIdForUebung,
     getLastUebungDataForGruppe, getLastWeightForUebung,
-    getMuscleGroupIdForName, shouldExerciseAndMuscleGroupBeUnlinked
+    getMuscleGroupIdForName, shouldExerciseAndMuscleGroupBeUnlinked, shouldWeightBeIncreased
 } from "../../utils/database-querys";
 import TextIconButton from "../../components/TextIconButton";
 import KraftsportUebungListItem from "./components/KraftsportUebungListItem";
@@ -32,7 +32,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
         try {
             const existingTrainings: ITrainingDatabase[] = await database.getAllAsync(getLastUebungDataForGruppe(gruppe));
             if (existingTrainings.length > 0) {
-                const newExercises: IUebung[] = existingTrainings.map((ex, index) => ({
+                const newExercises: IUebung[] = existingTrainings.map((ex) => ({
                     id: ex.id,
                     name: ex.name,
                     saetze: Array.from({ length: ex.last_sets },
@@ -43,7 +43,17 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                         })),
                 }));
 
-                setUebungen(newExercises);
+                const exercises = [...newExercises]
+
+                newExercises.forEach((exercise) => {
+                    const shouldBeUpdated: {increaseWeight: number}|null = database.getFirstSync(shouldWeightBeIncreased(exercise.name));
+                    if(shouldBeUpdated){
+                        exercises.filter((e) => e.name === exercise.name)[0].weightShouldBeIncreased = shouldBeUpdated.increaseWeight === 1;
+                    } else {
+                        exercises.filter((e) => e.name === exercise.name)[0].weightShouldBeIncreased = false;
+                    }
+                })
+                setUebungen(exercises);
             }
         } catch (error) {
             console.error("Fehler beim Laden der Trainingsdaten:", error);
@@ -63,7 +73,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
         if(result?.should_unlink === 1){
             Alert.alert(
                 "Übung aus Gruppe entfernen?",
-                "Soll die Übung dauerhaft aus diser Muskelgruppe entfernt werden?",
+                "Soll die Übung dauerhaft aus dieser Muskelgruppe entfernt werden?",
                 [{text: "Nein"},{text: "Ja", style: "destructive", onPress:()=> deleteUebungFromMuscleGroup(uebungId)}]
             )
         }
@@ -155,7 +165,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 return;
             }
 
-            const trainingInsert = await database.runAsync(addTrainig(datum, muscleGroupId));
+            const trainingInsert = await database.runAsync(addTraining(datum, muscleGroupId));
             const trainingId = trainingInsert.lastInsertRowId;
 
             for (const uebung of uebungen) {

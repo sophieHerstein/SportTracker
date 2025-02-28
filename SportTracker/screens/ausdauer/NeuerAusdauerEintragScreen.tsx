@@ -9,7 +9,7 @@ import {
     addTrainingsTypToTable,
     getIdForTrainingsTyp
 } from "../../utils/database-querys";
-import {ITrainigstypDatabaseResult, ITrainingstypDropdown} from "../../utils/interfaces";
+import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../utils/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
 import {EAppPaths} from "../../utils/constants";
@@ -29,7 +29,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
 
     useEffect(() => {
         const trainingsTypen = route.params.trainingsTypen;
-        const trainigstypenMapping: ITrainingstypDropdown[] = trainingsTypen.map((tt: ITrainigstypDatabaseResult)=>{
+        const trainigstypenMapping: ITrainingstypDropdown[] = trainingsTypen.map((tt: ITrainingstypDatabaseResult)=>{
             return {label: tt.name, value: tt.name}
         })
         setSportarten(trainigstypenMapping);
@@ -77,7 +77,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
     }
 
     function trainingsTypExists(trainingstypName: string){
-        return route.params.trainingsTypen.filter((tt: ITrainigstypDatabaseResult) => tt.name === trainingstypName).length > 0;
+        return route.params.trainingsTypen.filter((tt: ITrainingstypDatabaseResult) => tt.name === trainingstypName).length > 0;
     }
 
     return (

@@ -9,18 +9,22 @@ import KraftsportGruppeWaehlenScreen from "./screens/kraftsport/KraftsportGruppe
 import NeuerAusdauerEintragScreen from "./screens/ausdauer/NeuerAusdauerEintragScreen";
 import AusdauerStatistikScreen from "./screens/ausdauer/AusdauerStatistikScreen";
 import {EAppPaths} from "./utils/constants";
-import {IAusdauerData, ITrainigstypDatabaseResult} from "./utils/interfaces";
+import {IAusdauerData, ITrainingstypDatabaseResult} from "./utils/interfaces";
+import KraftsportStatistikScreen from "./screens/kraftsport/KraftsportStatistikScreen";
+import StartScreen from "./screens/StartScreen";
 
 export type NavigatorParamList = {
+    [EAppPaths.HOME]: undefined;
     [EAppPaths.KRAFTSPORT_HOME]: undefined;
     [EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN]: undefined;
     [EAppPaths.KRAFTSPORT_UEBUNGEN]: {
         gruppe: string;
         datum: number;
     };
+    [EAppPaths.KRAFTSPORT_STATISTIK]: undefined;
     [EAppPaths.AUSDAUER_HOME]: undefined;
     [EAppPaths.AUSDAUER_EINTRAG]: {
-        trainingsTypen: ITrainigstypDatabaseResult[]
+        trainingsTypen: ITrainingstypDatabaseResult[]
     };
     [EAppPaths.AUSDAUER_STATISTIK]: {
         ausdauerData: IAusdauerData[]
@@ -41,6 +45,7 @@ function KraftsportStack() {
                 const gruppe = route.params.gruppe;
                 return {title: gruppe}
             }}></Stack.Screen>
+            <Stack.Screen name={EAppPaths.KRAFTSPORT_STATISTIK} component={KraftsportStatistikScreen} options={{title: "Kraftsport Statistik"}}></Stack.Screen>
         </Stack.Navigator>
     );
 }
@@ -59,12 +64,13 @@ function AusdauerStack() {
 export default function Navigation() {
     return (
         <NavigationContainer>
-            <Tab.Navigator screenOptions={({route}) => {
+            <Tab.Navigator initialRouteName={EAppPaths.HOME} screenOptions={({route}) => {
                 return {
                     tabBarIcon: ({focused, size, color}) => {
                         let icon;
                         if(route.name === EAppPaths.KRAFTSPORT_STACK) icon = focused ? 'barbell' : 'barbell-outline';
                         if(route.name === EAppPaths.AUSDAUER_STACK) icon = focused ? 'body' : 'body-outline';
+                        if(route.name === EAppPaths.HOME) icon = focused ? 'home' : 'home-outline';
                         // @ts-ignore
                         return <Icon.Ionicons name={icon} size={size} color={color}/>
                     },
@@ -72,7 +78,7 @@ export default function Navigation() {
                     tabBarStyle: {
                         backgroundColor: 'aliceblue',
                     },
-                    headerShown: false
+                    headerShown: false,
                 }
             }}>
                 <Tab.Screen
@@ -83,6 +89,11 @@ export default function Navigation() {
                             title: 'Kraftsport',
                         }
                     }
+                />
+                <Tab.Screen
+                    name={EAppPaths.HOME}
+                    component={StartScreen}
+                    options={{headerShown: false, title: ''}}
                 />
                 <Tab.Screen
                     name={EAppPaths.AUSDAUER_STACK}

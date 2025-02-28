@@ -9,8 +9,8 @@ import {EAppPaths} from "../../utils/constants";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
 import {
-    createAusdauertrainingseinheitTable,
-    createTrainingsTypTable, deleteAusdauerTrainingseinheitWithId, getAllAusdauertrainingseinheiten,
+    deleteAusdauerTrainingseinheitWithId,
+    getAllAusdauertrainingseinheiten,
     getAllTrainingstypen
 } from "../../utils/database-querys";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
@@ -18,7 +18,7 @@ import {NavigatorParamList} from "../../Navigation";
 import {
     IAusdauerData,
     IAusdauertrainingseinheitDatabaseResult,
-    ITrainigstypDatabaseResult
+    ITrainingstypDatabaseResult
 } from "../../utils/interfaces";
 
 type AusdauersportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_HOME>;
@@ -28,7 +28,7 @@ const database = SQLite.openDatabaseSync('training.db');
 export default function AusdauerScreen({navigation, route}: AusdauersportScreenProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [ausdauerData, setData] = useState<IAusdauerData[]>([]);
-    const [trainingsTypen, setTrainingsTypen] = useState<ITrainigstypDatabaseResult[]>([]);
+    const [trainingsTypen, setTrainingsTypen] = useState<ITrainingstypDatabaseResult[]>([]);
 
     useFocusEffect(useCallback(() => {
         initDB();
@@ -37,10 +37,8 @@ export default function AusdauerScreen({navigation, route}: AusdauersportScreenP
 
     async function initDB(){
         setIsLoading(true);
-        database.runSync(createTrainingsTypTable);
-        database.runSync(createAusdauertrainingseinheitTable);
         const [trainingsTypenRows, ausdauertrainingseinheitRows] = await Promise.all([
-            database.getAllAsync(getAllTrainingstypen) as Promise<ITrainigstypDatabaseResult[]>,
+            database.getAllAsync(getAllTrainingstypen) as Promise<ITrainingstypDatabaseResult[]>,
             database.getAllAsync(getAllAusdauertrainingseinheiten) as Promise<IAusdauertrainingseinheitDatabaseResult[]>,
         ]);
         setTrainingsTypen(trainingsTypenRows);
@@ -116,10 +114,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         paddingTop: 100
-    },
-    listSeperators: {
-        height: StyleSheet.hairlineWidth,
-        backgroundColor: 'lightsteelblue'
     },
     statistics: {
         position: 'absolute',

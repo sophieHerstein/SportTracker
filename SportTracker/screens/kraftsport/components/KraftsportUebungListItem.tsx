@@ -2,16 +2,22 @@ import {IKraftsportUebungListItemProps} from "../../../utils/interfaces";
 import {FlatList, StyleSheet, TextInput, View} from "react-native";
 import SatzListItem from "./SatzListItem";
 import TextIconButton from "../../../components/TextIconButton";
+import {MaterialIcons} from "@expo/vector-icons";
 
 export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz, updateUebungName, addSatz, deleteUebung}: IKraftsportUebungListItemProps) {
     return (
         <View style={styles.uebungContainer}>
-            <TextInput
-                style={styles.input}
-                placeholder="Übungsname"
-                value={uebung.name}
-                onChangeText={(text) => updateUebungName(uebung.id, text)}
-            />
+            <View style={styles.irgendwas}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Übungsname"
+                    value={uebung.name}
+                    onChangeText={(text) => updateUebungName(uebung.id, text)}
+                />
+                {!uebung.weightShouldBeIncreased ? null : (
+                    <MaterialIcons name='auto-graph' size={36} color='darkslateblue'/>
+                )}
+            </View>
             <FlatList
                 data={uebung.saetze}
                 keyExtractor={(_, index) => index.toString()}
@@ -107,5 +113,9 @@ const styles = StyleSheet.create({
     addSatzText: {
         color: 'royalblue',
         fontSize: 16,
+    },
+    irgendwas: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     }
 });

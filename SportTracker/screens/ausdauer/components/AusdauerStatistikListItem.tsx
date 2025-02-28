@@ -1,5 +1,4 @@
-import {Dimensions, StyleSheet, Text, View} from 'react-native';
-import {VictoryAxis, VictoryChart, VictoryScatter, VictoryTheme} from "victory-native";
+import {Dimensions, Text, View} from 'react-native';
 import AusdauerLineChart from "./AusdauerLineChart";
 import AusdauerScatterPlot from "./AusdauerScatterPlot";
 import {IAusdauerStatistikListItemProps} from "../../../utils/interfaces";
@@ -16,7 +15,3 @@ export default function AusdauerStatistikListItem({item}: IAusdauerStatistikList
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-
-});

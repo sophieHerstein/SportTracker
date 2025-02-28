@@ -38,7 +38,7 @@ export default function AusdauerLineChart({screenwidth, items, text, dataKey}: I
                         backgroundGradientTo: "#eeeeee",
                         decimalPlaces: 0,
                         color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
-                        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                        // labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                         propsForDots: {
                             r: "6",
                             strokeWidth: "2",

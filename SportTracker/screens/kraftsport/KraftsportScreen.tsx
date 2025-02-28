@@ -6,12 +6,6 @@ import * as SQLite from "expo-sqlite";
 import {useFocusEffect} from "@react-navigation/native";
 import {EAppPaths} from "../../utils/constants";
 import {
-    createExerciseMuscleGroupTable,
-    createExerciseSetTable,
-    createExerciseTable,
-    createExerciseTrainingTable,
-    createMuscleGroupTable,
-    createTrainingTable,
     deleteTrainingWithId1,
     deleteTrainingWithId2,
     deleteTrainingWithId3, deleteTrainingWithId4,
@@ -23,12 +17,6 @@ import EmptyList from "../../components/EmptyList";
 import {NavigatorParamList} from "../../Navigation";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 
-// TODO:   Charts
-//         Trends
-//         Empfehlungen oder ähnliches oder Analysen sowas halt
-//         globale Stylings/einheitliches Styling
-//         Bugfixes
-
 type KraftsportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_HOME>;
 
 const database = SQLite.openDatabaseSync('training.db');
@@ -38,42 +26,9 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     const [isLoading, setLoading] = useState<boolean>(true);
 
     useFocusEffect(useCallback(() => {
-        setupDatabase();
-        // dropDatabase();
+        fetchTrainings();
         }, []
     ));
-
-    async function setupDatabase() {
-        setLoading(true);
-        try {
-            await database.runAsync(createMuscleGroupTable);
-            await database.runAsync(createExerciseTable);
-            await database.runAsync(createExerciseMuscleGroupTable);
-            await database.runAsync(createTrainingTable);
-            await database.runAsync(createExerciseTrainingTable);
-            await database.runAsync(createExerciseSetTable);
-
-            await fetchTrainings();
-        } catch (error) {
-            console.error("❌ Fehler beim Einrichten der Datenbank:", error);
-        }
-        setLoading(false);
-    }
-
-    async function dropDatabase(){
-        try {
-            await database.runAsync('DROP TABLE IF EXISTS training');
-            await database.runAsync('DROP TABLE IF EXISTS exercise_set');
-            await database.runAsync('DROP TABLE IF EXISTS exercise_training');
-            await database.runAsync('DROP TABLE IF EXISTS exercise_muscle_group');
-            await database.runAsync('DROP TABLE IF EXISTS exercise');
-            await database.runAsync('DROP TABLE IF EXISTS muscle_group');
-            await database.runAsync('DROP TABLE IF EXISTS trainingstyp');
-            await database.runAsync('DROP TABLE IF EXISTS ausdauertrainingseinheit');
-        } catch (error) {
-            console.error("Fehler beim Einrichten der Datenbank:", error);
-        }
-    }
 
     function transformTrainingData(dataBaseData: IKraftsportDatabaseResult[]): IKraftsportData[] {
         const transformedData: Record<string, {
@@ -160,6 +115,13 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
             <IconButton
                 size={36}
                 color='royalblue'
+                onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_STATISTIK)}
+                style={styles.statistics}
+                icon='bar-chart'>
+            </IconButton>
+            <IconButton
+                size={36}
+                color='royalblue'
                 onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN)}
                 style={styles.new}
                 icon='add-circle'>
@@ -190,5 +152,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 60,
         right: 30,
+    },
+    statistics: {
+        position: 'absolute',
+        top: 60,
+        left: 30,
     },
 });

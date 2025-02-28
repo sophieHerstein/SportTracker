@@ -21,7 +21,8 @@ export interface IKraftsportData {
 export interface IUebung {
     id: number,
     name: string,
-    saetze: ISatz[]
+    saetze: ISatz[],
+    weightShouldBeIncreased?: boolean
 }
 
 export interface ISatz {
@@ -89,7 +90,7 @@ export interface IBigButtonProps {
     style: ViewStyle,
 }
 
-export interface ITrainigstypDatabaseResult {
+export interface ITrainingstypDatabaseResult {
     id: number,
     name: string
 }
