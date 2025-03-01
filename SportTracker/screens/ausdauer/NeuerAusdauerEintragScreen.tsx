@@ -61,8 +61,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
             await saveEintragInDB()
             navigation.goBack();
         } catch (error) {
-            console.error("Fehler beim Speichern: ", error);
-            alert("Fehler beim Speichern des Eintrags.");
+            console.error("❌ Fehler beim Speichern: ", error);
         }
     }
 

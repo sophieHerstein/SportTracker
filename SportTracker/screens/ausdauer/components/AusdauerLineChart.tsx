@@ -27,7 +27,7 @@ export default function AusdauerLineChart({screenwidth, items, text, dataKey}: I
     return (
         <View>
             <Text style={{ textAlign: "center", fontSize: 18, marginTop: 20 }}>{text}</Text>
-            <ScrollView horizontal>
+            <ScrollView horizontal={true}>
                 <LineChart
                     data={transformDataForLineChart()}
                     width={getScreenWidth()}

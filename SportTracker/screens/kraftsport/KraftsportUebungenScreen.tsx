@@ -56,7 +56,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 setUebungen(exercises);
             }
         } catch (error) {
-            console.error("Fehler beim Laden der Trainingsdaten:", error);
+            console.error("❌ Fehler beim Laden der Trainingsdaten:", error);
         }
     }
 
@@ -189,7 +189,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             }
             navigation.popToTop();
         } catch (error) {
-            console.error("Fehler beim Speichern:", error);
+            console.error("❌ Fehler beim Speichern:", error);
         }
     }
 

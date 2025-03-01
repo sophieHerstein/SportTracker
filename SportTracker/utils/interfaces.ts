@@ -1,4 +1,5 @@
 import {TextStyle, ViewStyle} from "react-native";
+import {ENotifications} from "./constants";
 
 export interface IKraftsportDatabaseResult {
     datum: number,
@@ -141,4 +142,58 @@ export interface IAusdauerStatistikListItemProps {
 export interface IGewichtUebung {
     satz_anzahl: number,
     weight: number
+}
+
+export interface IEntwicklungGewichtDatabaseResult {
+    datum: number,
+    uebung: string,
+    max_weight: number
+}
+
+export interface IEntwicklungGewicht {
+    name: string,
+    data: IEntwicklungGewichtData[]
+}
+
+export interface IEntwicklungGewichtData {
+    datum: string,
+    gewicht: number
+}
+
+export interface ITrainingsProMonatDatabaseResult {
+    monat: string,
+    trainingsanzahl: number
+}
+
+export interface ITrainingsProWocheDatabaseResult {
+    woche: string,
+    trainingsanzahl: number
+}
+
+export interface IProgressionsAnalyseDatabaseResult {
+    uebung: string,
+    differenz: number
+}
+
+export interface IBarChartProps {
+    label: string,
+    value: number
+}
+
+export interface ITrainingsBarChartProps {
+    titel: string,
+    data: IBarChartProps[]
+}
+
+export interface IKraftsportLineChartProps {
+    data: IEntwicklungGewicht[]
+}
+
+export interface INotification {
+    typ: ENotifications;
+    additionalData?: string
+}
+
+export interface INotificationProps {
+    notification: INotification
 }

@@ -83,10 +83,10 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
             await database.runAsync(deleteTrainingWithId1(id));
             await database.runAsync(deleteTrainingWithId2(id));
             await database.runAsync(deleteTrainingWithId3(id));
-            await database.runAsync(deleteTrainingWithId4(id));
+            await database.runAsync(deleteTrainingWithId4());
             await fetchTrainings();
         } catch (error) {
-            console.error("Fehler beim Löschen des Trainings:", error);
+            console.error("❌ Fehler beim Löschen des Trainings:", error);
         }
     }
 

@@ -11,7 +11,7 @@ import AusdauerStatistikScreen from "./screens/ausdauer/AusdauerStatistikScreen"
 import {EAppPaths} from "./utils/constants";
 import {IAusdauerData, ITrainingstypDatabaseResult} from "./utils/interfaces";
 import KraftsportStatistikScreen from "./screens/kraftsport/KraftsportStatistikScreen";
-import StartScreen from "./screens/StartScreen";
+import StartScreen from "./screens/start/StartScreen";
 
 export type NavigatorParamList = {
     [EAppPaths.HOME]: undefined;
