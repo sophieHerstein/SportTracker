@@ -1,4 +1,4 @@
-import {Text, View} from "react-native";
+import {ScrollView, Text, View} from "react-native";
 import {
     createAusdauertrainingseinheitTable,
     createExerciseMuscleGroupTable,
@@ -36,6 +36,7 @@ import {
 import TrainingsBarChart from "./components/TrainingsBarChart";
 import Notifications from "./components/Notifications";
 import {ENotifications} from "../../utils/constants";
+import {globalStyles} from "../../utils/global-styles";
 
 // TODO:
 //         globale Stylings/einheitliches Styling
@@ -146,22 +147,22 @@ export default function StartScreen(){
     }
 
     if (isLoading) {
-        <LoadingSpinner/>
+        return <LoadingSpinner/>
     }
 
     return (
-        <View>
+        <ScrollView style={globalStyles.screenContainer}>
             <View>
                 {notifications.length > 0 && notifications.map((notification, index) => (
                     <Notifications key={index} notification={notification}/>
                 ))
                 }
             </View>
-            <Text style={{ fontSize: 18, textAlign: "center", marginBottom: 10 }}>Trainingsfrequenz</Text>
+            <Text style={globalStyles.title}>Trainingsfrequenzen</Text>
             <TrainingsBarChart titel="Kraftsport pro Woche" data={kraftsportTrainingProWocheData}/>
             <TrainingsBarChart titel="Kraftsport pro Monat" data={kraftsportTrainingProMonatData}/>
             <TrainingsBarChart titel="Ausdauer pro Woche" data={ausdauerTrainingProWocheData}/>
             <TrainingsBarChart titel="Ausdauer pro Monat" data={ausdauerTrainingProMonatData}/>
-        </View>
+        </ScrollView>
     );
 }

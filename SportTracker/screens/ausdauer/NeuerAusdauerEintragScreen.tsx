@@ -12,7 +12,8 @@ import {
 import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../utils/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths} from "../../utils/constants";
+import {EAppPaths, hightlight} from "../../utils/constants";
+import {globalStyles} from "../../utils/global-styles";
 
 type NeuerAusdauerEintragScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_EINTRAG>;
 
@@ -80,21 +81,22 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
     }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Neuen Eintrag hinzufügen</Text>
+        <View style={[globalStyles.screenContainer, styles.center]}>
+            <Text style={globalStyles.title}>Neuen Eintrag hinzufügen</Text>
             <View style={styles.inputContainer}>
-                <View style={styles.row}>
-                    <Text style={styles.label}>Datum:</Text>
+                <View style={globalStyles.row}>
+                    <Text style={globalStyles.text}>Datum:</Text>
                     <DateTimePicker
+                        style={styles.background}
                         testID="dateTimePicker"
                         value={datum}
                         mode='date'
                         onChange={(_, datum) => setDatum(datum ?? new Date())}
                     />
                 </View>
-                <View style={styles.pickerRow}>
-                    <Text style={styles.label}>Sportart:</Text>
-                    <DropDownPicker style={styles.picker} dropDownContainerStyle={styles.picker}
+                <View style={globalStyles.row}>
+                    <Text style={globalStyles.text}>Sportart:</Text>
+                    <DropDownPicker style={styles.picker} dropDownContainerStyle={{}}
                             open={open}
                             value={name}
                             items={sportarten}
@@ -106,35 +108,40 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                             searchPlaceholder="Suche ..."
                     />
                 </View>
-                <View style={styles.row}>
-                    <Text style={styles.label}>Strecke:</Text>
-                    <View style={styles.inputStuff}>
+                <View style={globalStyles.row}>
+                    <Text style={globalStyles.text}>Strecke:</Text>
+                    <View style={styles.input}>
                         <TextInput
-                            style={styles.input}
+                            style={globalStyles.input}
                             onChangeText={setStrecke}/>
-                        <Text style={styles.label}>km</Text>
+                        <Text style={globalStyles.text}>km</Text>
                     </View>
                 </View>
-                <View style={styles.row}>
-                    <Text style={styles.label}>Zeit:</Text>
-                    <View style={styles.inputStuff}>
+                <View style={globalStyles.row}>
+                    <Text style={globalStyles.text}>Zeit:</Text>
+                    <View style={styles.input}>
                         <TextInput
-                            style={styles.input}
+                            style={globalStyles.input}
                             onChangeText={setDauer}/>
-                        <Text style={styles.label}>min</Text>
+                        <Text style={globalStyles.text}>min</Text>
                     </View>
                 </View>
             </View>
-            <BigButton style={styles.speichern} title='Speichern' onPress={()=> saveEintrag()}></BigButton>
+            <BigButton title='Speichern' onPress={()=> saveEintrag()}></BigButton>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+    background: {
+        backgroundColor: hightlight,
+        borderRadius: 10
+    },
+    inputContainer: {
         justifyContent: 'center',
-        alignItems: 'center'
+        width: '80%',
+        paddingTop: 10,
+        paddingBottom: 10
     },
     picker: {
         borderWidth: 1,
@@ -146,50 +153,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         marginStart: 26
     },
-    pickerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    inputContainer: {
-        justifyContent: 'center',
-        width: '80%',
-        paddingTop: 10,
-        paddingBottom: 10
-    },
-    label: {
-      fontSize: 18,
-    },
-    row: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    },
-    inputStuff: {
+    input: {
         width: '75%',
         flexDirection: 'row',
         alignItems: 'center'
     },
-    input: {
-        borderWidth: 1,
-        borderColor: 'lightsteelblue',
-        padding: 10,
-        margin: 10,
-        width: '75%',
-        borderRadius: 5,
-        fontSize: 20
-    },
-    back: {
-        position: 'absolute',
-        top: 50,
-        left: 20
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        paddingBottom: 20,
-        color: 'royalblue',
-    },
-    speichern: {
-        marginTop: 20
+    center: {
+        justifyContent: "center",
+        alignItems: "center"
     }
-});
+})

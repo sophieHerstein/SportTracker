@@ -4,7 +4,7 @@ import {useState, useCallback} from 'react';
 import KraftsportListItem from "./components/KraftsportListItem";
 import * as SQLite from "expo-sqlite";
 import {useFocusEffect} from "@react-navigation/native";
-import {EAppPaths} from "../../utils/constants";
+import {EAppPaths, primary, secondary} from "../../utils/constants";
 import {
     deleteTrainingWithId1,
     deleteTrainingWithId2,
@@ -16,6 +16,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
 import {NavigatorParamList} from "../../Navigation";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
+import {globalStyles} from "../../utils/global-styles";
 
 type KraftsportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_HOME>;
 
@@ -107,23 +108,23 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     }
 
     if (isLoading) {
-        <LoadingSpinner/>
+        return <LoadingSpinner/>
     }
 
     return (
-        <View style={styles.container}>
+        <View style={globalStyles.screenContainer}>
             <IconButton
                 size={36}
-                color='royalblue'
+                color={secondary}
                 onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_STATISTIK)}
-                style={styles.statistics}
+                style={globalStyles.topLeft}
                 icon='bar-chart'>
             </IconButton>
             <IconButton
                 size={36}
-                color='royalblue'
+                color={primary}
                 onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN)}
-                style={styles.new}
+                style={globalStyles.topRight}
                 icon='add-circle'>
             </IconButton>
             <FlatList data={kraftsportData}
@@ -136,26 +137,3 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    center: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        paddingTop: 100
-    },
-    new: {
-        position: 'absolute',
-        top: 60,
-        right: 30,
-    },
-    statistics: {
-        position: 'absolute',
-        top: 60,
-        left: 30,
-    },
-});

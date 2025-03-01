@@ -3,20 +3,23 @@ import {FlatList, StyleSheet, TextInput, View} from "react-native";
 import SatzListItem from "./SatzListItem";
 import TextIconButton from "../../../components/TextIconButton";
 import {MaterialIcons} from "@expo/vector-icons";
+import {hightlight, secondary} from "../../../utils/constants";
+import {globalStyles} from "../../../utils/global-styles";
 
 export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz, updateUebungName, addSatz, deleteUebung}: IKraftsportUebungListItemProps) {
     return (
-        <View style={styles.uebungContainer}>
-            <View style={styles.irgendwas}>
+        <View style={globalStyles.cards}>
+            <View style={styles.row}>
                 <TextInput
-                    style={styles.input}
+                    style={globalStyles.input}
+                    placeholderTextColor={hightlight}
                     placeholder="Übungsname"
                     value={uebung.name}
                     onChangeText={(text) => updateUebungName(uebung.id, text)}
                 />
-                {!uebung.weightShouldBeIncreased ? null : (
-                    <MaterialIcons name='auto-graph' size={36} color='darkslateblue'/>
-                )}
+                {uebung.weightShouldBeIncreased ? (
+                    <MaterialIcons name='auto-graph' size={36} color={hightlight}/>
+                ) : null}
             </View>
             <FlatList
                 data={uebung.saetze}
@@ -32,7 +35,7 @@ export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz
                 onPress={() => addSatz(uebung.id)}
                 iconName='add'
                 stylePressable={styles.addSatz}
-                color='royalblue'
+                color={hightlight}
                 iconSize={20}
                 styleText={styles.addSatzText}
                 title='Satz hinzufügen'/>
@@ -49,54 +52,10 @@ export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: "white",
-
-    },
-    uebungContainer: {
-        backgroundColor: "lightskyblue",
-        padding: 10,
-        borderRadius: 8,
-        marginVertical: 10,
-    },
-    addUebung: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 10,
-    },
-    addUebungText: {
-        color: 'royalblue',
-        fontSize: 20,
-    },
-    input: {
-        borderBottomWidth: 0.5,
-        borderBottomColor: "grey",
-        fontSize: 20,
-        padding: 5,
-        marginBottom: 10,
-    },
-    satzContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginVertical: 5,
-    },
-    satzInput: {
-        padding: 5,
-        width: 80,
-        borderBottomWidth: 0.5,
-        borderBottomColor: "grey",
-    },
     deleteText: {
         color: "red",
         fontWeight: "bold",
         marginLeft: 10,
-    },
-    fertigButton: {
-        alignItems: "center",
     },
     addSatz: {
         flexDirection: "row",
@@ -111,11 +70,12 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
     },
     addSatzText: {
-        color: 'royalblue',
+        color: hightlight,
         fontSize: 16,
     },
-    irgendwas: {
+    row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: "center",
     }
 });

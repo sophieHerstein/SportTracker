@@ -15,3 +15,11 @@ export enum ENotifications {
     ZEIT_FUER_AUSDAUER = 'zeitFuerAusdauer',
     MUSKELGRUPPE_TRAINIEREN = 'muskelgruppeTrainieren'
 }
+
+export const background = '#0D0D0D'
+export const secondaryBackground = '#1A1A2E'
+export const primary = '#E94560'
+export const secondary = '#0F3460'
+export const textColorPrimary = '#D1D1D1'
+export const textColorSecondary = '#16213E'
+export const hightlight = '#F4F4F4'

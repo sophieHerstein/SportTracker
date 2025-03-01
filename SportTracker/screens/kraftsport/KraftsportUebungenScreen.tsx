@@ -13,8 +13,9 @@ import TextIconButton from "../../components/TextIconButton";
 import KraftsportUebungListItem from "./components/KraftsportUebungListItem";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths} from "../../utils/constants";
+import {EAppPaths, hightlight, primary, secondary} from "../../utils/constants";
 import {IGewichtUebung, ISatz, ITrainingDatabase, IUebung} from "../../utils/interfaces";
+import {globalStyles} from "../../utils/global-styles";
 
 type KraftsportUebungenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_UEBUNGEN>;
 
@@ -194,8 +195,8 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }
 
     return (
-        <View style={styles.container}>
-            <TextIconButton iconName='add' color='royalblue' onPress={() => addUebung()} iconSize={20} stylePressable={styles.addUebung} styleText={styles.addUebungText} title="Übung hinzufügen"/>
+        <View style={globalStyles.screenContainer}>
+            <TextIconButton iconName='add' color={hightlight} onPress={() => addUebung()} iconSize={20} stylePressable={styles.addUebung} styleText={styles.addUebungText} title="Übung hinzufügen"/>
             <FlatList
                 data={uebungen || []}
                 keyExtractor={(item, index) => (item?.id ? item.id.toString() : index.toString())}
@@ -209,23 +210,12 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                         deleteUebung={deleteUebung}/>
             }
             />
-            <BigButton style={styles.fertigButton} title='Fertig' onPress={()=> saveTraining()}></BigButton>
+            <BigButton title='Fertig' onPress={()=> saveTraining()}></BigButton>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: "white",
-    },
-    uebungContainer: {
-        backgroundColor: "lightskyblue",
-        padding: 10,
-        borderRadius: 8,
-        marginVertical: 10,
-    },
     addUebung: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -233,35 +223,13 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     addUebungText: {
-        color: 'royalblue',
+        color: hightlight,
         fontSize: 20,
-    },
-    input: {
-        borderBottomWidth: 0.5,
-        borderBottomColor: "grey",
-        fontSize: 20,
-        padding: 5,
-        marginBottom: 10,
-    },
-    satzContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginVertical: 5,
-    },
-    satzInput: {
-        padding: 5,
-        width: 80,
-        borderBottomWidth: 0.5,
-        borderBottomColor: "grey",
     },
     deleteText: {
         color: "red",
         fontWeight: "bold",
         marginLeft: 10,
-    },
-    fertigButton: {
-        alignItems: "center",
     },
     addSatz: {
         flexDirection: "row",

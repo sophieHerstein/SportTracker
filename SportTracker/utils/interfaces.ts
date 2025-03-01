@@ -88,7 +88,6 @@ export interface IKraftsportListItemProps {
 export interface IBigButtonProps {
     onPress: ()=> void,
     title: string,
-    style: ViewStyle,
 }
 
 export interface ITrainingstypDatabaseResult {
@@ -181,7 +180,7 @@ export interface IBarChartProps {
 }
 
 export interface ITrainingsBarChartProps {
-    titel: string,
+    titel?: string,
     data: IBarChartProps[]
 }
 

@@ -1,27 +1,13 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, Text } from 'react-native';
 import {IBigButtonProps} from "../utils/interfaces";
+import {globalStyles} from "../utils/global-styles";
 
-export default function BigButton({onPress, title, style}: IBigButtonProps) {
+export default function BigButton({onPress, title}: IBigButtonProps) {
     return (
         <Pressable
             onPress={onPress}
-            style={[styles.button, style]}>
-            <Text style={styles.title}>{title}</Text>
+            style={globalStyles.buttonPrimary}>
+            <Text style={globalStyles.text}>{title}</Text>
         </Pressable>
     );
 }
-
-
-const styles =  StyleSheet.create({
-    button: {
-        borderWidth: 1,
-        padding: 10,
-        borderRadius: 10,
-        borderColor: 'royalblue',
-        backgroundColor:'royalblue'
-    },
-    title: {
-        color: 'white',
-        fontSize: 18
-    }
-});

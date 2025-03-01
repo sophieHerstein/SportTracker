@@ -5,7 +5,7 @@ import {useState} from 'react';
 import * as SQLite from 'expo-sqlite'
 import {useFocusEffect} from "@react-navigation/native";
 import { useCallback } from 'react';
-import {EAppPaths} from "../../utils/constants";
+import {EAppPaths, primary, secondary} from "../../utils/constants";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
 import {
@@ -20,6 +20,7 @@ import {
     IAusdauertrainingseinheitDatabaseResult,
     ITrainingstypDatabaseResult
 } from "../../utils/interfaces";
+import {globalStyles} from "../../utils/global-styles";
 
 type AusdauersportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_HOME>;
 
@@ -74,23 +75,23 @@ export default function AusdauerScreen({navigation, route}: AusdauersportScreenP
 
 
     if (isLoading) {
-        <LoadingSpinner />
+        return <LoadingSpinner />
     }
 
     return (
-        <View style={styles.container}>
+        <View style={globalStyles.screenContainer}>
             <IconButton
                 size={36}
-                color='royalblue'
+                color={secondary}
                 onPress={() => navigation.navigate(EAppPaths.AUSDAUER_STATISTIK, {ausdauerData})}
-                style={styles.statistics}
+                style={globalStyles.topLeft}
                 icon='bar-chart'>
             </IconButton>
             <IconButton
                 size={36}
-                color='royalblue'
+                color={primary}
                 onPress={()=> navigation.navigate(EAppPaths.AUSDAUER_EINTRAG, { trainingsTypen })}
-                style={styles.new}
+                style={globalStyles.topRight}
                 icon='add-circle'>
             </IconButton>
             <FlatList data={ausdauerData}
@@ -103,26 +104,3 @@ export default function AusdauerScreen({navigation, route}: AusdauersportScreenP
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    center: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        paddingTop: 100
-    },
-    statistics: {
-        position: 'absolute',
-        top: 60,
-        left: 30,
-    },
-    new: {
-        position: 'absolute',
-        top: 60,
-        right: 30,
-    },
-});

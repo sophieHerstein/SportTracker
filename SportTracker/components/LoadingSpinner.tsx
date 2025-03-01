@@ -1,10 +1,18 @@
-import {ActivityIndicator, Text, View} from "react-native";
+import {ActivityIndicator, StyleSheet, Text, View} from "react-native";
+import {hightlight} from "../utils/constants";
+import {globalStyles} from "../utils/global-styles";
 
 export default function LoadingSpinner() {
     return (
-        <View>
-            <ActivityIndicator size="large" color="red" />
-            <Text>Lade Daten...</Text>
+        <View style={[globalStyles.screenContainer, styles.container]}>
+            <ActivityIndicator size="large" color={hightlight} />
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        justifyContent: "center",
+        alignItems: "center",
+    }
+})

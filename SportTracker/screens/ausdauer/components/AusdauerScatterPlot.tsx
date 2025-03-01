@@ -1,6 +1,9 @@
-import {Text, View} from "react-native";
-import {VictoryAxis, VictoryChart, VictoryScatter, VictoryTheme} from "victory-native";
+import {StyleSheet, Text, View} from "react-native";
+import {Rect, VictoryAxis, VictoryChart, VictoryScatter, VictoryTheme} from "victory-native";
 import {IAusdauerScatterPlotProps} from "../../../utils/interfaces";
+import {globalStyles} from "../../../utils/global-styles";
+import Svg, {Defs, LinearGradient, Stop} from "react-native-svg";
+import {background, hightlight, primary, secondary, secondaryBackground} from "../../../utils/constants";
 
 export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatterPlotProps){
 
@@ -32,43 +35,58 @@ export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatt
     const yTicks = getUniqueTicks(items.map(d => d.strecke), 2);
 
     return (
-        <View>
-            <Text style={{ textAlign: "center", fontSize: 18, marginTop: 20 }}>Scatter Chart: Dauer vs. Strecke</Text>
+        <View style={styles.margin}>
+            <Text style={globalStyles.subtitle}>Scatter Chart: Dauer vs. Strecke</Text>
+            <View>
+                <Svg height="100%" width="100%" style={{ position: "absolute" }}>
+                    <Defs>
+                        <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <Stop offset="0%" stopColor={primary} stopOpacity="1" />
+                            <Stop offset="100%" stopColor={secondary} stopOpacity="1" />
+                        </LinearGradient>
+                    </Defs>
+                    <Rect width="100%" height="100%" fill="url(#grad)" rx="20" ry="20" />
+                </Svg>
+                <VictoryChart
+                    theme={VictoryTheme.material}
+                    width={screenwidth}
+                    domainPadding={20}
+                >
+                    <VictoryAxis
+                        label="Dauer (Minuten)"
+                        tickValues={xTicks}
+                        tickFormat={(t) => `${t} min`}
+                        style={{
+                            axis: { stroke: hightlight },
+                            tickLabels: { fill: hightlight },
+                            axisLabel: {fill: hightlight, padding: 27.5 },
+                        }}
+                    />
+                    <VictoryAxis
+                        dependentAxis
+                        label="Strecke (km)"
+                        tickValues={yTicks}
+                        tickFormat={(t) => `${t} km`}
+                        style={{
+                            axis: { stroke: hightlight },
+                            tickLabels: { fill: hightlight },
+                            axisLabel: {fill: hightlight, padding: 40 },
+                        }}
+                    />
 
-            <VictoryChart
-                theme={VictoryTheme.material}
-                width={screenwidth}
-                domainPadding={20}
-                style={{
-                    background: { fill: "#ffffff" },
-                }}
-            >
-                <VictoryAxis
-                    label="Dauer (Minuten)"
-                    tickValues={xTicks}
-                    tickFormat={(t) => `${t} min`}
-                    style={{
-                        axis: { stroke: "#aaa" },
-                        tickLabels: { fontSize: 12, fill: "#333" }
-                    }}
-                />
-                <VictoryAxis
-                    dependentAxis
-                    label="Strecke (km)"
-                    tickValues={yTicks}
-                    tickFormat={(t) => `${t} km`}
-                    style={{
-                        axis: { stroke: "#aaa" },
-                        tickLabels: { fontSize: 12, fill: "#333" }
-                    }}
-                />
-
-                <VictoryScatter
-                    data={scatterData}
-                    size={({ datum }) => datum.size}
-                    style={{ data: { fill: "#36a2eb" } }}
-                />
-            </VictoryChart>
+                    <VictoryScatter
+                        data={scatterData}
+                        size={({ datum }) => datum.size}
+                        style={{ data: { fill: secondaryBackground } }}
+                    />
+                </VictoryChart>
+            </View>
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    margin: {
+        marginVertical: 7.5
+    }
+})

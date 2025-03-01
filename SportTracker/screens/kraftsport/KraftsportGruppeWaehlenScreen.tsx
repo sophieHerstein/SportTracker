@@ -3,11 +3,12 @@ import {Text, StyleSheet, View, Pressable, TextInput} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IconButton from "../../components/IconButton";
 import * as SQLite from "expo-sqlite";
-import {EAppPaths} from "../../utils/constants";
+import {EAppPaths, hightlight, secondary} from "../../utils/constants";
 import {addMuscleGroupToTable, getMuscleGroupData} from "../../utils/database-querys";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
 import {IMuscleGroupDatabaseResult} from "../../utils/interfaces";
+import {globalStyles} from "../../utils/global-styles";
 
 type KraftsportGruppeWaehlenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN>;
 
@@ -46,11 +47,13 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.inputContainer}>
-                <View style={styles.row}>
-                    <Text style={styles.label}>Datum:</Text>
+        <View style={[globalStyles.screenContainer, styles.center]}>
+            <Text style={globalStyles.title}>Gruppe wählen</Text>
+            <View style={[globalStyles.container, styles.paddingVertical]}>
+                <View style={globalStyles.row}>
+                    <Text style={globalStyles.text}>Datum:</Text>
                     <DateTimePicker
+                        style={styles.background}
                         testID="dateTimePicker"
                         value={datum}
                         mode='date'
@@ -58,28 +61,28 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                     />
                 </View>
             </View>
-            <View style={styles.uebungContainer}>
+            <View style={styles.paddingVertical}>
                 {gruppen.map((gruppe, index) => (
                     <Pressable
                         key={index}
-                        style={styles.uebung}
+                        style={[globalStyles.buttonPrimary, styles.buttonWidth]}
                         onPress={()=> navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
                             gruppe,
                             datum: datum.getTime()})}>
-                        <Text style={styles.uebungText}>{gruppe}</Text>
+                        <Text style={globalStyles.buttonText}>{gruppe}</Text>
                     </Pressable>
                 ))}
             </View>
             <IconButton
                 size={36}
                 icon='add'
-                color='royalblue'
-                style={{}}
+                color={secondary}
                 onPress={()=> setShowInput(true)}>
             </IconButton>
             {showInput && (
                 <TextInput placeholder='Gruppe'
-                           style={styles.input}
+                           style={globalStyles.input}
+                           placeholderTextColor={hightlight}
                            returnKeyType='done'
                            onChangeText={setAdditionalGruppe}
                            onSubmitEditing={()=> addGruppeToList()}>
@@ -90,55 +93,18 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+    buttonWidth: {
+        width: 150
+    },
+    paddingVertical: {
+        paddingVertical: 10
+    },
+    center: {
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
     },
-    inputContainer: {
-        justifyContent: 'center',
-        width: '80%',
-        paddingTop: 10,
-        paddingBottom: 10
-    },
-    label: {
-        fontSize: 18,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        paddingBottom: 20,
-        color: 'royalblue',
-    },
-    uebungContainer: {
-        paddingTop: 20,
-        paddingBottom: 20
-    },
-    uebung: {
-        backgroundColor: 'lightskyblue',
-        margin: 5,
-        fontSize: 20,
-        padding: 10,
-        borderRadius: 10,
-        width: 200,
-        alignItems: 'center',
-    },
-    uebungText: {
-        fontSize: 20,
-    },
-    input: {
-    borderWidth: 1,
-        borderColor: 'darkslateblue',
-        padding: 10,
-        margin: 10,
-        width: '80%',
-        borderRadius: 5,
-        fontSize: 20
-},
-});
+    background: {
+        backgroundColor: hightlight,
+        borderRadius: 10
+    }
+})

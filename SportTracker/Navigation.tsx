@@ -8,7 +8,7 @@ import AusdauerScreen from "./screens/ausdauer/AusdauerScreen";
 import KraftsportGruppeWaehlenScreen from "./screens/kraftsport/KraftsportGruppeWaehlenScreen";
 import NeuerAusdauerEintragScreen from "./screens/ausdauer/NeuerAusdauerEintragScreen";
 import AusdauerStatistikScreen from "./screens/ausdauer/AusdauerStatistikScreen";
-import {EAppPaths} from "./utils/constants";
+import {EAppPaths, hightlight, secondaryBackground} from "./utils/constants";
 import {IAusdauerData, ITrainingstypDatabaseResult} from "./utils/interfaces";
 import KraftsportStatistikScreen from "./screens/kraftsport/KraftsportStatistikScreen";
 import StartScreen from "./screens/start/StartScreen";
@@ -38,7 +38,7 @@ const Tab = createBottomTabNavigator<NavigatorParamList>();
 
 function KraftsportStack() {
     return (
-        <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: 'aliceblue'}}}>
+        <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: secondaryBackground}}}>
             <Stack.Screen name={EAppPaths.KRAFTSPORT_HOME} component={KraftsportScreen} options={{title: "Kraftsport"}}/>
             <Stack.Screen name={EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN} component={KraftsportGruppeWaehlenScreen} options={{title: "Gruppe wählen"}}></Stack.Screen>
             <Stack.Screen name={EAppPaths.KRAFTSPORT_UEBUNGEN} component={KraftsportUebungenScreen} options={({route}) => {
@@ -52,7 +52,7 @@ function KraftsportStack() {
 
 function AusdauerStack() {
     return (
-        <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: 'aliceblue'}}}>
+        <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: secondaryBackground}}}>
             <Stack.Screen name={EAppPaths.AUSDAUER_HOME} component={AusdauerScreen} options={{title: "Ausdauer"}}/>
             <Stack.Screen name={EAppPaths.AUSDAUER_EINTRAG} component={NeuerAusdauerEintragScreen} options={{title: "Neuer Eintrag"}}></Stack.Screen>
             <Stack.Screen name={EAppPaths.AUSDAUER_STATISTIK} component={AusdauerStatistikScreen} options={{title: "Ausdauer Statistik"}}></Stack.Screen>
@@ -74,9 +74,9 @@ export default function Navigation() {
                         // @ts-ignore
                         return <Icon.Ionicons name={icon} size={size} color={color}/>
                     },
-                    tabBarActiveTintColor: 'royalblue',
+                    tabBarActiveTintColor: hightlight,
                     tabBarStyle: {
-                        backgroundColor: 'aliceblue',
+                        backgroundColor: secondaryBackground,
                     },
                     headerShown: false,
                 }

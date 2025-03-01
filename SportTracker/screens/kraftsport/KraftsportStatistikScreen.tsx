@@ -1,17 +1,16 @@
-import {Dimensions, ScrollView, Text, View} from "react-native";
+import {Text, View} from "react-native";
 import {useEffect, useState} from "react";
 import * as SQLite from "expo-sqlite";
-import {BarChart, LineChart} from "react-native-chart-kit";
 import {
     IBarChartProps,
     IEntwicklungGewicht,
-    IEntwicklungGewichtData,
     IEntwicklungGewichtDatabaseResult,
     IProgressionsAnalyseDatabaseResult
 } from "../../utils/interfaces";
 import TrainingsBarChart from "../start/components/TrainingsBarChart";
 import {getEntwicklungGewichtData, getProgressionsData} from "../../utils/database-querys";
 import KraftsportLineChart from "./components/KraftsportLineChart";
+import {globalStyles} from "../../utils/global-styles";
 
 const database = SQLite.openDatabaseSync('training.db');
 
@@ -24,7 +23,6 @@ export default function  KraftsportStatistikScreen(){
             const entwicklungGewichtResults: IEntwicklungGewichtDatabaseResult[] = await database.getAllAsync(getEntwicklungGewichtData);
             entwicklungGewichtResults.sort((r1, r2) => r1.datum - r2.datum );
 
-            // Daten nach Übung gruppieren
             const groupedData: Record<string, { datum: string; gewicht: number }[]> = {};
 
             entwicklungGewichtResults.forEach(row => {
@@ -38,7 +36,6 @@ export default function  KraftsportStatistikScreen(){
                 groupedData[row.uebung].push({ datum, gewicht });
             });
 
-            // Umwandlung in gewünschtes Array-Format
             const formattedData: IEntwicklungGewicht[] = Object.keys(groupedData).map(name => ({
                 name,
                 data: groupedData[name]
@@ -62,9 +59,11 @@ export default function  KraftsportStatistikScreen(){
     }, []);
 
     return (
-        <View>
-        <KraftsportLineChart data={entwicklungGewichtData} />
-        <TrainingsBarChart titel="Fortschritt pro Übung" data={progressionsData}/>
+        <View style={globalStyles.screenContainer}>
+            <Text style={globalStyles.title}>Entwicklung Gewicht</Text>
+            <KraftsportLineChart data={entwicklungGewichtData} />
+            <Text style={globalStyles.title}>Fortschritt pro Übung</Text>
+            <TrainingsBarChart data={progressionsData}/>
         </View>
     );
 }

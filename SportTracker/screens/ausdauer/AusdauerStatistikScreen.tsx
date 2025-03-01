@@ -6,6 +6,7 @@ import {NavigatorParamList} from "../../Navigation";
 import {EAppPaths} from "../../utils/constants";
 import {IAusdauerData} from "../../utils/interfaces";
 import EmptyList from "../../components/EmptyList";
+import {globalStyles} from "../../utils/global-styles";
 
 type AusdauerStatistikScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_STATISTIK>;
 
@@ -27,7 +28,7 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
 
 
     return (
-        <View>
+        <View style={globalStyles.screenContainer}>
             <FlatList data={data}
                       renderItem={({item})=> (
                           <AusdauerStatistikListItem item={item}/>
