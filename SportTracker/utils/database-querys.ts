@@ -79,18 +79,18 @@ export const dropTrainingstypTable = 'DROP TABLE IF EXISTS trainingstyp';
 
 export const dropAusdauertrainingseinheitTable = 'DROP TABLE IF EXISTS ausdauertrainingseinheit'
 
-export const getKraftsportTrainingProMonat = "SELECT strftime('%Y-%m', t.datum / 1000, 'unixepoch') AS monat, COUNT(*) AS trainingsanzahl FROM training t GROUP BY monat ORDER BY monat ASC";
+export const getKraftsportTrainingProMonat = "SELECT strftime('%Y-%m', t.datum / 1000, 'unixepoch') AS monat, COUNT(*) AS trainingsanzahl FROM training t GROUP BY monat ORDER BY monat DESC";
 
-export const getKraftsportTrainingProWoche = "SELECT strftime('%Y-%W', t.datum / 1000, 'unixepoch') AS woche, COUNT(*) AS trainingsanzahl FROM training t GROUP BY woche ORDER BY woche ASC;"
+export const getKraftsportTrainingProWoche = "SELECT strftime('%Y-%W', t.datum / 1000, 'unixepoch') AS woche, COUNT(*) AS trainingsanzahl FROM training t GROUP BY woche ORDER BY woche DESC;"
 
-export const getAusdauerTrainingProMonat = "SELECT strftime('%Y-%m', a.datum / 1000, 'unixepoch') AS monat, COUNT(*) AS trainingsanzahl FROM ausdauertrainingseinheit a GROUP BY monat ORDER BY monat ASC"
+export const getAusdauerTrainingProMonat = "SELECT strftime('%Y-%m', a.datum / 1000, 'unixepoch') AS monat, COUNT(*) AS trainingsanzahl FROM ausdauertrainingseinheit a GROUP BY monat ORDER BY monat DESC"
 
-export const getAusdauerTrainingProWoche = "SELECT strftime('%Y-%W', a.datum / 1000, 'unixepoch') AS woche, COUNT(*) AS trainingsanzahl FROM ausdauertrainingseinheit a GROUP BY woche ORDER BY woche ASC;"
+export const getAusdauerTrainingProWoche = "SELECT strftime('%Y-%W', a.datum / 1000, 'unixepoch') AS woche, COUNT(*) AS trainingsanzahl FROM ausdauertrainingseinheit a GROUP BY woche ORDER BY woche DESC;"
 
-export const getProgressionsData = "WITH first_training AS (SELECT et.exercise_id, e.name AS uebung, MAX(es.weight) AS first_weight FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id JOIN exercise e ON et.exercise_id = e.id GROUP BY et.exercise_id ), last_training AS ( SELECT et.exercise_id, MAX(es.weight) AS last_weight FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id GROUP BY et.exercise_id ) SELECT ft.uebung, (lt.last_weight - ft.first_weight) AS differenz FROM first_training ft JOIN last_training lt ON ft.exercise_id = lt.exercise_id ORDER BY differenz DESC"
+export const getProgressionsData = "SELECT et.exercise_id, e.name AS uebung, MAX(es.weight) - MIN(es.weight) AS differenz FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id JOIN exercise e ON et.exercise_id = e.id GROUP BY et.exercise_id, e.name ORDER BY differenz DESC;"
 
 export const getEntwicklungGewichtData = "SELECT e.name AS uebung, t.datum, MAX(es.weight) AS max_weight FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id JOIN exercise e ON et.exercise_id = e.id GROUP BY e.name, t.datum ORDER BY e.name ASC, t.datum ASC"
 
 export const keinAusdauerSeit14Tagen = "SELECT CASE WHEN MAX(datum) < strftime('%s', 'now', '-14 days') * 1000 THEN 1 ELSE 0 END AS zeit_fuer_ausdauer FROM ausdauertrainingseinheit";
 
-export const muskelgruppeSollteTrainiertWerden = "SELECT mg.name FROM muscle_group mg LEFT JOIN training t ON mg.id = t.muscle_group_id WHERE t.datum IS NULL OR t.datum < strftime('%s', 'now', '-30 days') * 1000 GROUP BY mg.name"
+export const muskelgruppeSollteTrainiertWerden =`SELECT mg.name, MAX(COALESCE(t.datum, 0)) AS last_training FROM muscle_group mg LEFT JOIN training t ON mg.id = t.muscle_group_id GROUP BY mg.name HAVING last_training < (strftime('%s', 'now', '-30 days') * 1000)`

@@ -32,6 +32,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     async function loadExistingTraining(){
         try {
             const existingTrainings: ITrainingDatabase[] = await database.getAllAsync(getLastUebungDataForGruppe(gruppe));
+
             if (existingTrainings.length > 0) {
                 const newExercises: IUebung[] = existingTrainings.map((ex) => ({
                     id: ex.id,
@@ -167,6 +168,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             }
 
             const trainingInsert = await database.runAsync(addTraining(datum, muscleGroupId));
+
             const trainingId = trainingInsert.lastInsertRowId;
 
             for (const uebung of uebungen) {

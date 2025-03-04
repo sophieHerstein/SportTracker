@@ -12,10 +12,12 @@ export default function TrainingsBarChart({titel, data}: ITrainingsBarChartProps
 
     useFocusEffect(useCallback(() => {
         const dataMapping = data
-            .map(d => ({
-                x: d.label,
-                y: Number(d.value) || 0
-            }))
+            .map(d => {
+                return {
+                    x: d.label,
+                    y: Number(d.value) || 0
+                }
+            })
             .filter(d => !isNaN(d.y));
 
         setMappedData(dataMapping);
@@ -31,15 +33,15 @@ export default function TrainingsBarChart({titel, data}: ITrainingsBarChartProps
         <View style={styles.container}>
             {titel ? <Text style={[globalStyles.subtitle, globalStyles.centerText]}>{titel}</Text>: null}
             <ScrollView horizontal={true}>
-                <VictoryChart width={Math.max(400, mappendData.length * 50)} height={220} domain={{ y: [minY, maxY] }} domainPadding={{ x: 50 }}>
-                    <Svg height="100%" width="100%" style={{ position: "absolute" }}>
+                <VictoryChart width={Math.max(400, mappendData.length * 100)} height={220} domain={{ y: [minY, maxY] }} domainPadding={{ x: 50 }}>
+                    <Svg height="100%" width={Math.max(400, mappendData.length * 100)} style={{ position: "absolute" }}>
                         <Defs>
                             <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <Stop offset="0%" stopColor={primary} stopOpacity="1" />
                                 <Stop offset="100%" stopColor={secondary} stopOpacity="1" />
                             </LinearGradient>
                         </Defs>
-                        <Rect width="100%" height="100%" fill="url(#grad)" rx="20" ry="20" />
+                        <Rect width={Math.max(400, mappendData.length * 100)} height="100%" fill="url(#grad)" rx="20" ry="20" />
                     </Svg>
                     <VictoryAxis
                         style={{

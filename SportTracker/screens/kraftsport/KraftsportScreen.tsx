@@ -62,7 +62,7 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
             });
         });
 
-        return Object.values(transformedData).map(training => ({
+        return Object.values(transformedData).map((training) => ({
             training_id: training.id,
             datum: new Date(training.datum).toLocaleDateString('de-DE', {
                 day: "2-digit",

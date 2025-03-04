@@ -12,6 +12,7 @@ import {EAppPaths, hightlight, secondaryBackground} from "./utils/constants";
 import {IAusdauerData, ITrainingstypDatabaseResult} from "./utils/interfaces";
 import KraftsportStatistikScreen from "./screens/kraftsport/KraftsportStatistikScreen";
 import StartScreen from "./screens/start/StartScreen";
+import {globalStyles} from "./utils/global-styles";
 
 export type NavigatorParamList = {
     [EAppPaths.HOME]: undefined;
@@ -43,7 +44,12 @@ function KraftsportStack() {
             <Stack.Screen name={EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN} component={KraftsportGruppeWaehlenScreen} options={{title: "Gruppe wählen"}}></Stack.Screen>
             <Stack.Screen name={EAppPaths.KRAFTSPORT_UEBUNGEN} component={KraftsportUebungenScreen} options={({route}) => {
                 const gruppe = route.params.gruppe;
-                return {title: gruppe}
+                const datum = new Date(route.params.datum).toLocaleDateString('de-DE', {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                });
+                return {title: `${gruppe} (${datum})`, headerTitleStyle: globalStyles.title}
             }}></Stack.Screen>
             <Stack.Screen name={EAppPaths.KRAFTSPORT_STATISTIK} component={KraftsportStatistikScreen} options={{title: "Kraftsport Statistik"}}></Stack.Screen>
         </Stack.Navigator>

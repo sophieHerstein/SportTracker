@@ -17,8 +17,8 @@ export default function KraftsportLineChartListItem({uebung}: IKraftsportLineCha
         <View style={{ marginRight: 20 }}>
         <Text style={[globalStyles.subtitle, globalStyles.centerText]}>{uebung.name}</Text>
         <ScrollView horizontal={true}>
-            <VictoryChart width={Math.max(400, uebung.data.length * 50)} height={220} domain={{ y: [0, Math.max(8, maxYValue) + 2] }}>
-                <Svg height="100%" width="100%" style={{ position: "absolute" }}>
+            <VictoryChart width={Math.max(400, uebung.data.length * 75)} height={220} domain={{ y: [0, Math.max(8, maxYValue) + 2] }}>
+                <Svg height="100%" width={Math.max(400, uebung.data.length * 75)} style={{ position: "absolute" }}>
                     <Defs>
                         <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
                             <Stop offset="0%" stopColor={primary} stopOpacity="1" />

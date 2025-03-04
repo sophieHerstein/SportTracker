@@ -94,9 +94,15 @@ export default function  KraftsportStatistikScreen(){
     }, [timeRange]);
 
     return (
-        <ScrollView style={globalStyles.screenContainer}>
+        <View style={globalStyles.screenContainer}>
             { entwicklungGewichtData.length > 0 || progressionsData.length > 0 ?
                 <View>
+                    {progressionsData.length > 0 &&
+                    <View>
+                        <Text style={globalStyles.title}>Fortschritt pro Übung</Text>
+                        <TrainingsBarChart data={progressionsData}/>
+                    </View>
+                    }
                     {entwicklungGewichtData.length > 0 &&
                         <View>
                             <Text style={globalStyles.title}>Entwicklung Gewicht</Text>
@@ -110,16 +116,10 @@ export default function  KraftsportStatistikScreen(){
                             <KraftsportLineChart data={entwicklungGewichtData} />
                         </View>
                     }
-                    {progressionsData.length > 0 &&
-                        <View>
-                            <Text style={globalStyles.title}>Fortschritt pro Übung</Text>
-                            <TrainingsBarChart data={progressionsData}/>
-                        </View>
-                    }
                 </View>
                 :
                 <EmptyList/>
             }
-        </ScrollView>
+        </View>
     );
 }
