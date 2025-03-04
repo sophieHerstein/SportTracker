@@ -1,5 +1,5 @@
 import {TextStyle, ViewStyle} from "react-native";
-import {ENotifications} from "./constants";
+import {ENotifications, ETimeRange} from "./constants";
 
 export interface IKraftsportDatabaseResult {
     datum: number,
@@ -28,15 +28,14 @@ export interface IUebung {
 
 export interface ISatz {
     id: number,
-    gewicht: number,
-    wiederholungen: number
+    gewicht: number|null,
+    wiederholungen: number|null
 }
 
 export interface IMuscleGroupDatabaseResult {
     id: number,
     name: string
 }
-
 
 export interface ITextIconButtonProps {
     stylePressable?: ViewStyle,
@@ -195,4 +194,27 @@ export interface INotification {
 
 export interface INotificationProps {
     notification: INotification
+}
+
+export interface IKraftsportLineChartListItemProps {
+    uebung: IVictoryKraftsportChartProps
+}
+
+export interface IVictoryKraftsportChartProps {
+    name: string,
+    data: IVictoryChartProps[]
+}
+
+export interface IVictoryChartProps {
+    x: string |number,
+    y: number
+}
+
+export interface IFilterProps{
+    timeRange: ETimeRange,
+    onPressGesamt: ()=>void,
+    onPressJahr: ()=>void,
+    onPress6Monate: ()=>void,
+    onPressMonat: ()=>void,
+    onPressWoche?: ()=>void
 }

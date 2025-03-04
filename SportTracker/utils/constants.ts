@@ -16,6 +16,14 @@ export enum ENotifications {
     MUSKELGRUPPE_TRAINIEREN = 'muskelgruppeTrainieren'
 }
 
+export enum ETimeRange {
+    GESAMT = 'gesamt',
+    JAHR = 'jahr',
+    SECHS_MONATE = '6Monate',
+    MONAT = 'monat',
+    WOCHE = 'woche'
+}
+
 export const background = '#0D0D0D'
 export const secondaryBackground = '#1A1A2E'
 export const primary = '#E94560'

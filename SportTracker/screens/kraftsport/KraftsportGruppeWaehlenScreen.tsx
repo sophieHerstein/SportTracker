@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Text, StyleSheet, View, Pressable, TextInput} from 'react-native';
+import {Text, StyleSheet, View, Pressable, TextInput, KeyboardAvoidingView} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import IconButton from "../../components/IconButton";
 import * as SQLite from "expo-sqlite";
@@ -47,7 +47,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     }
 
     return (
-        <View style={[globalStyles.screenContainer, styles.center]}>
+        <KeyboardAvoidingView behavior={"height"} style={[globalStyles.screenContainer, styles.center]}>
             <Text style={globalStyles.title}>Gruppe wählen</Text>
             <View style={[globalStyles.container, styles.paddingVertical]}>
                 <View style={globalStyles.row}>
@@ -88,7 +88,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                            onSubmitEditing={()=> addGruppeToList()}>
                 </TextInput>
             )}
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 

@@ -1,4 +1,9 @@
-import {ScrollView, Text, View} from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import * as SQLite from "expo-sqlite";
+import {useCallback, useEffect, useState} from "react";
+import {Button, ScrollView, Text, View} from "react-native";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import {ENotifications, ETimeRange, hightlight, primary} from "../../utils/constants";
 import {
     createAusdauertrainingseinheitTable,
     createExerciseMuscleGroupTable,
@@ -23,23 +28,16 @@ import {
     keinAusdauerSeit14Tagen,
     muskelgruppeSollteTrainiertWerden
 } from "../../utils/database-querys";
-import {useCallback, useState} from "react";
-import {useFocusEffect} from "@react-navigation/native";
-import * as SQLite from "expo-sqlite";
-import LoadingSpinner from "../../components/LoadingSpinner";
+import { globalStyles } from "../../utils/global-styles";
 import {
     IBarChartProps,
     INotification,
     ITrainingsProMonatDatabaseResult,
     ITrainingsProWocheDatabaseResult
 } from "../../utils/interfaces";
-import TrainingsBarChart from "./components/TrainingsBarChart";
 import Notifications from "./components/Notifications";
-import {ENotifications} from "../../utils/constants";
-import {globalStyles} from "../../utils/global-styles";
-
-// TODO:
-//         globale Stylings/einheitliches Styling
+import TrainingsBarChart from "./components/TrainingsBarChart";
+import Filter from "../../components/Filter";
 
 const database = SQLite.openDatabaseSync('training.db');
 
@@ -50,47 +48,53 @@ export default function StartScreen(){
     const [ausdauerTrainingProMonatData, setAusdauerTrainingProMonatData] = useState<IBarChartProps[]>([]);
     const [ausdauerTrainingProWocheData, setAusdauerTrainingProWocheData] = useState<IBarChartProps[]>([]);
     const [notifications, setNotifications] = useState<INotification[]>([]);
+    const [timeRange, setTimeRange] = useState<ETimeRange>(ETimeRange.GESAMT);
 
     useFocusEffect(useCallback(() => {
         setupDatabase();
         // dropDatabase();
-        fetchData()
         }, []
     ));
 
+    useEffect(() => {
+        fetchData();
+    }, [timeRange])
+
     async function fetchData() {
         const resultsKraftsportProMonat: ITrainingsProMonatDatabaseResult[] = await database.getAllAsync(getKraftsportTrainingProMonat);
-
-        const formattedKraftsportProMonat: IBarChartProps[] = resultsKraftsportProMonat.map(row => ({
-            label: row.monat,
-            value: row.trainingsanzahl
-        }));
+        const formattedKraftsportProMonat = resultsKraftsportProMonat
+            .filter(row => shouldIncludeEntry(row.monat, "month"))
+            .map(row => ({
+                label: row.monat,
+                value: row.trainingsanzahl
+            }));
         setKraftsportTrainingProMonatData(formattedKraftsportProMonat);
 
         const resultsKraftsportProWoche: ITrainingsProWocheDatabaseResult[] = await database.getAllAsync(getKraftsportTrainingProWoche);
-        const formattedKraftsportProWoche: IBarChartProps[] = resultsKraftsportProWoche.map(row => ({
-            label: row.woche,
-            value: row.trainingsanzahl
-        }));
-
+        const formattedKraftsportProWoche = resultsKraftsportProWoche
+            .filter(row => shouldIncludeEntry(row.woche, "week"))
+            .map(row => ({
+                label: row.woche,
+                value: row.trainingsanzahl
+            }));
         setKraftsportTrainingProWocheData(formattedKraftsportProWoche);
 
         const resultsAusdauerProWoche: ITrainingsProWocheDatabaseResult[] = await database.getAllAsync(getAusdauerTrainingProWoche);
-
-        const formattedAusdauerProWoche: IBarChartProps[] = resultsAusdauerProWoche.map(row => ({
-            label: row.woche,
-            value: row.trainingsanzahl
-        }));
-
+        const formattedAusdauerProWoche = resultsAusdauerProWoche
+            .filter(row => shouldIncludeEntry(row.woche, "week"))
+            .map(row => ({
+                label: row.woche,
+                value: row.trainingsanzahl
+            }));
         setAusdauerTrainingProWocheData(formattedAusdauerProWoche);
 
-        const resultsAusdauerProMonat: ITrainingsProMonatDatabaseResult[] = await database.getAllAsync(getAusdauerTrainingProMonat);
-
-        const formattedAusdauerProMonat: IBarChartProps[] = resultsAusdauerProMonat.map(row => ({
-            label: row.monat,
-            value: row.trainingsanzahl
-        }));
-
+        const resultsAusdauerProMonat: ITrainingsProMonatDatabaseResult[]  = await database.getAllAsync(getAusdauerTrainingProMonat);
+        const formattedAusdauerProMonat = resultsAusdauerProMonat
+            .filter(row => shouldIncludeEntry(row.monat, "month"))
+            .map(row => ({
+                label: row.monat,
+                value: row.trainingsanzahl
+            }));
         setAusdauerTrainingProMonatData(formattedAusdauerProMonat);
 
         const zeitFuerAusdauer: {zeit_fuer_ausdauer: number}|null = await database.getFirstAsync(keinAusdauerSeit14Tagen);
@@ -112,6 +116,47 @@ export default function StartScreen(){
         }
     }
 
+    function shouldIncludeEntry(dateStr: string, type: "month" | "week") {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth() + 1; // Monate: 1-12
+
+        let entryYear, entryValue;
+
+        if (type === "month") {
+            const [month, year] = dateStr.split("-").map(Number);
+            entryYear = year;
+            entryValue = month;
+        } else {
+            const [week, year] = dateStr.split("-").map(Number);
+            entryYear = year;
+            entryValue = week;
+        }
+
+        switch (timeRange) {
+            case ETimeRange.GESAMT:
+                return true;
+
+            case ETimeRange.JAHR:
+                const twelveMonthsAgo = new Date();
+                twelveMonthsAgo.setMonth(today.getMonth() - 11);
+                return new Date(entryYear, entryValue - 1) >= twelveMonthsAgo;
+
+            case ETimeRange.SECHS_MONATE:
+                const sixMonthsAgo = new Date();
+                sixMonthsAgo.setMonth(today.getMonth() - 5);
+                return new Date(entryYear, entryValue - 1) >= sixMonthsAgo;
+
+            case ETimeRange.MONAT:
+                const oneMonthsAgo = new Date();
+                oneMonthsAgo.setMonth(today.getMonth());
+                return new Date(entryYear, entryValue - 1) >= oneMonthsAgo;
+
+            default:
+                return true;
+        }
+    }
+
     async function setupDatabase() {
         setLoading(true);
         try {
@@ -123,6 +168,8 @@ export default function StartScreen(){
             await database.runAsync(createExerciseSetTable);
             await database.runAsync(createTrainingsTypTable);
             await database.runAsync(createAusdauertrainingseinheitTable);
+
+            await fetchData();
 
         } catch (error) {
             console.error("❌ Fehler beim Einrichten der Datenbank:", error);
@@ -159,10 +206,24 @@ export default function StartScreen(){
                 }
             </View>
             <Text style={globalStyles.title}>Trainingsfrequenzen</Text>
-            <TrainingsBarChart titel="Kraftsport pro Woche" data={kraftsportTrainingProWocheData}/>
-            <TrainingsBarChart titel="Kraftsport pro Monat" data={kraftsportTrainingProMonatData}/>
-            <TrainingsBarChart titel="Ausdauer pro Woche" data={ausdauerTrainingProWocheData}/>
-            <TrainingsBarChart titel="Ausdauer pro Monat" data={ausdauerTrainingProMonatData}/>
+            <Filter
+                timeRange={timeRange}
+                onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
+                onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
+                onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
+                onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
+            {kraftsportTrainingProWocheData.length > 0 &&
+                <TrainingsBarChart titel="Kraftsport pro Woche" data={kraftsportTrainingProWocheData}/>
+            }
+            {kraftsportTrainingProMonatData.length > 0 &&
+                <TrainingsBarChart titel="Kraftsport pro Monat" data={kraftsportTrainingProMonatData}/>
+            }
+            {ausdauerTrainingProWocheData.length > 0 &&
+                <TrainingsBarChart titel="Ausdauer pro Woche" data={ausdauerTrainingProWocheData}/>
+            }
+            {ausdauerTrainingProMonatData.length > 0 &&
+                <TrainingsBarChart titel="Ausdauer pro Monat" data={ausdauerTrainingProMonatData}/>
+            }
         </ScrollView>
     );
 }

@@ -13,7 +13,7 @@ export default function SatzListItem({satz, uebungId, updateSatz, deleteSatz}: I
                    placeholderTextColor={hightlight}
                    placeholder="Gewicht"
                    keyboardType="numeric"
-                   value={satz.gewicht.toString()}
+                   value={satz.gewicht ? satz.gewicht.toString() : ''}
                    onChangeText={(text) => updateSatz(uebungId, satz.id, "gewicht", text)}
                />
                <Text style={globalStyles.text}>kg</Text>
@@ -24,7 +24,7 @@ export default function SatzListItem({satz, uebungId, updateSatz, deleteSatz}: I
                 placeholderTextColor={hightlight}
                 placeholder="Wdh"
                 keyboardType="numeric"
-                value={satz.wiederholungen.toString()}
+                value={satz.wiederholungen ? satz.wiederholungen.toString() : ''}
                 onChangeText={(text) => updateSatz(uebungId, satz.id, "wiederholungen", text)}
             />
             <IconButton onPress={() => deleteSatz(uebungId, satz.id)} icon='delete' color='red' size={24}/>

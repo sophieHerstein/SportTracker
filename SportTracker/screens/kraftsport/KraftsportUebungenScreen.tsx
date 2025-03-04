@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {View, FlatList, StyleSheet, Alert} from "react-native";
+import {View, FlatList, StyleSheet, Alert, KeyboardAvoidingView, Platform} from "react-native";
 import BigButton from "../../components/BigButton";
 import * as SQLite from "expo-sqlite";
 import {
@@ -39,7 +39,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                     saetze: Array.from({ length: ex.last_sets },
                         (): ISatz => ({
                             gewicht: ex.last_weight,
-                            wiederholungen: 0,
+                            wiederholungen: null,
                             id: new Date().getTime() + Math.random() * 1000  // Temporäre ID für die UI
                         })),
                 }));
@@ -96,7 +96,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                             saetze: Array.from({ length: uebungData.satz_anzahl },
                                 (): ISatz => ({
                                     gewicht: uebungData.weight,
-                                    wiederholungen: 0,
+                                    wiederholungen: null,
                                     id: new Date().getTime() + Math.random() * 1000  // Temporäre ID für die UI
                                 })),
                         }
@@ -113,7 +113,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }
 
     function addSatz(uebungId: number) {
-        let gewicht = 0;
+        let gewicht = null;
         const saetzeFromUebung = uebungen.filter((uebung) => uebung.id === uebungId)[0].saetze;
         if(saetzeFromUebung && saetzeFromUebung.length >= 1){
             gewicht = saetzeFromUebung[saetzeFromUebung.length-1].gewicht;
@@ -123,7 +123,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 uebung.id === uebungId
                     ? {
                         ...uebung,
-                        saetze: [...uebung.saetze, { id: Date.now(), wiederholungen: 0, gewicht: gewicht }],
+                        saetze: [...uebung.saetze, { id: Date.now(), wiederholungen: null, gewicht: gewicht }],
                     }
                     : uebung
             )
@@ -185,7 +185,8 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 const exerciseTrainingInsert = await database.runAsync(addExerciseToTraining(trainingId, exerciseId));
                 const exerciseTrainingId = exerciseTrainingInsert.lastInsertRowId;
                 for (const satz of uebung.saetze) {
-                    await database.runAsync(addSatzToDatabase(exerciseTrainingId, satz.gewicht, satz.wiederholungen));
+
+                    await database.runAsync(addSatzToDatabase(exerciseTrainingId, satz.gewicht ?? 0, satz.wiederholungen ?? 0));
                 }
             }
             navigation.popToTop();
@@ -195,7 +196,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }
 
     return (
-        <View style={globalStyles.screenContainer}>
+        <KeyboardAvoidingView behavior={"height"}  style={globalStyles.screenContainer}>
             <TextIconButton iconName='add' color={hightlight} onPress={() => addUebung()} iconSize={20} stylePressable={styles.addUebung} styleText={styles.addUebungText} title="Übung hinzufügen"/>
             <FlatList
                 data={uebungen || []}
@@ -211,7 +212,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             }
             />
             <BigButton title='Fertig' onPress={()=> saveTraining()}></BigButton>
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
