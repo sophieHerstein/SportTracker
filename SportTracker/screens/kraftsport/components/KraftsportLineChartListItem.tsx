@@ -8,13 +8,14 @@ import {useEffect, useState} from "react";
 
 export default function KraftsportLineChartListItem({uebung}: IKraftsportLineChartListItemProps){
     const [maxYValue, setMaxYValue] = useState<number>(0);
-    useEffect(() => {
-        uebung.data.forEach((d)=>
-            setMaxYValue(Math.max(d.y, maxYValue))
-        )
-    }, []);
+        useEffect(() => {
+            if (uebung.data.length > 0) {
+                setMaxYValue(Math.max(...uebung.data.map(d => d.y)));
+            }
+        }, []);
+
     return (
-        <View style={{ marginRight: 20 }}>
+        <View style={{ marginRight: 20, marginBottom: 20 }}>
         <Text style={[globalStyles.subtitle, globalStyles.centerText]}>{uebung.name}</Text>
         <ScrollView horizontal={true}>
             <VictoryChart width={Math.max(400, uebung.data.length * 75)} height={220} domain={{ y: [0, Math.max(8, maxYValue) + 2] }}>

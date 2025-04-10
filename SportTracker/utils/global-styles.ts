@@ -1,5 +1,13 @@
 import {StyleSheet} from "react-native";
-import {background, hightlight, primary, secondary, secondaryBackground, textColorPrimary} from "./constants";
+import {
+    background,
+    hightlight,
+    primary,
+    secondary,
+    secondaryBackground,
+    textColorPrimary,
+    textColorSecondary
+} from "./constants";
 
 export const globalStyles = StyleSheet.create({
     screenContainer: {
@@ -69,6 +77,11 @@ export const globalStyles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
     },
+    rowWithoutSpace: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+    },
     container: {
         justifyContent: "center",
         width: "80%"
@@ -82,5 +95,16 @@ export const globalStyles = StyleSheet.create({
         width: '80%',
         borderRadius: 5,
         fontSize: 20
+    },
+    setDate: {
+        backgroundColor: hightlight,
+        height: 30,
+        width: 100,
+        borderRadius: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    setDateText: {
+        color: textColorSecondary
     }
 });

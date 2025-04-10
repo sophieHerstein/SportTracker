@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
-import {Text, StyleSheet, TextInput, View} from 'react-native';
+import {Text, StyleSheet, TextInput, View, Pressable} from 'react-native';
 import BigButton from '../../components/BigButton';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DropDownPicker from "react-native-dropdown-picker";
 import * as SQLite from "expo-sqlite";
 import {
@@ -25,8 +25,8 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
     const [strecke, setStrecke] = useState('');
     const [dauer, setDauer] = useState('');
     const [sportarten, setSportarten] = useState<ITrainingstypDropdown[]>([]);
-
     const [open, setOpen] = useState(false);
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
     useEffect(() => {
         const trainingsTypen = route.params.trainingsTypen;
@@ -36,16 +36,29 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         setSportarten(trainigstypenMapping);
     }, [])
 
+    const showDatePicker = () => {
+        setDatePickerVisibility(true);
+    };
+
+    const hideDatePicker = () => {
+        setDatePickerVisibility(false);
+    };
+
+    const handleConfirm = (date: Date) => {
+        setDatum(date);
+        hideDatePicker();
+    };
+
     function isStringValidNumber(value: string) {
-        return !Number.isNaN(parseFloat(value)) && parseFloat(value) > 0;
+        return !Number.isNaN(parseFloat(value));
     }
 
     function isStreckeValid() {
-        return isStringValidNumber(strecke);
+        return isStringValidNumber(strecke) && parseFloat(strecke) >= 0;
     }
 
     function isDauerValid() {
-        return isStringValidNumber(dauer);
+        return isStringValidNumber(dauer) && parseFloat(dauer) > 0;
     }
 
     async function saveEintrag(){
@@ -86,12 +99,22 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
             <View style={styles.inputContainer}>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Datum:</Text>
-                    <DateTimePicker
-                        style={styles.background}
-                        testID="dateTimePicker"
-                        value={datum}
-                        mode='date'
-                        onChange={(_, datum) => setDatum(datum ?? new Date())}
+                    <Pressable style={globalStyles.setDate} onPress={showDatePicker}>
+                        <Text style={globalStyles.setDateText}>{datum.toLocaleDateString('de-DE', {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric"
+                    })}</Text>
+                    </Pressable>
+                    <DateTimePickerModal
+                        locale="de-DE"
+                        isVisible={isDatePickerVisible}
+                        mode="date"
+                        onConfirm={handleConfirm}
+                        onCancel={hideDatePicker}
+                        confirmTextIOS="OK"
+                        cancelTextIOS="Abbrechen"
+                        date={datum}
                     />
                 </View>
                 <View style={globalStyles.row}>
@@ -109,21 +132,21 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                     />
                 </View>
                 <View style={globalStyles.row}>
-                    <Text style={globalStyles.text}>Strecke:</Text>
-                    <View style={styles.input}>
-                        <TextInput
-                            style={globalStyles.input}
-                            onChangeText={setStrecke}/>
-                        <Text style={globalStyles.text}>km</Text>
-                    </View>
-                </View>
-                <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Zeit:</Text>
                     <View style={styles.input}>
                         <TextInput
                             style={globalStyles.input}
                             onChangeText={setDauer}/>
                         <Text style={globalStyles.text}>min</Text>
+                    </View>
+                </View>
+                <View style={globalStyles.row}>
+                    <Text style={globalStyles.text}>Strecke:</Text>
+                    <View style={styles.input}>
+                        <TextInput
+                            style={globalStyles.input}
+                            onChangeText={setStrecke}/>
+                        <Text style={globalStyles.text}>km</Text>
                     </View>
                 </View>
             </View>

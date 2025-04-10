@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react';
 import {Text, StyleSheet, View, Pressable, TextInput, KeyboardAvoidingView} from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import IconButton from "../../components/IconButton";
 import * as SQLite from "expo-sqlite";
 import {EAppPaths, hightlight, secondary} from "../../utils/constants";
@@ -9,6 +8,7 @@ import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
 import {IMuscleGroupDatabaseResult} from "../../utils/interfaces";
 import {globalStyles} from "../../utils/global-styles";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 type KraftsportGruppeWaehlenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN>;
 
@@ -19,10 +19,24 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     const [showInput, setShowInput] = useState(false);
     const [additionalGruppe, setAdditionalGruppe] = useState('');
     const [gruppen, setGruppen] = useState<string[]>([]);
+    const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
     useEffect(() => {
         getMuskelgruppe();
     }, []);
+
+    const showDatePicker = () => {
+        setDatePickerVisibility(true);
+    };
+
+    const hideDatePicker = () => {
+        setDatePickerVisibility(false);
+    };
+
+    const handleConfirm = (date: Date) => {
+        setDatum(date);
+        hideDatePicker();
+    };
 
     async function getMuskelgruppe(){
         const databaseData: IMuscleGroupDatabaseResult[] = await database.getAllAsync(getMuscleGroupData);
@@ -52,12 +66,22 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
             <View style={[globalStyles.container, styles.paddingVertical]}>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Datum:</Text>
-                    <DateTimePicker
-                        style={styles.background}
-                        testID="dateTimePicker"
-                        value={datum}
-                        mode='date'
-                        onChange={(_, datum)=> setDatum(datum ?? new Date())}
+                    <Pressable style={globalStyles.setDate} onPress={showDatePicker}>
+                        <Text style={globalStyles.setDateText}>{datum.toLocaleDateString('de-DE', {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric"
+                        })}</Text>
+                    </Pressable>
+                    <DateTimePickerModal
+                        locale="de-DE"
+                        isVisible={isDatePickerVisible}
+                        mode="date"
+                        onConfirm={handleConfirm}
+                        onCancel={hideDatePicker}
+                        confirmTextIOS="OK"
+                        cancelTextIOS="Abbrechen"
+                        date={datum}
                     />
                 </View>
             </View>

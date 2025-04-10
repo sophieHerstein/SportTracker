@@ -60,9 +60,6 @@ export default function  KraftsportStatistikScreen(){
                     case ETimeRange.MONAT:
                         timeRangeInNumbers = 30
                         break;
-                    case ETimeRange.WOCHE:
-                        timeRangeInNumbers = 7
-                        break;
                 }
                 filteredResults = entwicklungGewichtResults.filter(row =>
                     new Date(row.datum) >= new Date(new Date().setDate(new Date().getDate() - timeRangeInNumbers))
@@ -111,8 +108,7 @@ export default function  KraftsportStatistikScreen(){
                                 onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
                                 onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
                                 onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
-                                onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}
-                                onPressWoche={()=> setTimeRange(ETimeRange.WOCHE)}/>
+                                onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
                             <KraftsportLineChart data={entwicklungGewichtData} />
                         </View>
                     }

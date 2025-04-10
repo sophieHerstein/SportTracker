@@ -20,8 +20,7 @@ export enum ETimeRange {
     GESAMT = 'gesamt',
     JAHR = 'jahr',
     SECHS_MONATE = '6Monate',
-    MONAT = 'monat',
-    WOCHE = 'woche'
+    MONAT = 'monat'
 }
 
 export const background = '#0D0D0D'

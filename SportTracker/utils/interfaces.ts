@@ -108,7 +108,8 @@ export interface IAusdauerData {
     dauer: number,
     id: number,
     name: string,
-    strecke: number
+    strecke: number,
+    geschwindigkeit: number,
 }
 
 export interface IAusdauersportListItemProps {
@@ -216,5 +217,4 @@ export interface IFilterProps{
     onPressJahr: ()=>void,
     onPress6Monate: ()=>void,
     onPressMonat: ()=>void,
-    onPressWoche?: ()=>void
 }

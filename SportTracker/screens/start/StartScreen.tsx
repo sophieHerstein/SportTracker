@@ -127,8 +127,6 @@ export default function StartScreen() {
 
     function shouldIncludeEntry(dateStr: string, type: "month" | "week") {
         const today = new Date();
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth() + 1; // Monate: 1-12
 
         let entryYear, entryValue;
 

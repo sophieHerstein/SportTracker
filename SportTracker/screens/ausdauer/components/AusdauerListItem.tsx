@@ -9,8 +9,11 @@ export default function AusdauerListItem({item, onDelete}: IAusdauersportListIte
         <View style={[globalStyles.cards, globalStyles.row]}>
             <View style={styles.info}>
                 <Text style={globalStyles.title}>{item.name} ({item.datum})</Text>
-                <Text style={[globalStyles.text, globalStyles.light]}>Strecke: {item.strecke}km ; Zeit: {item.dauer}min</Text>
-                <Text style={[globalStyles.text, globalStyles.light]}>Durchschnittsgeschwindigkeit: {Math.round(item.strecke/(item.dauer/60))} km/h</Text>
+                <View style={globalStyles.rowWithoutSpace}>
+                    {item.strecke > 0 && <Text style={[globalStyles.text, globalStyles.light]}>Strecke: {item.strecke}km; </Text>}
+                    <Text style={[globalStyles.text, globalStyles.light]}>Zeit: {item.dauer}min</Text>
+                </View>
+                {item.strecke > 0 && <Text style={[globalStyles.text, globalStyles.light]}>Durchschnittsgeschwindigkeit: {Math.round(item.strecke/(item.dauer/60))} km/h</Text>}
             </View>
             <IconButton size={36} color='royalblue' icon='delete' onPress={() => onDelete(item.id)}></IconButton>
         </View>

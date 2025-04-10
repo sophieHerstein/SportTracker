@@ -11,8 +11,9 @@ export default function AusdauerStatistikListItem({item}: IAusdauerStatistikList
         <View>
             <Text style={globalStyles.title}>{item[0].name}</Text>
             <AusdauerLineChart screenwidth={screenWidth} items={item} dataKey="dauer" text="Dauer (Minuten)"/>
-            <AusdauerLineChart screenwidth={screenWidth} items={item} dataKey="strecke" text="Strecke (km)"/>
-            <AusdauerScatterPlot screenwidth={screenWidth} items={item}/>
+            {item.some((i)=> i.strecke > 0) && <AusdauerLineChart screenwidth={screenWidth} items={item} dataKey="strecke" text="Strecke (km)"/>}
+            {item.some((i)=> i.strecke > 0) && <AusdauerLineChart screenwidth={screenWidth} items={item} dataKey="geschwindigkeit" text="Geschwindigkeit (km/h)"/>}
+            {item.some((i)=> i.strecke > 0) && <AusdauerScatterPlot screenwidth={screenWidth} items={item}/>}
         </View>
     );
 }

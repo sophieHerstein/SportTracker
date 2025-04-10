@@ -27,7 +27,7 @@ export default function AusdauerLineChart({ screenwidth, items, text, dataKey }:
     const maxY = Math.max(...transformedData.map(d => d.y), 10) + 2;
 
     // ✅ Linienfarbe basierend auf `dataKey`
-    const einheit = dataKey === "dauer" ? "min" : "km";
+    const einheit = dataKey === "dauer" ? "min" : dataKey === "strecke" ? "km": "km/h";
 
 
 
@@ -61,7 +61,7 @@ export default function AusdauerLineChart({ screenwidth, items, text, dataKey }:
                         tickFormat={(tick) => `${tick} ${einheit}`}
                         style={{
                             axis: { stroke: hightlight},
-                            tickLabels: { fill: hightlight }
+                            tickLabels: { fill: hightlight, fontSize: 10 },
                         }}
                     />
 

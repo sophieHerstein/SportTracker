@@ -29,9 +29,6 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
                     case ETimeRange.MONAT:
                         timeRangeInNumbers = 30
                         break;
-                    case ETimeRange.WOCHE:
-                        timeRangeInNumbers = 7
-                        break;
                 }
 
                 if(parseDate(item.datum) >= new Date(new Date().setDate(new Date().getDate() - timeRangeInNumbers))){
@@ -66,8 +63,7 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
                 onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
                 onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
                 onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
-                onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}
-                onPressWoche={()=> setTimeRange(ETimeRange.WOCHE)}/>
+                onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
             <FlatList data={data}
                       renderItem={({item})=> (
                           <AusdauerStatistikListItem item={item}/>

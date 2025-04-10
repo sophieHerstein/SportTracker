@@ -40,8 +40,8 @@ const Tab = createBottomTabNavigator<NavigatorParamList>();
 function KraftsportStack() {
     return (
         <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: secondaryBackground}}}>
-            <Stack.Screen name={EAppPaths.KRAFTSPORT_HOME} component={KraftsportScreen} options={{title: "Kraftsport"}}/>
-            <Stack.Screen name={EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN} component={KraftsportGruppeWaehlenScreen} options={{title: "Gruppe wählen"}}></Stack.Screen>
+            <Stack.Screen name={EAppPaths.KRAFTSPORT_HOME} component={KraftsportScreen} options={{title: "Kraftsport", headerTitleStyle: globalStyles.title}}/>
+            <Stack.Screen name={EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN} component={KraftsportGruppeWaehlenScreen} options={{title: "Gruppe wählen", headerTitleStyle: globalStyles.title}}></Stack.Screen>
             <Stack.Screen name={EAppPaths.KRAFTSPORT_UEBUNGEN} component={KraftsportUebungenScreen} options={({route}) => {
                 const gruppe = route.params.gruppe;
                 const datum = new Date(route.params.datum).toLocaleDateString('de-DE', {
@@ -51,7 +51,7 @@ function KraftsportStack() {
                 });
                 return {title: `${gruppe} (${datum})`, headerTitleStyle: globalStyles.title}
             }}></Stack.Screen>
-            <Stack.Screen name={EAppPaths.KRAFTSPORT_STATISTIK} component={KraftsportStatistikScreen} options={{title: "Kraftsport Statistik"}}></Stack.Screen>
+            <Stack.Screen name={EAppPaths.KRAFTSPORT_STATISTIK} component={KraftsportStatistikScreen} options={{title: "Kraftsport Statistik", headerTitleStyle: globalStyles.title}}></Stack.Screen>
         </Stack.Navigator>
     );
 }
@@ -59,9 +59,9 @@ function KraftsportStack() {
 function AusdauerStack() {
     return (
         <Stack.Navigator screenOptions={{headerStyle: {backgroundColor: secondaryBackground}}}>
-            <Stack.Screen name={EAppPaths.AUSDAUER_HOME} component={AusdauerScreen} options={{title: "Ausdauer"}}/>
-            <Stack.Screen name={EAppPaths.AUSDAUER_EINTRAG} component={NeuerAusdauerEintragScreen} options={{title: "Neuer Eintrag"}}></Stack.Screen>
-            <Stack.Screen name={EAppPaths.AUSDAUER_STATISTIK} component={AusdauerStatistikScreen} options={{title: "Ausdauer Statistik"}}></Stack.Screen>
+            <Stack.Screen name={EAppPaths.AUSDAUER_HOME} component={AusdauerScreen} options={{title: "Ausdauer", headerTitleStyle: globalStyles.title}}/>
+            <Stack.Screen name={EAppPaths.AUSDAUER_EINTRAG} component={NeuerAusdauerEintragScreen} options={{title: "Neuer Eintrag", headerTitleStyle: globalStyles.title}}></Stack.Screen>
+            <Stack.Screen name={EAppPaths.AUSDAUER_STATISTIK} component={AusdauerStatistikScreen} options={{title: "Ausdauer Statistik", headerTitleStyle: globalStyles.title}}></Stack.Screen>
         </Stack.Navigator>
     );
 }
@@ -93,6 +93,7 @@ export default function Navigation() {
                     options={
                         {
                             title: 'Kraftsport',
+                            headerTitleStyle: globalStyles.title
                         }
                     }
                 />
@@ -107,6 +108,7 @@ export default function Navigation() {
                     options={
                         {
                             title: 'Ausdauer',
+                            headerTitleStyle: globalStyles.title
                         }
                     }
                 />

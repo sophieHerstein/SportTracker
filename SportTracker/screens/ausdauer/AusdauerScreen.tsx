@@ -54,6 +54,7 @@ export default function AusdauerScreen({navigation, route}: AusdauersportScreenP
                 dauer: ad.dauer_minuten,
                 id: ad.id,
                 strecke: ad.strecke_km,
+                geschwindigkeit: ad.strecke_km/(ad.dauer_minuten / 60),
                 name: trainingsTypenRows.filter((tt) => tt.id === ad.trainingstyp_id)[0].name
             }
         });
