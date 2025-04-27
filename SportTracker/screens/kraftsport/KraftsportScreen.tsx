@@ -91,6 +91,13 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
         }
     }
 
+    function updateTraining(id: string, gruppe: string, datum: number) {
+        navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
+            gruppe,
+            datum,
+            id})
+    }
+
     async function fetchTrainings() {
         setLoading(true);
         try {
@@ -129,7 +136,7 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
             </IconButton>
             <FlatList data={kraftsportData}
                       renderItem={({item})=> (
-                          <KraftsportListItem item={item} onDelete={(id: string) => deleteTraining(id)}/>
+                          <KraftsportListItem onUpdate={(id: string, gruppe: string, datum: number)=> updateTraining(id, gruppe, datum)} item={item} onDelete={(id: string) => deleteTraining(id)}/>
                       )}
                       keyExtractor={(item)=> item.training_id.toString()}
                       ListEmptyComponent={EmptyList}

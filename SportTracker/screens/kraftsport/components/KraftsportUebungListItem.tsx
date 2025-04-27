@@ -1,5 +1,5 @@
 import {IKraftsportUebungListItemProps} from "../../../utils/interfaces";
-import {FlatList, StyleSheet, TextInput, View} from "react-native";
+import {FlatList, Pressable, StyleSheet, TextInput, View} from "react-native";
 import SatzListItem from "./SatzListItem";
 import TextIconButton from "../../../components/TextIconButton";
 import {MaterialIcons} from "@expo/vector-icons";
@@ -8,7 +8,8 @@ import {globalStyles} from "../../../utils/global-styles";
 
 export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz, updateUebungName, addSatz, deleteUebung}: IKraftsportUebungListItemProps) {
     return (
-        <View style={globalStyles.cards}>
+        //TODO: als Modal -> Diagram mit Entwicklung und letzter Ausführung -> also die entsprechenden Wiederholungen
+        <Pressable onPress={()=> console.log('clicked')} style={globalStyles.cards}>
             <View style={styles.row}>
                 <TextInput
                     style={globalStyles.input}
@@ -47,7 +48,7 @@ export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz
                 iconSize={20}
                 styleText={styles.deleteText}
                 title='Übung löschen'/>
-        </View>
+        </Pressable>
     )
 }
 

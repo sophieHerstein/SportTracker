@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Text, StyleSheet, TextInput, View, Pressable} from 'react-native';
 import BigButton from '../../components/BigButton';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -12,8 +12,9 @@ import {
 import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../utils/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, hightlight} from "../../utils/constants";
+import {EAppPaths, hightlight, textColorPrimary} from "../../utils/constants";
 import {globalStyles} from "../../utils/global-styles";
+import IconButton from "../../components/IconButton";
 
 type NeuerAusdauerEintragScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_EINTRAG>;
 
@@ -27,6 +28,17 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
     const [sportarten, setSportarten] = useState<ITrainingstypDropdown[]>([]);
     const [open, setOpen] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerLeft: () =>
+                <IconButton onPress={()=> saveEintrag()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
+        });
+    }, [navigation,
+        datum,
+        name,
+        strecke,
+        dauer]);
 
     useEffect(() => {
         const trainingsTypen = route.params.trainingsTypen;
@@ -61,7 +73,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         return isStringValidNumber(dauer) && parseFloat(dauer) > 0;
     }
 
-    async function saveEintrag(){
+    async function saveEintrag() {
         if(!isDauerValid()){
             alert('Bitte die Dauer überprüfen');
             return;

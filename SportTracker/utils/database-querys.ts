@@ -37,7 +37,7 @@ export const addUebungToDatabase = (name: string) => `INSERT INTO exercise (name
 
 export const connectMuscleGroupAndUebung = (muscleGroupId: number, exerciseId: number) => `INSERT OR IGNORE INTO exercise_muscle_group (muscle_group_id, exercise_id) VALUES (${muscleGroupId}, ${exerciseId})`
 
-export const addExerciseToTraining = (trainingId: number, exerciseId: number) => `INSERT INTO exercise_training (training_id, exercise_id) VALUES (${trainingId}, ${exerciseId})`
+export const addExerciseToTraining = (trainingId: string, exerciseId: number) => `INSERT INTO exercise_training (training_id, exercise_id) VALUES (${trainingId}, ${exerciseId})`
 
 export const addSatzToDatabase = (exerciseTrainingId: number, weight: number, repetitions: number) => `INSERT INTO exercise_set (exercise_training_id, weight, repetitions) VALUES (${exerciseTrainingId}, ${weight}, ${repetitions})`
 
@@ -94,3 +94,9 @@ export const getEntwicklungGewichtData = "SELECT e.name AS uebung, t.datum, MAX(
 export const keinAusdauerSeit14Tagen = "SELECT CASE WHEN MAX(datum) < strftime('%s', 'now', '-14 days') * 1000 THEN 1 ELSE 0 END AS zeit_fuer_ausdauer FROM ausdauertrainingseinheit";
 
 export const muskelgruppeSollteTrainiertWerden =`SELECT mg.name, MAX(COALESCE(t.datum, 0)) AS last_training FROM muscle_group mg LEFT JOIN training t ON mg.id = t.muscle_group_id GROUP BY mg.name HAVING last_training < (strftime('%s', 'now', '-30 days') * 1000)`
+
+export const getExercisesForTraining = (trainingId: string) => `SELECT et.id as exercise_training_id, e.id as exercise_id, e.name, es.id as set_id, es.weight, es.repetitions FROM exercise_training et JOIN exercise e ON et.exercise_id = e.id LEFT JOIN exercise_set es ON es.exercise_training_id = et.id WHERE et.training_id = ${trainingId} ORDER BY e.name ASC, es.id ASC`;
+
+export const deleteSatzFromTraining = (trainingId: string) => `DELETE FROM exercise_set WHERE exercise_training_id IN (SELECT id FROM exercise_training WHERE training_id = '${trainingId}')`;
+
+export const deleteTraining = (trainingId: string) => `DELETE FROM exercise_training WHERE training_id = '${trainingId}'`

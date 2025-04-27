@@ -82,6 +82,7 @@ export interface ITrainingDatabase {
 export interface IKraftsportListItemProps {
     item: IKraftsportData;
     onDelete: (trainingId: string)=>void,
+    onUpdate: (trainingId: string, gruppe: string, datum: number)=>void,
 }
 
 export interface IBigButtonProps {
