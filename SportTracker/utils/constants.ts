@@ -20,6 +20,7 @@ export enum ETimeRange {
     GESAMT = 'gesamt',
     JAHR = 'jahr',
     SECHS_MONATE = '6Monate',
+    DREI_MONATE = '3Monate',
     MONAT = 'monat'
 }
 

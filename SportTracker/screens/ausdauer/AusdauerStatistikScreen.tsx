@@ -26,6 +26,9 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
                     case ETimeRange.SECHS_MONATE:
                         timeRangeInNumbers = 183
                         break;
+                    case ETimeRange.DREI_MONATE:
+                        timeRangeInNumbers = 93
+                        break;
                     case ETimeRange.MONAT:
                         timeRangeInNumbers = 30
                         break;
@@ -63,6 +66,7 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
                 onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
                 onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
                 onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
+                onPress3Monate={()=> setTimeRange(ETimeRange.DREI_MONATE)}
                 onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
             <FlatList data={data}
                       renderItem={({item})=> (

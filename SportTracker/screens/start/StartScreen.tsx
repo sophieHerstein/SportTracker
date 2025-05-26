@@ -113,7 +113,6 @@ export default function StartScreen() {
         }
 
         const muskelGruppeTrainieren: {last_training: number, name: string}[] = await database.getAllAsync(muskelgruppeSollteTrainiertWerden);
-        console.log(muskelGruppeTrainieren);
         if (!!muskelGruppeTrainieren && muskelGruppeTrainieren.length > 0) {
             const newNotifications: INotification[] = [...notifications];
             muskelGruppeTrainieren.forEach((t) => {
@@ -162,9 +161,16 @@ export default function StartScreen() {
                     return new Date(entryYear, entryValue - 1) >= sixMonthsAgo;
                 } else {
                     return getWeekDate(entryYear, entryValue) >= sixMonthsAgo;
-
                 }
 
+            case ETimeRange.DREI_MONATE:
+                const threeMonthsAgo = new Date();
+                threeMonthsAgo.setMonth(today.getMonth() - 3);
+                if(type === "month") {
+                    return new Date(entryYear, entryValue - 1) >= threeMonthsAgo;
+                } else {
+                    return getWeekDate(entryYear, entryValue) >= threeMonthsAgo;
+                }
 
             case ETimeRange.MONAT:
                 const oneMonthsAgo = new Date();
@@ -368,6 +374,7 @@ export default function StartScreen() {
                 onPressGesamt={() => setTimeRange(ETimeRange.GESAMT)}
                 onPressJahr={() => setTimeRange(ETimeRange.JAHR)}
                 onPress6Monate={() => setTimeRange(ETimeRange.SECHS_MONATE)}
+                onPress3Monate={() => setTimeRange(ETimeRange.DREI_MONATE)}
                 onPressMonat={() => setTimeRange(ETimeRange.MONAT)}/>
             {kraftsportTrainingProWocheData.length > 0 &&
                 <TrainingsBarChart titel="Kraftsport pro Woche" data={kraftsportTrainingProWocheData}/>

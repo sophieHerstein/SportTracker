@@ -41,13 +41,21 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     useEffect(() => {
         navigation.setOptions({
             headerLeft: () =>
-                <IconButton onPress={()=> saveTraining()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
+                <IconButton onPress={()=> showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
         });
     }, [navigation, uebungen]);
 
     useEffect(() => {
         loadExistingTraining();
     }, []);
+
+    function showAlert() {
+        Alert.alert(
+            "Training speichern?",
+            "Soll das Training gespeichert werden?",
+            [{text: "Nein", onPress: ()=> navigation.popToTop(), style: "destructive"},{text: "Ja", onPress:()=> saveTraining()}]
+        )
+    }
 
     async function loadExistingTraining(){
         if(!route.params.id){
@@ -89,7 +97,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 const exercisesMap: Record<number, IUebung> = {};
 
                 for (const row of result) {
-                    if (!exercisesMap[row.exercise_id] && row.repetitions) {
+                    if (!exercisesMap[row.exercise_id]) {
                         exercisesMap[row.exercise_id] = {
                             id: row.exercise_id,
                             name: row.name,
@@ -107,7 +115,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
                 const exercises = Object.values(exercisesMap);
                 setUebungen(exercises);
-                setOriginalUebungen(JSON.parse(JSON.stringify(exercises))); // Tiefe Kopie!
+                setOriginalUebungen(JSON.parse(JSON.stringify(exercises)));
             } catch (error) {
                 console.error("❌ Fehler beim Laden des bestehenden Trainings:", error);
             }
@@ -239,13 +247,6 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             }
 
             for (const uebung of uebungen) {
-                const validSets = uebung.saetze.filter(s => s.wiederholungen && s.wiederholungen > 0);
-
-                if (validSets.length === 0) {
-                    continue;
-                }
-
-
                 const existingExercise: { id: number } | null = await database.getFirstAsync(getIdForUebung(uebung.name));
 
                 let exerciseId;

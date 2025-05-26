@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Text, StyleSheet, TextInput, View, Pressable} from 'react-native';
+import {Text, StyleSheet, TextInput, View, Pressable, Alert} from 'react-native';
 import BigButton from '../../components/BigButton';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -32,7 +32,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
     useEffect(() => {
         navigation.setOptions({
             headerLeft: () =>
-                <IconButton onPress={()=> saveEintrag()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
+                <IconButton onPress={()=> showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
         });
     }, [navigation,
         datum,
@@ -47,6 +47,14 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         })
         setSportarten(trainigstypenMapping);
     }, [])
+
+    function showAlert() {
+        Alert.alert(
+            "Training speichern?",
+            "Soll das Training gespeichert werden?",
+            [{text: "Nein", onPress: ()=> navigation.goBack(), style: "destructive"},{text: "Ja", onPress:()=> saveEintrag()}]
+        )
+    }
 
     const showDatePicker = () => {
         setDatePickerVisibility(true);
@@ -78,9 +86,8 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
             alert('Bitte die Dauer überprüfen');
             return;
         }
-        if(!isStreckeValid()){
-            alert('Bitte die Strecke überprüfen');
-            return;
+        if(!strecke){
+            setStrecke('0');
         }
 
         try {
@@ -96,8 +103,9 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
             await database.runAsync(addTrainingsTypToTable(name));
         }
         const trainingsTypId: {id: number}| null = await database.getFirstAsync(getIdForTrainingsTyp(name));
+
         if(!!trainingsTypId){
-            await database.runAsync(addAusdauertrainingsEinheitToTable(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke)));
+            await database.runAsync(addAusdauertrainingsEinheitToTable(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke ?? 0)));
         }
     }
 

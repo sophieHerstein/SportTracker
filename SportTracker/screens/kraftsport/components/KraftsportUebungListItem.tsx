@@ -3,14 +3,25 @@ import {FlatList, Pressable, StyleSheet, TextInput, View} from "react-native";
 import SatzListItem from "./SatzListItem";
 import TextIconButton from "../../../components/TextIconButton";
 import {MaterialIcons} from "@expo/vector-icons";
-import {hightlight, secondary} from "../../../utils/constants";
+import {hightlight, primary, secondary} from "../../../utils/constants";
 import {globalStyles} from "../../../utils/global-styles";
+import {useEffect, useState} from "react";
+import KraftsportUebungModal from "./KraftsportUebungModal";
 
 export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz, updateUebungName, addSatz, deleteUebung}: IKraftsportUebungListItemProps) {
+
+    const [cardStyle, setCardStyle] = useState<any>(globalStyles.cards);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+    useEffect(() => {
+        if(uebung.weightShouldBeIncreased){
+            setCardStyle({...globalStyles.cards, borderColor: primary, borderWidth: 2});
+        }
+    }, []);
+
     return (
-        //TODO: als Modal -> Diagram mit Entwicklung und letzter Ausführung -> also die entsprechenden Wiederholungen
-        <Pressable onPress={()=> console.log('clicked')} style={globalStyles.cards}>
-            <View style={styles.row}>
+        <View style={cardStyle}>
+            <View style={styles.rowWithInfo}>
                 <TextInput
                     style={globalStyles.input}
                     placeholderTextColor={hightlight}
@@ -18,10 +29,9 @@ export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz
                     value={uebung.name}
                     onChangeText={(text) => updateUebungName(uebung.id, text)}
                 />
-                {uebung.weightShouldBeIncreased ? (
-                    <MaterialIcons name='auto-graph' size={36} color={hightlight}/>
-                ) : null}
+                <MaterialIcons style={{alignSelf:"flex-start"}} name='info-outline' size={16} color={hightlight} onPress={()=> setModalVisible(true)}/>
             </View>
+            <KraftsportUebungModal uebung={uebung} visible={modalVisible} onCancel={()=> setModalVisible(false)}></KraftsportUebungModal>
             <FlatList
                 data={uebung.saetze}
                 keyExtractor={(_, index) => index.toString()}
@@ -48,7 +58,7 @@ export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz
                 iconSize={20}
                 styleText={styles.deleteText}
                 title='Übung löschen'/>
-        </Pressable>
+        </View>
     )
 }
 
@@ -74,9 +84,7 @@ const styles = StyleSheet.create({
         color: hightlight,
         fontSize: 16,
     },
-    row: {
+    rowWithInfo: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: "center",
     }
 });

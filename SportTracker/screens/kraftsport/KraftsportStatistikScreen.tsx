@@ -1,4 +1,4 @@
-import {ScrollView, Text, View} from "react-native";
+import {Text, View} from "react-native";
 import {useEffect, useState} from "react";
 import * as SQLite from "expo-sqlite";
 import {
@@ -44,18 +44,19 @@ export default function  KraftsportStatistikScreen(){
             const entwicklungGewichtResults: IEntwicklungGewichtDatabaseResult[] = await database.getAllAsync(getEntwicklungGewichtData);
             entwicklungGewichtResults.sort((r1, r2) => r1.datum - r2.datum );
 
-            entwicklungGewichtResults.sort((r1, r2) => r1.datum - r2.datum);
-
             let filteredResults = [...entwicklungGewichtResults]
 
             if(timeRange !== ETimeRange.GESAMT){
-                let timeRangeInNumbers;
+                let timeRangeInNumbers: number;
                 switch (timeRange){
                     case ETimeRange.JAHR:
                         timeRangeInNumbers = 365
                         break;
                     case ETimeRange.SECHS_MONATE:
                         timeRangeInNumbers = 183
+                        break;
+                    case ETimeRange.DREI_MONATE:
+                        timeRangeInNumbers = 93
                         break;
                     case ETimeRange.MONAT:
                         timeRangeInNumbers = 30
@@ -100,18 +101,22 @@ export default function  KraftsportStatistikScreen(){
                         <TrainingsBarChart data={progressionsData}/>
                     </View>
                     }
-                    {entwicklungGewichtData.length > 0 &&
-                        <View>
-                            <Text style={globalStyles.title}>Entwicklung Gewicht</Text>
-                            <Filter
-                                timeRange={timeRange}
-                                onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
-                                onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
-                                onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
-                                onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
+                    <View>
+                        <Text style={globalStyles.title}>Entwicklung Gewicht</Text>
+                        <Filter
+                            timeRange={timeRange}
+                            onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
+                            onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
+                            onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
+                            onPress3Monate={()=> setTimeRange(ETimeRange.DREI_MONATE)}
+                            onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
+                        {entwicklungGewichtData.length > 0 &&
                             <KraftsportLineChart data={entwicklungGewichtData} />
-                        </View>
-                    }
+                        }
+                        {entwicklungGewichtData.length > 0 &&
+                            <Text>Keine Trainings in dem Zeitraum</Text>
+                        }
+                    </View>
                 </View>
                 :
                 <EmptyList/>

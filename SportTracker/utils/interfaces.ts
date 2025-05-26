@@ -199,7 +199,8 @@ export interface INotificationProps {
 }
 
 export interface IKraftsportLineChartListItemProps {
-    uebung: IVictoryKraftsportChartProps
+    uebung: IVictoryKraftsportChartProps,
+    isNotListElement?: boolean
 }
 
 export interface IVictoryKraftsportChartProps {
@@ -217,5 +218,12 @@ export interface IFilterProps{
     onPressGesamt: ()=>void,
     onPressJahr: ()=>void,
     onPress6Monate: ()=>void,
+    onPress3Monate: ()=>void,
     onPressMonat: ()=>void,
+}
+
+export interface IKraftpsortUebungModalProps {
+    visible: boolean,
+    onCancel: ()=>void,
+    uebung: IUebung,
 }

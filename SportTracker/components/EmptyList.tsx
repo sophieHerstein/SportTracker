@@ -3,7 +3,7 @@ import {globalStyles} from "../utils/global-styles";
 
 export default function EmptyList() {
     return (
-        <Text style={[globalStyles.title, globalStyles.centerText, styles.paddingVertical]}>Keine Daten geladen</Text>
+        <Text style={[globalStyles.title, globalStyles.centerText, styles.paddingVertical]}>Keine Daten vorhanden</Text>
     )
 }
 

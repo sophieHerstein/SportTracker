@@ -91,6 +91,8 @@ export const getProgressionsData = "SELECT et.exercise_id, e.name AS uebung, MAX
 
 export const getEntwicklungGewichtData = "SELECT e.name AS uebung, t.datum, MAX(es.weight) AS max_weight FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id JOIN exercise e ON et.exercise_id = e.id GROUP BY e.name, t.datum ORDER BY e.name ASC, t.datum ASC"
 
+export const getEntwicklungGewichtDataForUebung = (uebungId: number)=> `SELECT t.datum, MAX(es.weight) AS max_weight FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id JOIN exercise e ON et.exercise_id = e.id WHERE e.id = '${uebungId}' GROUP BY t.datum ORDER BY t.datum DESC`
+
 export const keinAusdauerSeit14Tagen = "SELECT CASE WHEN MAX(datum) < strftime('%s', 'now', '-14 days') * 1000 THEN 1 ELSE 0 END AS zeit_fuer_ausdauer FROM ausdauertrainingseinheit";
 
 export const muskelgruppeSollteTrainiertWerden =`SELECT mg.name, MAX(COALESCE(t.datum, 0)) AS last_training FROM muscle_group mg LEFT JOIN training t ON mg.id = t.muscle_group_id GROUP BY mg.name HAVING last_training < (strftime('%s', 'now', '-30 days') * 1000)`
