@@ -2,16 +2,17 @@ import {FlatList, Modal, Pressable, Text, View} from "react-native";
 import {
     IEntwicklungGewichtData,
     IEntwicklungGewichtDatabaseResult,
-    IKraftpsortUebungModalProps, IVictoryKraftsportChartProps
+    IKraftpsortUebungModalProps, ISatz, ISatzDB, IVictoryKraftsportChartProps
 } from "../../../utils/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
 import EmptyList from "../../../components/EmptyList";
 import {useEffect, useState} from "react";
-import {getEntwicklungGewichtDataForUebung} from "../../../utils/database-querys";
+import {getEntwicklungGewichtDataForUebung, getLastSatzDataForUebung} from "../../../utils/database-querys";
 import {ETimeRange} from "../../../utils/constants";
 import * as SQLite from "expo-sqlite";
 import Filter from "../../../components/Filter";
 import KraftsportLineChartListItem from "./KraftsportLineChartListItem";
+import {data} from "../../../utils/data";
 
 const database = SQLite.openDatabaseSync('training.db');
 
@@ -22,12 +23,23 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
         data: []
     });
     const [timeRange, setTimeRange] = useState<ETimeRange>(ETimeRange.GESAMT);
+    const [lastUebungData, setLastUebungData] = useState<ISatz[]>([]);
 
     useEffect(() => {
         fetchData();
     }, [timeRange]);
 
     async function fetchData() {
+        const lastUebung: ISatzDB[] = await database.getAllAsync(getLastSatzDataForUebung(uebung.id));
+
+        setLastUebungData(lastUebung.map((satz) => {
+            return {
+                id: satz.satz_id,
+                gewicht: satz.weight,
+                wiederholungen: satz.repetitions,
+            }
+        }))
+
         const entwicklungGewichtResults: IEntwicklungGewichtDatabaseResult[] = await database.getAllAsync(getEntwicklungGewichtDataForUebung(uebung.id));
 
         let filteredResults = [...entwicklungGewichtResults]
@@ -86,7 +98,7 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
                 <Text style={[globalStyles.title, {alignSelf: "center", paddingBottom: 25}]}>{uebung.name}</Text>
                 <Text style={[globalStyles.text, {paddingBottom: 10}]}>Gewicht und Wiederholung der letzten Durchführung:</Text>
                 <FlatList style={{maxHeight: 100}}
-                    data={uebung.saetze}
+                    data={lastUebungData}
                     renderItem={({item, index})=> {
                         return (
                             <Text style={[globalStyles.text, {alignSelf: "center"}]}>Satz {index+1}: {item.gewicht} x {item.wiederholungen}</Text>

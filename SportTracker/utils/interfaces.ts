@@ -32,6 +32,12 @@ export interface ISatz {
     wiederholungen: number|null
 }
 
+export interface ISatzDB {
+    satz_id: number,
+    weight: number,
+    repetitions: number
+}
+
 export interface IMuscleGroupDatabaseResult {
     id: number,
     name: string

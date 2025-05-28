@@ -15,7 +15,7 @@ export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz
 
     useEffect(() => {
         if(uebung.weightShouldBeIncreased){
-            setCardStyle({...globalStyles.cards, borderColor: primary, borderWidth: 2});
+            setCardStyle({...globalStyles.cards, borderColor: primary, borderWidth: 4});
         }
     }, []);
 

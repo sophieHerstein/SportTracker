@@ -102,3 +102,5 @@ export const getExercisesForTraining = (trainingId: string) => `SELECT et.id as 
 export const deleteSatzFromTraining = (trainingId: string) => `DELETE FROM exercise_set WHERE exercise_training_id IN (SELECT id FROM exercise_training WHERE training_id = '${trainingId}')`;
 
 export const deleteTraining = (trainingId: string) => `DELETE FROM exercise_training WHERE training_id = '${trainingId}'`
+
+export const getLastSatzDataForUebung = (uebungId: number) => `SELECT es.id AS satz_id, es.weight, es.repetitions FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id WHERE et.exercise_id = '${uebungId}' AND t.datum = (SELECT MAX(t2.datum) FROM exercise_training et2 JOIN training t2 ON et2.training_id = t2.id WHERE et2.exercise_id = '${uebungId}')`
