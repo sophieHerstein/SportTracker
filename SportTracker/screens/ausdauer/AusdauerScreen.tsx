@@ -1,49 +1,43 @@
-import {FlatList, StyleSheet, View} from 'react-native';
+import {FlatList, View} from 'react-native';
 import AusdauerListItem from "./components/AusdauerListItem";
 import IconButton from "../../components/IconButton";
-import {useState} from 'react';
-import * as SQLite from 'expo-sqlite'
+import {useCallback, useMemo, useState} from 'react';
 import {useFocusEffect} from "@react-navigation/native";
-import { useCallback } from 'react';
-import {EAppPaths, primary, secondary} from "../../utils/constants";
+import {EAppPaths, primary, secondary} from "../../models/constants";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
-import {
-    deleteAusdauerTrainingseinheitWithId,
-    getAllAusdauertrainingseinheiten,
-    getAllTrainingstypen
-} from "../../utils/database-querys";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
 import {
     IAusdauerData,
     IAusdauertrainingseinheitDatabaseResult,
     ITrainingstypDatabaseResult
-} from "../../utils/interfaces";
+} from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
+import {AusdauerService} from "../../services/ausdauer.service";
 
 type AusdauersportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_HOME>;
 
-const database = SQLite.openDatabaseSync('training.db');
-
-export default function AusdauerScreen({navigation, route}: AusdauersportScreenProps) {
+export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [ausdauerData, setData] = useState<IAusdauerData[]>([]);
     const [trainingsTypen, setTrainingsTypen] = useState<ITrainingstypDatabaseResult[]>([]);
+
+    const ausdauerService = useMemo(() => new AusdauerService(), []);
 
     useFocusEffect(useCallback(() => {
         initDB();
     }, []));
 
 
-    async function initDB(){
+    async function initDB() {
         setIsLoading(true);
         const [trainingsTypenRows, ausdauertrainingseinheitRows] = await Promise.all([
-            database.getAllAsync(getAllTrainingstypen) as Promise<ITrainingstypDatabaseResult[]>,
-            database.getAllAsync(getAllAusdauertrainingseinheiten) as Promise<IAusdauertrainingseinheitDatabaseResult[]>,
+            ausdauerService.fetchAllTrainingstypen() as Promise<ITrainingstypDatabaseResult[]>,
+            ausdauerService.fetchAllAusdauertrainingseinheiten() as Promise<IAusdauertrainingseinheitDatabaseResult[]>
         ]);
         setTrainingsTypen(trainingsTypenRows);
-        const newAusdauertrainingsDaten: IAusdauerData[] = ausdauertrainingseinheitRows.map((ad: IAusdauertrainingseinheitDatabaseResult)=> {
+        const newAusdauertrainingsDaten: IAusdauerData[] = ausdauertrainingseinheitRows.map((ad: IAusdauertrainingseinheitDatabaseResult) => {
             return {
                 datum_as_timestamp: ad.datum,
                 datum: new Date(ad.datum).toLocaleDateString('de-DE', {
@@ -54,20 +48,20 @@ export default function AusdauerScreen({navigation, route}: AusdauersportScreenP
                 dauer: ad.dauer_minuten,
                 id: ad.id,
                 strecke: ad.strecke_km,
-                geschwindigkeit: ad.strecke_km/(ad.dauer_minuten / 60),
+                geschwindigkeit: ad.strecke_km / (ad.dauer_minuten / 60),
                 name: trainingsTypenRows.filter((tt) => tt.id === ad.trainingstyp_id)[0].name
             }
         });
-        newAusdauertrainingsDaten.sort((a,b) => b.datum_as_timestamp - a.datum_as_timestamp);
+        newAusdauertrainingsDaten.sort((a, b) => b.datum_as_timestamp - a.datum_as_timestamp);
         setData(newAusdauertrainingsDaten);
         setIsLoading(false);
     }
 
-    async function removeEintragFromList(id: number){
+    async function removeEintragFromList(id: number) {
         const newAusdauerData: IAusdauerData[] = [...ausdauerData];
-        await database.runAsync(deleteAusdauerTrainingseinheitWithId(id));
+        await ausdauerService.deleteAusdauerTrainingseinheitWithId(id);
         const deletedAusdauerEntry = newAusdauerData.find(item => item.id === id);
-        if(!!deletedAusdauerEntry){
+        if (!!deletedAusdauerEntry) {
             const index = newAusdauerData.indexOf(deletedAusdauerEntry);
             newAusdauerData.splice(index, 1);
         }
@@ -76,7 +70,7 @@ export default function AusdauerScreen({navigation, route}: AusdauersportScreenP
 
 
     if (isLoading) {
-        return <LoadingSpinner />
+        return <LoadingSpinner/>
     }
 
     return (
@@ -91,15 +85,15 @@ export default function AusdauerScreen({navigation, route}: AusdauersportScreenP
             <IconButton
                 size={36}
                 color={primary}
-                onPress={()=> navigation.navigate(EAppPaths.AUSDAUER_EINTRAG, { trainingsTypen })}
+                onPress={() => navigation.navigate(EAppPaths.AUSDAUER_EINTRAG, {trainingsTypen})}
                 style={globalStyles.topRight}
                 icon='add-circle'>
             </IconButton>
             <FlatList data={ausdauerData}
-                      renderItem={({item})=> (
+                      renderItem={({item}) => (
                           <AusdauerListItem item={item} onDelete={(id: number) => removeEintragFromList(id)}/>
                       )}
-                      keyExtractor={(item)=> item.id.toString()}
+                      keyExtractor={(item) => item.id.toString()}
                       ListEmptyComponent={EmptyList}
             />
         </View>

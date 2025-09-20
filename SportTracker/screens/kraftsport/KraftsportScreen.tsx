@@ -1,33 +1,27 @@
-import { FlatList, StyleSheet, View} from 'react-native';
+import {FlatList, View} from 'react-native';
 import IconButton from "../../components/IconButton";
-import {useState, useCallback} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 import KraftsportListItem from "./components/KraftsportListItem";
-import * as SQLite from "expo-sqlite";
 import {useFocusEffect} from "@react-navigation/native";
-import {EAppPaths, primary, secondary} from "../../utils/constants";
-import {
-    deleteTrainingWithId1,
-    deleteTrainingWithId2,
-    deleteTrainingWithId3, deleteTrainingWithId4,
-    getKraftsportHomeScreenData
-} from "../../utils/database-querys";
-import {IKraftsportData, IKraftsportDatabaseResult, ISatz} from "../../utils/interfaces";
+import {EAppPaths, primary, secondary} from "../../models/constants";
+import {IKraftsportData, IKraftsportDatabaseResult, ISatz} from "../../models/interfaces";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
 import {NavigatorParamList} from "../../Navigation";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {globalStyles} from "../../utils/global-styles";
+import {KraftsportService} from "../../services/kraftsport.service";
 
 type KraftsportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_HOME>;
-
-const database = SQLite.openDatabaseSync('training.db');
 
 export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     const [kraftsportData, setData] = useState<IKraftsportData[]>([]);
     const [isLoading, setLoading] = useState<boolean>(true);
 
+    const kraftsportService = useMemo(() => new KraftsportService(), []);
+
     useFocusEffect(useCallback(() => {
-        fetchTrainings();
+            fetchTrainings();
         }, []
     ));
 
@@ -79,12 +73,9 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     }
 
 
-    async function deleteTraining(id: string){
+    async function deleteTraining(id: string) {
         try {
-            await database.runAsync(deleteTrainingWithId1(id));
-            await database.runAsync(deleteTrainingWithId2(id));
-            await database.runAsync(deleteTrainingWithId3(id));
-            await database.runAsync(deleteTrainingWithId4());
+            await kraftsportService.deleteTrainingWithId(id);
             await fetchTrainings();
         } catch (error) {
             console.error("❌ Fehler beim Löschen des Trainings:", error);
@@ -95,13 +86,14 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
         navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
             gruppe,
             datum,
-            id})
+            id
+        })
     }
 
     async function fetchTrainings() {
         setLoading(true);
         try {
-            const results: IKraftsportDatabaseResult[] = await database.getAllAsync(getKraftsportHomeScreenData);
+            const results: IKraftsportDatabaseResult[] = await kraftsportService.fetchKraftsportData();
 
             if (results.length > 0) {
                 const transformedData: IKraftsportData[] = transformTrainingData(results);
@@ -135,10 +127,12 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
                 icon='add-circle'>
             </IconButton>
             <FlatList data={kraftsportData}
-                      renderItem={({item})=> (
-                          <KraftsportListItem onUpdate={(id: string, gruppe: string, datum: number)=> updateTraining(id, gruppe, datum)} item={item} onDelete={(id: string) => deleteTraining(id)}/>
+                      renderItem={({item}) => (
+                          <KraftsportListItem
+                              onUpdate={(id: string, gruppe: string, datum: number) => updateTraining(id, gruppe, datum)}
+                              item={item} onDelete={(id: string) => deleteTraining(id)}/>
                       )}
-                      keyExtractor={(item)=> item.training_id.toString()}
+                      keyExtractor={(item) => item.training_id.toString()}
                       ListEmptyComponent={EmptyList}
             />
         </View>

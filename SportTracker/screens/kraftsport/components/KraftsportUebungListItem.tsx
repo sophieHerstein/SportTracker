@@ -1,20 +1,27 @@
-import {IKraftsportUebungListItemProps} from "../../../utils/interfaces";
-import {FlatList, Pressable, StyleSheet, TextInput, View} from "react-native";
+import {IKraftsportUebungListItemProps} from "../../../models/interfaces";
+import {FlatList, StyleSheet, TextInput, View} from "react-native";
 import SatzListItem from "./SatzListItem";
 import TextIconButton from "../../../components/TextIconButton";
 import {MaterialIcons} from "@expo/vector-icons";
-import {hightlight, primary, secondary} from "../../../utils/constants";
+import {hightlight, primary} from "../../../models/constants";
 import {globalStyles} from "../../../utils/global-styles";
 import {useEffect, useState} from "react";
 import KraftsportUebungModal from "./KraftsportUebungModal";
 
-export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz, updateUebungName, addSatz, deleteUebung}: IKraftsportUebungListItemProps) {
+export default function KraftsportUebungListItem({
+                                                     uebung,
+                                                     updateSatz,
+                                                     deleteSatz,
+                                                     updateUebungName,
+                                                     addSatz,
+                                                     deleteUebung
+                                                 }: IKraftsportUebungListItemProps) {
 
     const [cardStyle, setCardStyle] = useState<any>(globalStyles.cards);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     useEffect(() => {
-        if(uebung.weightShouldBeIncreased){
+        if (uebung.weightShouldBeIncreased) {
             setCardStyle({...globalStyles.cards, borderColor: primary, borderWidth: 4});
         }
     }, []);
@@ -29,13 +36,15 @@ export default function KraftsportUebungListItem({uebung, updateSatz, deleteSatz
                     value={uebung.name}
                     onChangeText={(text) => updateUebungName(uebung.id, text)}
                 />
-                <MaterialIcons style={{alignSelf:"flex-start"}} name='info-outline' size={16} color={hightlight} onPress={()=> setModalVisible(true)}/>
+                <MaterialIcons style={{alignSelf: "flex-start"}} name='info-outline' size={16} color={hightlight}
+                               onPress={() => setModalVisible(true)}/>
             </View>
-            <KraftsportUebungModal uebung={uebung} visible={modalVisible} onCancel={()=> setModalVisible(false)}></KraftsportUebungModal>
+            <KraftsportUebungModal uebung={uebung} visible={modalVisible}
+                                   onCancel={() => setModalVisible(false)}></KraftsportUebungModal>
             <FlatList
                 data={uebung.saetze}
                 keyExtractor={(_, index) => index.toString()}
-                renderItem={({ item: satz }) =>
+                renderItem={({item: satz}) =>
                     <SatzListItem
                         satz={satz}
                         uebungId={uebung.id}

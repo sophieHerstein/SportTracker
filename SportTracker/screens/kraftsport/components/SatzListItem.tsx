@@ -1,23 +1,23 @@
-import {StyleSheet, TextInput, View, Text} from "react-native";
-import {ISatzListItemProps} from "../../../utils/interfaces";
+import {StyleSheet, Text, TextInput, View} from "react-native";
+import {ISatzListItemProps} from "../../../models/interfaces";
 import IconButton from "../../../components/IconButton";
 import {globalStyles} from "../../../utils/global-styles";
-import {hightlight} from "../../../utils/constants";
+import {hightlight} from "../../../models/constants";
 
-export default function SatzListItem({satz, uebungId, updateSatz, deleteSatz}: ISatzListItemProps){
+export default function SatzListItem({satz, uebungId, updateSatz, deleteSatz}: ISatzListItemProps) {
     return (
         <View style={globalStyles.row}>
-           <View style={globalStyles.row}>
-               <TextInput
-                   style={[globalStyles.input, styles.input]}
-                   placeholderTextColor={hightlight}
-                   placeholder="Gewicht"
-                   keyboardType="numeric"
-                   value={satz.gewicht ? satz.gewicht.toString() : ''}
-                   onChangeText={(text) => updateSatz(uebungId, satz.id, "gewicht", text)}
-               />
-               <Text style={globalStyles.text}>kg</Text>
-           </View>
+            <View style={globalStyles.row}>
+                <TextInput
+                    style={[globalStyles.input, styles.input]}
+                    placeholderTextColor={hightlight}
+                    placeholder="Gewicht"
+                    keyboardType="numeric"
+                    value={satz.gewicht ? satz.gewicht.toString() : ''}
+                    onChangeText={(text) => updateSatz(uebungId, satz.id, "gewicht", text)}
+                />
+                <Text style={globalStyles.text}>kg</Text>
+            </View>
             <Text style={globalStyles.text}>X</Text>
             <TextInput
                 style={[globalStyles.input, styles.input]}

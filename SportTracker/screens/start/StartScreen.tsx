@@ -1,46 +1,22 @@
 import {useFocusEffect} from "@react-navigation/native";
-import * as SQLite from "expo-sqlite";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {ScrollView, Text, View} from "react-native";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import {ENotifications, ETimeRange} from "../../utils/constants";
-import {
-    createAusdauertrainingseinheitTable,
-    createExerciseMuscleGroupTable,
-    createExerciseSetTable,
-    createExerciseTable,
-    createExerciseTrainingTable,
-    createMuscleGroupTable,
-    createTrainingsTypTable,
-    createTrainingTable,
-    dropAusdauertrainingseinheitTable,
-    dropExerciseMuscleGroupTable,
-    dropExerciseSetTable,
-    dropExerciseTable,
-    dropExerciseTrainingTable,
-    dropMuscleGroupTable,
-    dropTrainingstypTable,
-    dropTrainingTable,
-    getAusdauerTrainingProMonat,
-    getAusdauerTrainingProWoche,
-    getKraftsportTrainingProMonat,
-    getKraftsportTrainingProWoche,
-    keinAusdauerSeit14Tagen,
-    muskelgruppeSollteTrainiertWerden
-} from "../../utils/database-querys";
+import {ETimeRange} from "../../models/constants";
 import {globalStyles} from "../../utils/global-styles";
 import {
     IBarChartProps,
     INotification,
     ITrainingsProMonatDatabaseResult,
     ITrainingsProWocheDatabaseResult
-} from "../../utils/interfaces";
+} from "../../models/interfaces";
 import Notifications from "./components/Notifications";
 import TrainingsBarChart from "./components/TrainingsBarChart";
 import Filter from "../../components/Filter";
-import {data} from "../../utils/data";
-
-const database = SQLite.openDatabaseSync('training.db');
+import {DatabaseSchemaService} from "../../services/database-schema.service";
+import {StatisticsService} from "../../services/statistics.service";
+import {NotificationsService} from "../../services/notifications.service";
+import {ImportDummyDataService} from "../../services/import-dummy-data.service";
 
 export default function StartScreen() {
     const [isLoading, setLoading] = useState<boolean>(true);
@@ -51,6 +27,11 @@ export default function StartScreen() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [timeRange, setTimeRange] = useState<ETimeRange>(ETimeRange.GESAMT);
 
+    const schemaService = useMemo(() => new DatabaseSchemaService(), []);
+    const statisticsService = useMemo(() => new StatisticsService(), []);
+    const notificationsService = useMemo(() => new NotificationsService(), []);
+    const importDummyDataService = useMemo(() => new ImportDummyDataService(), []);
+
     useFocusEffect(useCallback(() => {
             setupDatabase();
             // dropDatabase();
@@ -58,7 +39,7 @@ export default function StartScreen() {
     ));
 
     // useEffect(() => {
-    //     parseAndInsertTraining(data);
+    //     importDummyDataService.parseAndInsertTraining();
     // }, [])
 
     useEffect(() => {
@@ -67,7 +48,7 @@ export default function StartScreen() {
 
 
     async function fetchData() {
-        const resultsKraftsportProMonat: ITrainingsProMonatDatabaseResult[] = await database.getAllAsync(getKraftsportTrainingProMonat);
+        const resultsKraftsportProMonat: ITrainingsProMonatDatabaseResult[] = await statisticsService.fetchTrainingsStatistikByTypeAndRange("kraft", "monat");
         const formattedKraftsportProMonat = resultsKraftsportProMonat
             .filter(row => shouldIncludeEntry(row.monat, "month"))
             .map(row => ({
@@ -76,7 +57,7 @@ export default function StartScreen() {
             }));
         setKraftsportTrainingProMonatData(formattedKraftsportProMonat);
 
-        const resultsKraftsportProWoche: ITrainingsProWocheDatabaseResult[] = await database.getAllAsync(getKraftsportTrainingProWoche);
+        const resultsKraftsportProWoche: ITrainingsProWocheDatabaseResult[] = await statisticsService.fetchTrainingsStatistikByTypeAndRange("kraft", "woche");
         const formattedKraftsportProWoche = resultsKraftsportProWoche
             .filter(row => shouldIncludeEntry(row.woche, "week"))
             .map(row => ({
@@ -85,7 +66,7 @@ export default function StartScreen() {
             }));
         setKraftsportTrainingProWocheData(formattedKraftsportProWoche);
 
-        const resultsAusdauerProWoche: ITrainingsProWocheDatabaseResult[] = await database.getAllAsync(getAusdauerTrainingProWoche);
+        const resultsAusdauerProWoche: ITrainingsProWocheDatabaseResult[] = await statisticsService.fetchTrainingsStatistikByTypeAndRange("ausdauer", "woche");
         const formattedAusdauerProWoche = resultsAusdauerProWoche
             .filter(row => shouldIncludeEntry(row.woche, "week"))
             .map(row => ({
@@ -94,7 +75,7 @@ export default function StartScreen() {
             }));
         setAusdauerTrainingProWocheData(formattedAusdauerProWoche);
 
-        const resultsAusdauerProMonat: ITrainingsProMonatDatabaseResult[] = await database.getAllAsync(getAusdauerTrainingProMonat);
+        const resultsAusdauerProMonat: ITrainingsProMonatDatabaseResult[] = await statisticsService.fetchTrainingsStatistikByTypeAndRange("ausdauer", "monat");
         const formattedAusdauerProMonat = resultsAusdauerProMonat
             .filter(row => shouldIncludeEntry(row.monat, "month"))
             .map(row => ({
@@ -103,25 +84,9 @@ export default function StartScreen() {
             }));
         setAusdauerTrainingProMonatData(formattedAusdauerProMonat);
 
-        const zeitFuerAusdauer: {
-            zeit_fuer_ausdauer: number
-        } | null = await database.getFirstAsync(keinAusdauerSeit14Tagen);
-        if (!!zeitFuerAusdauer && zeitFuerAusdauer.zeit_fuer_ausdauer === 1) {
-            const newNotifications: INotification[] = [...notifications];
-            newNotifications.push({typ: ENotifications.ZEIT_FUER_AUSDAUER});
-            setNotifications(newNotifications);
-        }
+        const newNotifications = await notificationsService.generateNotifications()
 
-        const muskelGruppeTrainieren: {last_training: number, name: string}[] = await database.getAllAsync(muskelgruppeSollteTrainiertWerden);
-        if (!!muskelGruppeTrainieren && muskelGruppeTrainieren.length > 0) {
-            const newNotifications: INotification[] = [...notifications];
-            muskelGruppeTrainieren.forEach((t) => {
-                if (notifications.filter((n) => n.additionalData === t.name).length === 0) {
-                    newNotifications.push({typ: ENotifications.MUSKELGRUPPE_TRAINIEREN, additionalData: t.name})
-                }
-            })
-            setNotifications(newNotifications);
-        }
+        setNotifications(newNotifications);
     }
 
     function shouldIncludeEntry(dateStr: string, type: "month" | "week") {
@@ -146,9 +111,9 @@ export default function StartScreen() {
             case ETimeRange.JAHR:
                 const twelveMonthsAgo = new Date();
                 twelveMonthsAgo.setMonth(today.getMonth());
-                twelveMonthsAgo.setFullYear(today.getFullYear()-1);
-                if(type === "month") {
-                    return new Date(entryYear, entryValue-1) >= twelveMonthsAgo;
+                twelveMonthsAgo.setFullYear(today.getFullYear() - 1);
+                if (type === "month") {
+                    return new Date(entryYear, entryValue - 1) >= twelveMonthsAgo;
                 } else {
                     return getWeekDate(entryYear, entryValue) >= twelveMonthsAgo;
                 }
@@ -157,7 +122,7 @@ export default function StartScreen() {
             case ETimeRange.SECHS_MONATE:
                 const sixMonthsAgo = new Date();
                 sixMonthsAgo.setMonth(today.getMonth() - 6);
-                if(type === "month") {
+                if (type === "month") {
                     return new Date(entryYear, entryValue - 1) >= sixMonthsAgo;
                 } else {
                     return getWeekDate(entryYear, entryValue) >= sixMonthsAgo;
@@ -166,7 +131,7 @@ export default function StartScreen() {
             case ETimeRange.DREI_MONATE:
                 const threeMonthsAgo = new Date();
                 threeMonthsAgo.setMonth(today.getMonth() - 3);
-                if(type === "month") {
+                if (type === "month") {
                     return new Date(entryYear, entryValue - 1) >= threeMonthsAgo;
                 } else {
                     return getWeekDate(entryYear, entryValue) >= threeMonthsAgo;
@@ -174,8 +139,8 @@ export default function StartScreen() {
 
             case ETimeRange.MONAT:
                 const oneMonthsAgo = new Date();
-                oneMonthsAgo.setMonth(today.getMonth()-1);
-                if(type === "month") {
+                oneMonthsAgo.setMonth(today.getMonth() - 1);
+                if (type === "month") {
                     return new Date(entryYear, entryValue - 2) >= oneMonthsAgo;
                 } else {
                     return getWeekDate(entryYear, entryValue) >= oneMonthsAgo;
@@ -194,142 +159,10 @@ export default function StartScreen() {
         return startOfWeek;
     }
 
-    async function checkTrainingExists(timestamp: number, muscleGroupId: number): Promise<boolean> {
-        const result = await database.getFirstAsync(
-            "SELECT id FROM training WHERE datum = ? AND muscle_group_id = ?;",
-            [timestamp, muscleGroupId]
-        );
-        return result !== null;
-    }
-
-    async function checkExerciseInTraining(trainingId: number, exerciseId: number): Promise<boolean> {
-        const result = await database.getFirstAsync(
-            "SELECT id FROM exercise_training WHERE training_id = ? AND exercise_id = ?;",
-            [trainingId, exerciseId]
-        );
-        return result !== null;
-    }
-
-    async function parseAndInsertTraining(text: string) {
-        const muscleGroupRegex = /^(.+?) \((\d{2}.\d{2}.\d{4})\)$/;
-        const exerciseRegex = /^(.+?) \((.*?)\)$/;
-        const setRegex = /(\d+) - (\d+)/g;
-
-        const lines = text.split("\n").map(line => line.trim()).filter(line => line.length > 0);
-        let muscleGroupId: number | null = null;
-        let trainingId: number | null = null;
-
-        try {
-            for (const line of lines) {
-                let match = muscleGroupRegex.exec(line);
-                if (match) {
-                    const [, muscleGroup, dateStr] = match;
-                    const [day, month, year] = dateStr.split(".");
-                    const timestamp = new Date(`${year}-${month}-${day}`).getTime();
-
-
-                    await database.runAsync("INSERT OR IGNORE INTO muscle_group (name) VALUES (?);", [muscleGroup]);
-
-                    const muscleGroupResult: { id: number } | null = await database.getFirstAsync(
-                        "SELECT id FROM muscle_group WHERE name = ?;",
-                        [muscleGroup]
-                    );
-
-                    if (!muscleGroupResult) {
-                        console.error(`❌ Fehler: Konnte die Muskelgruppen-ID für '${muscleGroup}' nicht abrufen.`);
-                        continue;
-                    }
-
-                    muscleGroupId = muscleGroupResult.id;
-
-                    const existingTraining: { id: number } | null = await database.getFirstAsync(
-                        "SELECT id FROM training WHERE datum = ? AND muscle_group_id = ?;",
-                        [timestamp, muscleGroupId]
-                    );
-
-                    if (existingTraining) {
-                        console.log(`⚠️ Training für '${muscleGroup}' am ${dateStr} existiert bereits.`);
-                        trainingId = existingTraining.id;
-                        continue;
-                    }
-
-                    const trainingResult = await database.runAsync(
-                        "INSERT INTO training (datum, muscle_group_id) VALUES (?, ?);",
-                        [timestamp, muscleGroupId]
-                    );
-
-                    if (!trainingResult) continue;
-                    trainingId = trainingResult.lastInsertRowId;
-                    console.log(`✅ Neues Training für '${muscleGroup}' am ${dateStr} gespeichert.`);
-                }
-
-                match = exerciseRegex.exec(line);
-                if (match) {
-                    const [, exerciseName, setsStr] = match;
-
-                    await database.runAsync("INSERT OR IGNORE INTO exercise (name) VALUES (?);", [exerciseName]);
-
-                    const exerciseResult: { id: number } | null = await database.getFirstAsync(
-                        "SELECT id FROM exercise WHERE name = ?;",
-                        [exerciseName]
-                    );
-
-                    if (!exerciseResult) {
-                        console.error(`❌ Fehler: Konnte die Übung-ID für '${exerciseName}' nicht abrufen.`);
-                        continue;
-                    }
-
-                    const exerciseId = exerciseResult.id;
-
-                    const existingExerciseTraining: { id: number } | null = await database.getFirstAsync(
-                        "SELECT id FROM exercise_training WHERE training_id = ? AND exercise_id = ?;",
-                        [trainingId, exerciseId]
-                    );
-
-                    let exerciseTrainingId = existingExerciseTraining ? existingExerciseTraining.id : null;
-
-                    if (!exerciseTrainingId) {
-                        const exerciseTrainingResult = await database.runAsync(
-                            "INSERT INTO exercise_training (training_id, exercise_id) VALUES (?, ?);",
-                            [trainingId, exerciseId]
-                        );
-
-                        if (!exerciseTrainingResult) continue;
-                        exerciseTrainingId = exerciseTrainingResult.lastInsertRowId;
-                        console.log(`✅ Übung '${exerciseName}' zu Training '${trainingId}' hinzugefügt.`);
-
-
-                        for (const [, weight, reps] of setsStr.matchAll(setRegex)) {
-                            await database.runAsync(
-                                "INSERT INTO exercise_set (exercise_training_id, weight, repetitions) VALUES (?, ?, ?);",
-                                [exerciseTrainingId, parseFloat(weight), parseInt(reps)]
-                            );
-                            console.log(`✅ Satz ${weight}kg x ${reps} für '${exerciseName}' hinzugefügt.`);
-                        }
-
-                    } else {
-                        console.log(`⚠️ Übung '${exerciseName}' ist bereits im Training enthalten.`);
-                    }
-
-                }
-            }
-            console.log("✅ Training erfolgreich importiert!");
-        } catch (error) {
-            console.error("⚠️ Fehler beim Einfügen des Trainings:", error);
-        }
-    }
-
     async function setupDatabase() {
         setLoading(true);
         try {
-            await database.runAsync(createMuscleGroupTable);
-            await database.runAsync(createExerciseTable);
-            await database.runAsync(createExerciseMuscleGroupTable);
-            await database.runAsync(createTrainingTable);
-            await database.runAsync(createExerciseTrainingTable);
-            await database.runAsync(createExerciseSetTable);
-            await database.runAsync(createTrainingsTypTable);
-            await database.runAsync(createAusdauertrainingseinheitTable);
+            await schemaService.setUpTables();
 
             await fetchData();
             console.log("✅ Datenbank eingerichtet");
@@ -341,14 +174,7 @@ export default function StartScreen() {
 
     async function dropDatabase() {
         try {
-            await database.runAsync(dropExerciseSetTable);
-            await database.runAsync(dropTrainingTable);
-            await database.runAsync(dropExerciseTrainingTable);
-            await database.runAsync(dropExerciseMuscleGroupTable);
-            await database.runAsync(dropExerciseTable);
-            await database.runAsync(dropMuscleGroupTable);
-            await database.runAsync(dropTrainingstypTable);
-            await database.runAsync(dropAusdauertrainingseinheitTable);
+            await schemaService.dropTables();
 
             console.log("✅ Datenbank resettet");
         } catch (error) {

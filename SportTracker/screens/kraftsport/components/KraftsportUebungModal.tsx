@@ -2,19 +2,18 @@ import {FlatList, Modal, Pressable, Text, View} from "react-native";
 import {
     IEntwicklungGewichtData,
     IEntwicklungGewichtDatabaseResult,
-    IKraftpsortUebungModalProps, ISatz, ISatzDB, IVictoryKraftsportChartProps
-} from "../../../utils/interfaces";
+    IKraftpsortUebungModalProps,
+    ISatz,
+    ISatzDB,
+    IVictoryKraftsportChartProps
+} from "../../../models/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
 import EmptyList from "../../../components/EmptyList";
-import {useEffect, useState} from "react";
-import {getEntwicklungGewichtDataForUebung, getLastSatzDataForUebung} from "../../../utils/database-querys";
-import {ETimeRange} from "../../../utils/constants";
-import * as SQLite from "expo-sqlite";
+import {useEffect, useMemo, useState} from "react";
+import {ETimeRange} from "../../../models/constants";
 import Filter from "../../../components/Filter";
 import KraftsportLineChartListItem from "./KraftsportLineChartListItem";
-import {data} from "../../../utils/data";
-
-const database = SQLite.openDatabaseSync('training.db');
+import {KraftsportService} from "../../../services/kraftsport.service";
 
 export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraftpsortUebungModalProps) {
 
@@ -25,12 +24,14 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
     const [timeRange, setTimeRange] = useState<ETimeRange>(ETimeRange.GESAMT);
     const [lastUebungData, setLastUebungData] = useState<ISatz[]>([]);
 
+    const kraftsportService = useMemo(() => new KraftsportService(), []);
+
     useEffect(() => {
         fetchData();
     }, [timeRange]);
 
     async function fetchData() {
-        const lastUebung: ISatzDB[] = await database.getAllAsync(getLastSatzDataForUebung(uebung.id));
+        const lastUebung: ISatzDB[] = await kraftsportService.getLastSatzDataForUebung(uebung.id);
 
         setLastUebungData(lastUebung.map((satz) => {
             return {
@@ -40,13 +41,13 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
             }
         }))
 
-        const entwicklungGewichtResults: IEntwicklungGewichtDatabaseResult[] = await database.getAllAsync(getEntwicklungGewichtDataForUebung(uebung.id));
+        const entwicklungGewichtResults: IEntwicklungGewichtDatabaseResult[] = await kraftsportService.getEntwicklungGewichtDataForUebung(uebung.id);
 
         let filteredResults = [...entwicklungGewichtResults]
 
-        if(timeRange !== ETimeRange.GESAMT){
+        if (timeRange !== ETimeRange.GESAMT) {
             let timeRangeInNumbers: number;
-            switch (timeRange){
+            switch (timeRange) {
                 case ETimeRange.JAHR:
                     timeRangeInNumbers = 365
                     break;
@@ -74,7 +75,7 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
             if (!groupedData[uebung.name]) {
                 groupedData[uebung.name] = [];
             }
-            groupedData[uebung.name].push({ datum, gewicht });
+            groupedData[uebung.name].push({datum, gewicht});
         });
 
         const chartData = groupedData[uebung.name] || [];
@@ -96,27 +97,29 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
         <Modal visible={visible} animationType="slide">
             <View style={[globalStyles.screenContainer, {paddingTop: 100}]}>
                 <Text style={[globalStyles.title, {alignSelf: "center", paddingBottom: 25}]}>{uebung.name}</Text>
-                <Text style={[globalStyles.text, {paddingBottom: 10}]}>Gewicht und Wiederholung der letzten Durchführung:</Text>
+                <Text style={[globalStyles.text, {paddingBottom: 10}]}>Gewicht und Wiederholung der letzten
+                    Durchführung:</Text>
                 <FlatList style={{maxHeight: 100}}
-                    data={lastUebungData}
-                    renderItem={({item, index})=> {
-                        return (
-                            <Text style={[globalStyles.text, {alignSelf: "center"}]}>Satz {index+1}: {item.gewicht} x {item.wiederholungen}</Text>
-                        )
-                    }}
-                    keyExtractor={(satz)=> satz.id.toString()}
-                    ListEmptyComponent={EmptyList}/>
+                          data={lastUebungData}
+                          renderItem={({item, index}) => {
+                              return (
+                                  <Text
+                                      style={[globalStyles.text, {alignSelf: "center"}]}>Satz {index + 1}: {item.gewicht} x {item.wiederholungen}</Text>
+                              )
+                          }}
+                          keyExtractor={(satz) => satz.id.toString()}
+                          ListEmptyComponent={EmptyList}/>
                 <View>
                     <Filter
                         timeRange={timeRange}
-                        onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
-                        onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
-                        onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
-                        onPress3Monate={()=> setTimeRange(ETimeRange.DREI_MONATE)}
-                        onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
-                        <KraftsportLineChartListItem isNotListElement={true} uebung={uebungData}  />
+                        onPressGesamt={() => setTimeRange(ETimeRange.GESAMT)}
+                        onPressJahr={() => setTimeRange(ETimeRange.JAHR)}
+                        onPress6Monate={() => setTimeRange(ETimeRange.SECHS_MONATE)}
+                        onPress3Monate={() => setTimeRange(ETimeRange.DREI_MONATE)}
+                        onPressMonat={() => setTimeRange(ETimeRange.MONAT)}/>
+                    <KraftsportLineChartListItem isNotListElement={true} uebung={uebungData}/>
                 </View>
-                <Pressable style={globalStyles.buttonPrimary} onPress={()=> onCancel()}>
+                <Pressable style={globalStyles.buttonPrimary} onPress={() => onCancel()}>
                     <Text style={globalStyles.buttonText}>Zurück</Text>
                 </Pressable>
             </View>

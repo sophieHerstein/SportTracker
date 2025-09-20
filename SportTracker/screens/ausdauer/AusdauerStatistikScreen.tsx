@@ -3,8 +3,8 @@ import {useEffect, useState} from "react";
 import AusdauerStatistikListItem from "./components/AusdauerStatistikListItem";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, ETimeRange} from "../../utils/constants";
-import {IAusdauerData} from "../../utils/interfaces";
+import {EAppPaths, ETimeRange} from "../../models/constants";
+import {IAusdauerData} from "../../models/interfaces";
 import EmptyList from "../../components/EmptyList";
 import {globalStyles} from "../../utils/global-styles";
 import Filter from "../../components/Filter";
@@ -17,9 +17,9 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
 
     useEffect(() => {
         const grouped = route.params.ausdauerData.reduce<Record<string, IAusdauerData[]>>((acc, item) => {
-            if(timeRange !== ETimeRange.GESAMT){
+            if (timeRange !== ETimeRange.GESAMT) {
                 let timeRangeInNumbers;
-                switch (timeRange){
+                switch (timeRange) {
                     case ETimeRange.JAHR:
                         timeRangeInNumbers = 365
                         break;
@@ -34,7 +34,7 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
                         break;
                 }
 
-                if(parseDate(item.datum) >= new Date(new Date().setDate(new Date().getDate() - timeRangeInNumbers))){
+                if (parseDate(item.datum) >= new Date(new Date().setDate(new Date().getDate() - timeRangeInNumbers))) {
                     if (!acc[item.name]) {
                         acc[item.name] = [];
                     }
@@ -63,18 +63,18 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
             <Text style={globalStyles.title}>Entwicklung Dauer & Strecke</Text>
             <Filter
                 timeRange={timeRange}
-                onPressGesamt={()=> setTimeRange(ETimeRange.GESAMT)}
-                onPressJahr={()=> setTimeRange(ETimeRange.JAHR)}
-                onPress6Monate={()=> setTimeRange(ETimeRange.SECHS_MONATE)}
-                onPress3Monate={()=> setTimeRange(ETimeRange.DREI_MONATE)}
-                onPressMonat={()=> setTimeRange(ETimeRange.MONAT)}/>
+                onPressGesamt={() => setTimeRange(ETimeRange.GESAMT)}
+                onPressJahr={() => setTimeRange(ETimeRange.JAHR)}
+                onPress6Monate={() => setTimeRange(ETimeRange.SECHS_MONATE)}
+                onPress3Monate={() => setTimeRange(ETimeRange.DREI_MONATE)}
+                onPressMonat={() => setTimeRange(ETimeRange.MONAT)}/>
             <FlatList data={data}
-                      renderItem={({item})=> (
+                      renderItem={({item}) => (
                           <AusdauerStatistikListItem item={item}/>
                       )}
-                      keyExtractor={(item)=> item[0].name}
+                      keyExtractor={(item) => item[0].name}
                       ListEmptyComponent={
-                        <EmptyList/>
+                          <EmptyList/>
                       }
             />
         </View>

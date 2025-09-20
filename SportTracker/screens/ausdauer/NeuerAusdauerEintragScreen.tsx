@@ -1,24 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import {Text, StyleSheet, TextInput, View, Pressable, Alert} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Alert, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 import BigButton from '../../components/BigButton';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import DropDownPicker from "react-native-dropdown-picker";
-import * as SQLite from "expo-sqlite";
-import {
-    addAusdauertrainingsEinheitToTable,
-    addTrainingsTypToTable,
-    getIdForTrainingsTyp
-} from "../../utils/database-querys";
-import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../utils/interfaces";
+import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../models/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, hightlight, textColorPrimary} from "../../utils/constants";
+import {EAppPaths, hightlight, textColorPrimary} from "../../models/constants";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
+import {AusdauerService} from "../../services/ausdauer.service";
 
 type NeuerAusdauerEintragScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_EINTRAG>;
-
-const database = SQLite.openDatabaseSync('training.db');
 
 export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAusdauerEintragScreenProps) {
     const [datum, setDatum] = useState(new Date());
@@ -29,10 +22,12 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
     const [open, setOpen] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
+    const ausdauerService = useMemo(() => new AusdauerService(), []);
+
     useEffect(() => {
         navigation.setOptions({
             headerLeft: () =>
-                <IconButton onPress={()=> showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
+                <IconButton onPress={() => showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
         });
     }, [navigation,
         datum,
@@ -42,7 +37,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
 
     useEffect(() => {
         const trainingsTypen = route.params.trainingsTypen;
-        const trainigstypenMapping: ITrainingstypDropdown[] = trainingsTypen.map((tt: ITrainingstypDatabaseResult)=>{
+        const trainigstypenMapping: ITrainingstypDropdown[] = trainingsTypen.map((tt: ITrainingstypDatabaseResult) => {
             return {label: tt.name, value: tt.name}
         })
         setSportarten(trainigstypenMapping);
@@ -52,7 +47,10 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         Alert.alert(
             "Training speichern?",
             "Soll das Training gespeichert werden?",
-            [{text: "Nein", onPress: ()=> navigation.goBack(), style: "destructive"},{text: "Ja", onPress:()=> saveEintrag()}]
+            [{text: "Nein", onPress: () => navigation.goBack(), style: "destructive"}, {
+                text: "Ja",
+                onPress: () => saveEintrag()
+            }]
         )
     }
 
@@ -73,20 +71,16 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         return !Number.isNaN(parseFloat(value));
     }
 
-    function isStreckeValid() {
-        return isStringValidNumber(strecke) && parseFloat(strecke) >= 0;
-    }
-
     function isDauerValid() {
         return isStringValidNumber(dauer) && parseFloat(dauer) > 0;
     }
 
     async function saveEintrag() {
-        if(!isDauerValid()){
+        if (!isDauerValid()) {
             alert('Bitte die Dauer überprüfen');
             return;
         }
-        if(!strecke){
+        if (!strecke) {
             setStrecke('0');
         }
 
@@ -99,17 +93,17 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
     }
 
     async function saveEintragInDB() {
-        if(!trainingsTypExists(name)){
-            await database.runAsync(addTrainingsTypToTable(name));
+        if (!trainingsTypExists(name)) {
+            await ausdauerService.addTrainingstyp(name)
         }
-        const trainingsTypId: {id: number}| null = await database.getFirstAsync(getIdForTrainingsTyp(name));
+        const trainingsTypId: { id: number } | null = await ausdauerService.getIdForTrainingstyp(name);
 
-        if(!!trainingsTypId){
-            await database.runAsync(addAusdauertrainingsEinheitToTable(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke ?? 0)));
+        if (!!trainingsTypId) {
+            await ausdauerService.addAusdauerTrainingseinheit(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke ?? 0));
         }
     }
 
-    function trainingsTypExists(trainingstypName: string){
+    function trainingsTypExists(trainingstypName: string) {
         return route.params.trainingsTypen.filter((tt: ITrainingstypDatabaseResult) => tt.name === trainingstypName).length > 0;
     }
 
@@ -121,10 +115,10 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                     <Text style={globalStyles.text}>Datum:</Text>
                     <Pressable style={globalStyles.setDate} onPress={showDatePicker}>
                         <Text style={globalStyles.setDateText}>{datum.toLocaleDateString('de-DE', {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric"
-                    })}</Text>
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric"
+                        })}</Text>
                     </Pressable>
                     <DateTimePickerModal
                         locale="de-DE"
@@ -140,15 +134,15 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Sportart:</Text>
                     <DropDownPicker style={styles.picker} dropDownContainerStyle={{}}
-                            open={open}
-                            value={name}
-                            items={sportarten}
-                            setOpen={setOpen}
-                            setValue={setName}
-                            setItems={setSportarten}
-                            searchable={true}
-                            addCustomItem={true}
-                            searchPlaceholder="Suche ..."
+                                    open={open}
+                                    value={name}
+                                    items={sportarten}
+                                    setOpen={setOpen}
+                                    setValue={setName}
+                                    setItems={setSportarten}
+                                    searchable={true}
+                                    addCustomItem={true}
+                                    searchPlaceholder="Suche ..."
                     />
                 </View>
                 <View style={globalStyles.row}>
@@ -170,7 +164,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                     </View>
                 </View>
             </View>
-            <BigButton title='Speichern' onPress={()=> saveEintrag()}></BigButton>
+            <BigButton title='Speichern' onPress={() => saveEintrag()}></BigButton>
         </View>
     );
 }

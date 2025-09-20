@@ -7,7 +7,7 @@ import {
     secondaryBackground,
     textColorPrimary,
     textColorSecondary
-} from "./constants";
+} from "../models/constants";
 
 export const globalStyles = StyleSheet.create({
     screenContainer: {

@@ -1,13 +1,13 @@
-import {FlatList, ScrollView, StyleSheet, Text, View} from "react-native";
+import {FlatList} from "react-native";
 import {
-    IKraftsportLineChartProps,
     IEntwicklungGewichtData,
+    IKraftsportLineChartProps,
     IVictoryKraftsportChartProps
-} from "../../../utils/interfaces";
-import { useMemo } from "react";
+} from "../../../models/interfaces";
+import {useMemo} from "react";
 import KraftsportLineChartListItem from "./KraftsportLineChartListItem";
 
-export default function KraftsportLineChart({ data }: IKraftsportLineChartProps) {
+export default function KraftsportLineChart({data}: IKraftsportLineChartProps) {
 
     const transformedData: IVictoryKraftsportChartProps[] = useMemo(() => {
         return data.map(uebung => ({
@@ -22,15 +22,7 @@ export default function KraftsportLineChart({ data }: IKraftsportLineChartProps)
     }, [data]);
 
     return (
-        <View style={styles.paddingBottom}>
-            <FlatList data={transformedData} renderItem={({item})=>
-                <KraftsportLineChartListItem uebung={item}/>}/>
-        </View>
+        <FlatList data={transformedData} renderItem={({item}) =>
+            <KraftsportLineChartListItem uebung={item}/>}/>
     );
 }
-
-const styles = StyleSheet.create({
-    paddingBottom: {
-        paddingBottom: 15
-    }
-});

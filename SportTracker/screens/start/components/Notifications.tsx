@@ -1,6 +1,6 @@
 import {Dimensions, StyleSheet, Text, View} from "react-native";
-import {INotificationProps} from "../../../utils/interfaces";
-import {background, ENotifications, hightlight, primary} from "../../../utils/constants";
+import {INotificationProps} from "../../../models/interfaces";
+import {ENotifications, primary} from "../../../models/constants";
 import {globalStyles} from "../../../utils/global-styles";
 
 export default function Notifications({notification}: INotificationProps) {

@@ -28,8 +28,8 @@ export interface IUebung {
 
 export interface ISatz {
     id: number,
-    gewicht: number|null,
-    wiederholungen: number|null
+    gewicht: number | null,
+    wiederholungen: number | null
 }
 
 export interface ISatzDB {
@@ -55,7 +55,7 @@ export interface ITextIconButtonProps {
 
 export interface IKraftsportUebungListItemProps {
     uebung: IUebung,
-    updateSatz: (uebungId: number, satzId: number, wdh: string, text:string) => void,
+    updateSatz: (uebungId: number, satzId: number, wdh: string, text: string) => void,
     deleteSatz: (uebungId: number, satzId: number) => void,
     updateUebungName: (uebungId: number, name: string) => void,
     addSatz: (uebungId: number) => void,
@@ -65,12 +65,12 @@ export interface IKraftsportUebungListItemProps {
 export interface ISatzListItemProps {
     satz: ISatz;
     uebungId: number,
-    updateSatz: (uebungId: number, satzId: number, wdh: string, text:string) => void,
+    updateSatz: (uebungId: number, satzId: number, wdh: string, text: string) => void,
     deleteSatz: (uebungId: number, satzId: number) => void,
 }
 
 export interface IIconButtonProps {
-    onPress: ()=>void,
+    onPress: () => void,
     icon: string,
     style?: ViewStyle,
     color: string,
@@ -87,12 +87,12 @@ export interface ITrainingDatabase {
 
 export interface IKraftsportListItemProps {
     item: IKraftsportData;
-    onDelete: (trainingId: string)=>void,
-    onUpdate: (trainingId: string, gruppe: string, datum: number)=>void,
+    onDelete: (trainingId: string) => void,
+    onUpdate: (trainingId: string, gruppe: string, datum: number) => void,
 }
 
 export interface IBigButtonProps {
-    onPress: ()=> void,
+    onPress: () => void,
     title: string,
 }
 
@@ -121,7 +121,7 @@ export interface IAusdauerData {
 
 export interface IAusdauersportListItemProps {
     item: IAusdauerData,
-    onDelete: (id: number)=> void,
+    onDelete: (id: number) => void,
 }
 
 export interface ITrainingstypDropdown {
@@ -136,7 +136,7 @@ export interface IAusdauerLineChartProps {
     dataKey: keyof IAusdauerData
 }
 
-export interface IAusdauerScatterPlotProps{
+export interface IAusdauerScatterPlotProps {
     screenwidth: number,
     items: IAusdauerData[]
 }
@@ -215,21 +215,21 @@ export interface IVictoryKraftsportChartProps {
 }
 
 export interface IVictoryChartProps {
-    x: string |number,
+    x: string | number,
     y: number
 }
 
-export interface IFilterProps{
+export interface IFilterProps {
     timeRange: ETimeRange,
-    onPressGesamt: ()=>void,
-    onPressJahr: ()=>void,
-    onPress6Monate: ()=>void,
-    onPress3Monate: ()=>void,
-    onPressMonat: ()=>void,
+    onPressGesamt: () => void,
+    onPressJahr: () => void,
+    onPress6Monate: () => void,
+    onPress3Monate: () => void,
+    onPressMonat: () => void,
 }
 
 export interface IKraftpsortUebungModalProps {
     visible: boolean,
-    onCancel: ()=>void,
+    onCancel: () => void,
     uebung: IUebung,
 }

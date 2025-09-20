@@ -1,6 +1,6 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { Pressable } from "react-native";
-import {IIconButtonProps} from "../utils/interfaces";
+import {MaterialIcons} from '@expo/vector-icons';
+import {Pressable} from "react-native";
+import {IIconButtonProps} from "../models/interfaces";
 
 export default function IconButton({onPress, icon, style, color, size}: IIconButtonProps) {
     return (

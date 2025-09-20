@@ -1,18 +1,15 @@
-import {useEffect, useState} from 'react';
-import {Text, StyleSheet, View, Pressable, TextInput, KeyboardAvoidingView} from 'react-native';
+import {useEffect, useMemo, useState} from 'react';
+import {KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 import IconButton from "../../components/IconButton";
-import * as SQLite from "expo-sqlite";
-import {EAppPaths, hightlight, secondary} from "../../utils/constants";
-import {addMuscleGroupToTable, getMuscleGroupData} from "../../utils/database-querys";
+import {EAppPaths, hightlight, secondary} from "../../models/constants";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {IMuscleGroupDatabaseResult} from "../../utils/interfaces";
+import {IMuscleGroupDatabaseResult} from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import {KraftsportService} from "../../services/kraftsport.service";
 
 type KraftsportGruppeWaehlenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN>;
-
-const database = SQLite.openDatabaseSync('training.db');
 
 export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGruppeWaehlenScreenProps) {
     const [datum, setDatum] = useState(new Date());
@@ -20,6 +17,8 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     const [additionalGruppe, setAdditionalGruppe] = useState('');
     const [gruppen, setGruppen] = useState<string[]>([]);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+    const kraftsportService = useMemo(() => new KraftsportService(), []);
 
     useEffect(() => {
         getMuskelgruppe();
@@ -38,20 +37,20 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
         hideDatePicker();
     };
 
-    async function getMuskelgruppe(){
-        const databaseData: IMuscleGroupDatabaseResult[] = await database.getAllAsync(getMuscleGroupData);
+    async function getMuskelgruppe() {
+        const databaseData: IMuscleGroupDatabaseResult[] = await kraftsportService.getMuscleGroupData();
         const muscleGroups = databaseData.map((row: IMuscleGroupDatabaseResult) => {
             return row.name;
         })
         setGruppen(muscleGroups);
     }
 
-    async function addGruppeToList(){
-        if(!gruppen.includes(additionalGruppe) && additionalGruppe.trim() !== ''){
+    async function addGruppeToList() {
+        if (!gruppen.includes(additionalGruppe) && additionalGruppe.trim() !== '') {
             const neueGruppen = [...gruppen];
             neueGruppen.push(additionalGruppe);
             setGruppen(neueGruppen);
-            await database.runAsync(addMuscleGroupToTable(additionalGruppe));
+            await kraftsportService.addMuscleGroup(additionalGruppe);
             setAdditionalGruppe('');
             setShowInput(false);
         } else {
@@ -90,9 +89,10 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                     <Pressable
                         key={index}
                         style={[globalStyles.buttonPrimary, styles.buttonWidth]}
-                        onPress={()=> navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
+                        onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
                             gruppe,
-                            datum: datum.getTime()})}>
+                            datum: datum.getTime()
+                        })}>
                         <Text style={globalStyles.buttonText}>{gruppe}</Text>
                     </Pressable>
                 ))}
@@ -101,7 +101,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                 size={36}
                 icon='add'
                 color={secondary}
-                onPress={()=> setShowInput(true)}>
+                onPress={() => setShowInput(true)}>
             </IconButton>
             {showInput && (
                 <TextInput placeholder='Gruppe'
@@ -109,7 +109,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                            placeholderTextColor={hightlight}
                            returnKeyType='done'
                            onChangeText={setAdditionalGruppe}
-                           onSubmitEditing={()=> addGruppeToList()}>
+                           onSubmitEditing={() => addGruppeToList()}>
                 </TextInput>
             )}
         </KeyboardAvoidingView>

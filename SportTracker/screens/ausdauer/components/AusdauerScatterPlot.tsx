@@ -1,11 +1,11 @@
 import {StyleSheet, Text, View} from "react-native";
 import {Rect, VictoryAxis, VictoryChart, VictoryScatter, VictoryTheme} from "victory-native";
-import {IAusdauerScatterPlotProps} from "../../../utils/interfaces";
+import {IAusdauerScatterPlotProps} from "../../../models/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
 import Svg, {Defs, LinearGradient, Stop} from "react-native-svg";
-import {background, hightlight, primary, secondary, secondaryBackground} from "../../../utils/constants";
+import {hightlight, primary, secondary, secondaryBackground} from "../../../models/constants";
 
-export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatterPlotProps){
+export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatterPlotProps) {
 
     function transformDataForScatterChart() {
         return items.map(item => {
@@ -38,14 +38,14 @@ export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatt
         <View style={styles.margin}>
             <Text style={globalStyles.subtitle}>Scatter Chart: Dauer vs. Strecke</Text>
             <View>
-                <Svg height="100%" width="100%" style={{ position: "absolute" }}>
+                <Svg height="100%" width="100%" style={{position: "absolute"}}>
                     <Defs>
                         <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <Stop offset="0%" stopColor={primary} stopOpacity="1" />
-                            <Stop offset="100%" stopColor={secondary} stopOpacity="1" />
+                            <Stop offset="0%" stopColor={primary} stopOpacity="1"/>
+                            <Stop offset="100%" stopColor={secondary} stopOpacity="1"/>
                         </LinearGradient>
                     </Defs>
-                    <Rect width="100%" height="100%" fill="url(#grad)" rx="20" ry="20" />
+                    <Rect width="100%" height="100%" fill="url(#grad)" rx="20" ry="20"/>
                 </Svg>
                 <VictoryChart
                     theme={VictoryTheme.material}
@@ -57,9 +57,9 @@ export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatt
                         tickValues={xTicks}
                         tickFormat={(t) => `${t} min`}
                         style={{
-                            axis: { stroke: hightlight },
-                            tickLabels: { fill: hightlight },
-                            axisLabel: {fill: hightlight, padding: 27.5 },
+                            axis: {stroke: hightlight},
+                            tickLabels: {fill: hightlight},
+                            axisLabel: {fill: hightlight, padding: 27.5},
                         }}
                     />
                     <VictoryAxis
@@ -68,16 +68,16 @@ export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatt
                         tickValues={yTicks}
                         tickFormat={(t) => `${t} km`}
                         style={{
-                            axis: { stroke: hightlight },
-                            tickLabels: { fill: hightlight },
-                            axisLabel: {fill: hightlight, padding: 40 },
+                            axis: {stroke: hightlight},
+                            tickLabels: {fill: hightlight},
+                            axisLabel: {fill: hightlight, padding: 40},
                         }}
                     />
 
                     <VictoryScatter
                         data={scatterData}
-                        size={({ datum }) => datum.size}
-                        style={{ data: { fill: secondaryBackground } }}
+                        size={({datum}) => datum.size}
+                        style={{data: {fill: secondaryBackground}}}
                     />
                 </VictoryChart>
             </View>
