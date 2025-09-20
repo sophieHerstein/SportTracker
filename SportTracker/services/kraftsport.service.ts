@@ -50,33 +50,33 @@ export class KraftsportService {
         return DatabaseService.getAll(`SELECT es.id AS satz_id, es.weight, es.repetitions FROM exercise_set es JOIN exercise_training et ON es.exercise_training_id = et.id JOIN training t ON et.training_id = t.id WHERE et.exercise_id = '${id}' AND t.datum = (SELECT MAX(t2.datum) FROM exercise_training et2 JOIN training t2 ON et2.training_id = t2.id WHERE et2.exercise_id = '${id}')`)
     }
 
-    async getLastUebungDataForGruppe(gruppe: string) {
-        return DatabaseService.getAll(`SELECT e.id,
-                                              e.name,
-                                              MAX(t.datum)                                                             AS last_training_date,
-                                              (SELECT es.weight
-                                               FROM exercise_set es
-                                                        JOIN exercise_training et2 ON es.exercise_training_id = et2.id
-                                               WHERE et2.exercise_id = e.id
-                                               ORDER BY et2.training_id DESC
-                                               LIMIT 1)                                                                AS last_weight,
-                                              (SELECT COUNT(*)
-                                               FROM exercise_set es
-                                                        JOIN exercise_training et2 ON es.exercise_training_id = et2.id
-                                               WHERE et2.exercise_id = e.id
-                                                 AND et2.training_id = (SELECT id
-                                                                        FROM training
-                                                                        WHERE datum = (SELECT MAX(datum)
-                                                                                       FROM training t
-                                                                                                JOIN exercise_training et3 ON t.id = et3.training_id
-                                                                                       WHERE et3.exercise_id = e.id))) AS last_sets
-                                       FROM exercise e
-                                                JOIN exercise_training et ON e.id = et.exercise_id
-                                                JOIN training t ON et.training_id = t.id
-                                       WHERE e.id IN (SELECT exercise_id
-                                                      FROM exercise_muscle_group
-                                                      WHERE muscle_group_id = (SELECT id FROM muscle_group WHERE name = '${gruppe}'))
-                                       GROUP BY e.id, e.name`);
+    async getLastUebungDataForGruppe(gruppeId: string) {
+        return DatabaseService.getAll(`
+            SELECT
+                e.id AS exercise_id,
+                e.name AS exercise_name,
+                es.id AS set_id,
+                es.weight,
+                es.repetitions
+            FROM training t
+                     JOIN exercise_training et ON et.training_id = t.id
+                     JOIN exercise e ON et.exercise_id = e.id
+                     JOIN exercise_set es ON es.exercise_training_id = et.id
+            WHERE t.id = (
+                SELECT t2.id
+                FROM training t2
+                         JOIN exercise_training et2 ON et2.training_id = t2.id
+                         JOIN exercise_muscle_group emg ON emg.exercise_id = et2.exercise_id
+                WHERE emg.muscle_group_id = ${gruppeId}
+                ORDER BY t2.datum DESC
+                LIMIT 1
+            )
+              AND e.id IN (
+                SELECT exercise_id
+                FROM exercise_muscle_group
+                WHERE muscle_group_id = ${gruppeId}
+            )
+            ORDER BY e.name ASC, es.id ASC;`);
     }
 
     async deleteUebungReferenzFromGruppe(uebungId: number, gruppe: string) {
@@ -137,9 +137,4 @@ export class KraftsportService {
     async deleteTraining(trainingId: string) {
         return DatabaseService.run(`DELETE FROM exercise_training WHERE training_id = '${trainingId}'`)
     }
-
-    async getLastInsertRowId() {
-        return DatabaseService.getOne("SELECT last_insert_rowid() AS id");
-    }
-
 }

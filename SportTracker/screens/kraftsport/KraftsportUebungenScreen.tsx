@@ -17,8 +17,6 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     const {datum, gruppe} = route.params;
     const [uebungen, setUebungen] = useState<IUebung[]>(() => []);
     const [originalUebungen, setOriginalUebungen] = useState<IUebung[]>([]);
-    const [trainingId, setTrainingId] = useState<string | null>(route.params.id ?? null);
-    const [unsavedChanges, setUnsavedChanges] = useState(false);
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
@@ -30,18 +28,11 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }, [navigation, uebungen]);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            if (unsavedChanges) {
-                console.log("⏱ Automatisches Speichern...");
-                saveTraining();
-            }
-        }, 30000); // alle 30 Sekunden
-
-        return () => clearInterval(interval);
-    }, [unsavedChanges, uebungen]);
-
-    useEffect(() => {
-        loadExistingTraining();
+        if (route.params.id) {
+            loadTrainingForEditing(route.params.id);
+        } else {
+            loadTrainingForNewSession();
+        }
     }, []);
 
     function showAlert() {
@@ -55,95 +46,98 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
         )
     }
 
-    async function loadExistingTraining() {
-        if (!trainingId) {
-            try {
-                // 1. Muskelgruppe-ID holen
-                const muscleGroupIdResult: {
-                    id: number
-                } | null = await kraftsportService.getMuscleGroupIdForName(gruppe);
-                const muscleGroupId = muscleGroupIdResult?.id;
-                if (!muscleGroupId) {
-                    Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
-                    return;
-                }
+    async function loadTrainingForNewSession() {
+        try {
+            const muscleGroupIdResult = await kraftsportService.getMuscleGroupIdForName(gruppe);
+            const muscleGroupId = muscleGroupIdResult?.id;
 
-                // 2. Training direkt anlegen
-                await kraftsportService.addTraining(datum, muscleGroupId);
-                const result: { id: number } | undefined | null = await kraftsportService.getLastInsertRowId();
-                const newTrainingId = result?.id?.toString();
-
-                if (!newTrainingId) {
-                    console.error("❌ Konnte Trainings-ID nicht setzen.");
-                    return;
-                }
-
-                console.log("✅ Neues Training erstellt mit ID:", newTrainingId);
-                setTrainingId(newTrainingId);
-
-                // 3. Übungen laden und setzen
-                const existingTrainings: ITrainingDatabase[] = await kraftsportService.getLastUebungDataForGruppe(gruppe);
-
-                if (existingTrainings.length > 0) {
-                    const newExercises: IUebung[] = existingTrainings.map((ex) => ({
-                        id: ex.id,
-                        name: ex.name,
-                        saetze: Array.from({length: ex.last_sets},
-                            (): ISatz => ({
-                                gewicht: ex.last_weight,
-                                wiederholungen: null,
-                                id: new Date().getTime() + Math.random() * 1000
-                            })),
-                    }));
-
-                    const exercises = [...newExercises];
-
-                    newExercises.forEach((exercise) => {
-                        kraftsportService.shouldWeightBeIncreased(exercise.name).then((shouldBeUpdated) => {
-                            exercises.filter((e) => e.name === exercise.name)[0].weightShouldBeIncreased =
-                                shouldBeUpdated?.increaseWeight === 1;
-                        });
-                    });
-
-                    setUebungen(exercises);
-                    setOriginalUebungen(JSON.parse(JSON.stringify(exercises)));
-                    setUnsavedChanges(true);  // Dadurch wird beim nächsten Timer gespeichert
-                }
-
-            } catch (error) {
-                console.error("❌ Fehler beim Initialisieren des Trainings:", error);
+            if (!muscleGroupId) {
+                Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
+                return;
             }
-        } else {
-            try {
-                const result: any[] = await kraftsportService.getExercisesForTraining(trainingId);
 
-                const exercisesMap: Record<number, IUebung> = {};
+            const existingTrainings = await kraftsportService.getLastUebungDataForGruppe(muscleGroupId);
 
-                for (const row of result) {
-                    if (!exercisesMap[row.exercise_id]) {
-                        exercisesMap[row.exercise_id] = {
-                            id: row.exercise_id,
-                            name: row.name,
-                            saetze: [],
-                        };
-                    }
-                    if (row.set_id) {
-                        exercisesMap[row.exercise_id].saetze.push({
-                            id: row.set_id,
-                            gewicht: row.weight,
-                            wiederholungen: row.repetitions,
-                        });
-                    }
-                }
-
-                const exercises = Object.values(exercisesMap);
-                setUebungen(exercises);
-                setOriginalUebungen(JSON.parse(JSON.stringify(exercises)));
-            } catch (error) {
-                console.error("❌ Fehler beim Laden des bestehenden Trainings:", error);
+            if (existingTrainings.length === 0) {
+                setUebungen([]);
+                setOriginalUebungen([]);
+                return;
             }
+
+            const newExercises: IUebung[] = []
+
+            existingTrainings.forEach((training) => {
+                if(newExercises.some((e)=> e.id === training.exercise_id)){
+                    const existingExercise = newExercises.find((e)=> e.id === training.exercise_id);
+                    if(existingExercise){
+                        existingExercise.saetze.push({
+                            id: training.set_id,
+                            gewicht: training.weight,
+                            wiederholungen: null
+                        })
+                    }
+                } else {
+                    newExercises.push({
+                        id: training.exercise_id,
+                        name: training.exercise_name,
+                        saetze: [{
+                            id: training.set_id,
+                            gewicht: training.weight,
+                            wiederholungen: null
+                        }],
+                    })
+                }
+            })
+
+            const enrichedExercises = await Promise.all(
+                newExercises.map(async (exercise) => {
+                    const result = await kraftsportService.shouldWeightBeIncreased(exercise.name);
+                    return {
+                        ...exercise,
+                        weightShouldBeIncreased: result?.increaseWeight === 1,
+                    };
+                })
+            );
+
+            setUebungen(enrichedExercises);
+            setOriginalUebungen(JSON.parse(JSON.stringify(enrichedExercises)));
+        } catch (error) {
+            console.error("❌ Fehler beim Initialisieren des Trainings:", error);
         }
+    }
 
+    async function loadTrainingForEditing(trainingId: string) {
+        try {
+            const result = await kraftsportService.getExercisesForTraining(trainingId);
+
+            const exercisesMap: Record<number, IUebung> = {};
+
+            for (const row of result) {
+                if (!exercisesMap[row.exercise_id]) {
+                    exercisesMap[row.exercise_id] = {
+                        id: row.exercise_id,
+                        name: row.name,
+                        saetze: [],
+                    };
+                }
+
+                if (row.set_id) {
+                    exercisesMap[row.exercise_id].saetze.push({
+                        id: row.set_id,
+                        gewicht: row.weight,
+                        wiederholungen: row.repetitions,
+                    });
+                }
+            }
+
+            const exercises = Object.values(exercisesMap)
+                .filter((uebung) => uebung.name.toLowerCase() !== gruppe.toLowerCase());
+
+            setUebungen(exercises);
+            setOriginalUebungen(JSON.parse(JSON.stringify(exercises)));
+        } catch (error) {
+            console.error("❌ Fehler beim Laden des bestehenden Trainings:", error);
+        }
     }
 
     function addUebung() {
@@ -169,9 +163,6 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 }]
             )
         }
-
-        setUnsavedChanges(true);
-        saveTraining();
     }
 
     async function deleteUebungFromMuscleGroup(uebungId: number) {
@@ -204,8 +195,6 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 )
             );
         }
-        setUnsavedChanges(true);
-        saveTraining();
     }
 
     function addSatz(uebungId: number) {
@@ -224,8 +213,6 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                     : uebung
             )
         );
-        setUnsavedChanges(true);
-        saveTraining();
     }
 
     function deleteSatz(uebungId: number, satzId: number) {
@@ -236,8 +223,6 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                     : uebung
             )
         );
-        setUnsavedChanges(true);
-        saveTraining();
     }
 
     function updateSatz(uebungId: number, satzId: number, field: string, value: string) {
@@ -253,17 +238,10 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                     : uebung
             )
         );
-        setUnsavedChanges(true);
-        saveTraining();
     }
 
     async function saveTraining() {
         try {
-            if (!unsavedChanges && trainingId) {
-                console.log("⚠️ Keine Änderungen – überspringe Speichern.");
-                return;
-            }
-
             const muscleGroupIdResult: { id: number } | null = await kraftsportService.getMuscleGroupIdForName(gruppe);
             const muscleGroupId = muscleGroupIdResult?.id;
 
@@ -271,9 +249,9 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
                 return;
             }
+            const isUpdate = !!route.params.id;
+            let trainingId = route.params.id;
 
-            const isUpdate = !!trainingId;
-            let currentTrainingId = trainingId;
             if (isUpdate) {
                 if (JSON.stringify(uebungen) === JSON.stringify(originalUebungen)) {
                     console.log('Keine Änderungen festgestellt, überspringe Speichern.');
@@ -287,9 +265,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 await kraftsportService.deleteTraining(trainingId!);
             } else {
                 const trainingInsert = await kraftsportService.addTraining(datum, muscleGroupId);
-                console.log("✅ Training erstellt mit ID:", trainingInsert.lastInsertRowId);
-                currentTrainingId = trainingInsert.lastInsertRowId.toString();
-                setTrainingId(currentTrainingId);
+                trainingId = trainingInsert.lastInsertRowId.toString();
             }
 
             for (const uebung of uebungen) {
@@ -305,7 +281,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
                 await kraftsportService.connectMuscleGroupAndUebung(muscleGroupId, exerciseId);
 
-                const exerciseTrainingInsert = await kraftsportService.addExerciseToTraining(currentTrainingId!, exerciseId);
+                const exerciseTrainingInsert = await kraftsportService.addExerciseToTraining(trainingId!, exerciseId);
                 const exerciseTrainingId = exerciseTrainingInsert.lastInsertRowId;
 
                 for (const satz of uebung.saetze) {

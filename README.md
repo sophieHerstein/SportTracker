@@ -6,7 +6,7 @@
 ### Features
 
 - Mitteilungen ermöglichen bspw. für wird mal wieder Zeit für Training
-- Statt höchstes Gewicht bei Satzübernahme für neues Training einfach so wie vorher übernehmen die Gewichte (bei Unklarheit Tom nochmal fragen)
+- ~~Statt höchstes Gewicht bei Satzübernahme für neues Training einfach so wie vorher übernehmen die Gewichte (bei Unklarheit Tom nochmal fragen)~~
 - Erweiterte Trend- und Hinweisanalyse (z.B. Tageszeit ergänzen oder wird eine Übung stagniert etc)
 - Bei Trainingsübersichten nach Art filtern
 - Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann
