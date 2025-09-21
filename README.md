@@ -12,10 +12,11 @@
 - Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann
 - Bei Klick auf Notofication Training anlegen
 - ~~Speichern beim Schließen der App~~
+- Fehlerlogging
 
 ### Bugs
 
 - ~~Es kommt keine Meldung für Ausdauertraining, wenn schon lange keins mehr gemacht~~
 - ~~Refactoring und Umbau gemäß Standards (oder zumindest DB Stuff in Services auslagern)~~
 - Diagramme stürzen bei Tom teilweise ab
-- Runter scrollen bei Diagrammen funktioniert nicht vollständig
+- ~~Runter scrollen bei Diagrammen funktioniert nicht vollständig~~
