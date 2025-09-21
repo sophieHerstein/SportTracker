@@ -11,7 +11,7 @@
 - Bei Trainingsübersichten nach Art filtern
 - Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann
 - Bei Klick auf Notofication Training anlegen
-- Speichern beim Schließen der App
+- ~~Speichern beim Schließen der App~~
 
 ### Bugs
 

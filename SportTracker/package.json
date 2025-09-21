@@ -20,6 +20,7 @@
     "expo-font": "^13.3.2",
     "expo-sqlite": "~15.2.14",
     "expo-status-bar": "~2.2.3",
+    "lodash": "^4.17.21",
     "react": "19.0.0",
     "react-native": " 0.79.5",
     "react-native-dropdown-picker": "^5.4.6",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@types/react": "~19.0.10",
+    "@types/lodash": "^4.17.21",
     "typescript": " ~5.8.3"
   },
   "private": true
