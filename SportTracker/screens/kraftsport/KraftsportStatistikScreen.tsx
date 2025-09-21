@@ -100,7 +100,7 @@ export default function KraftsportStatistikScreen() {
                             <TrainingsBarChart data={progressionsData}/>
                         </View>
                     }
-                    <View style={{flex: 1}}>
+                    <View style={{maxHeight: '65%'}}>
                         <Text style={globalStyles.title}>Entwicklung Gewicht</Text>
                         <Filter
                             timeRange={timeRange}
