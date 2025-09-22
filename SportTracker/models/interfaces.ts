@@ -233,3 +233,9 @@ export interface IKraftpsortUebungModalProps {
     onCancel: () => void,
     uebung: IUebung,
 }
+
+export interface IColumnDefinition {
+    table: string;
+    column: string;
+    sql: string;
+}

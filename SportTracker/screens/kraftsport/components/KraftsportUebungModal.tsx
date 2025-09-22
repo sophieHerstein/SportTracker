@@ -1,4 +1,4 @@
-import {FlatList, Modal, Pressable, Text, View} from "react-native";
+import {FlatList, Modal, Pressable, Switch, Text, View} from "react-native";
 import {
     IEntwicklungGewichtData,
     IEntwicklungGewichtDatabaseResult,
@@ -10,7 +10,7 @@ import {
 import {globalStyles} from "../../../utils/global-styles";
 import EmptyList from "../../../components/EmptyList";
 import {useEffect, useMemo, useState} from "react";
-import {ETimeRange} from "../../../models/constants";
+import {ETimeRange, primary, secondary, textColorPrimary} from "../../../models/constants";
 import Filter from "../../../components/Filter";
 import KraftsportLineChartListItem from "./KraftsportLineChartListItem";
 import {KraftsportService} from "../../../services/kraftsport.service";
@@ -23,8 +23,13 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
     });
     const [timeRange, setTimeRange] = useState<ETimeRange>(ETimeRange.GESAMT);
     const [lastUebungData, setLastUebungData] = useState<ISatz[]>([]);
+    const [isWeightNotIncreasable, setIsWeightNotIncreasable] = useState<boolean>(true);
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
+
+    useEffect(() => {
+        fetchData();
+    }, [])
 
     useEffect(() => {
         fetchData();
@@ -32,6 +37,8 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
 
     async function fetchData() {
         const lastUebung: ISatzDB[] = await kraftsportService.getLastSatzDataForUebung(uebung.id);
+        const canWeightNotBeIncreased = await kraftsportService.getNoMoreIncrease(uebung.id);
+        setIsWeightNotIncreasable(canWeightNotBeIncreased.no_more_increase === 1);
 
         setLastUebungData(lastUebung.map((satz) => {
             return {
@@ -92,6 +99,11 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
         setUebungData(transformedData);
     }
 
+    function changeIncreasabilityOfWeight(){
+        const newIsWeightNotIncreasable = !isWeightNotIncreasable;
+        setIsWeightNotIncreasable(newIsWeightNotIncreasable);
+        kraftsportService.setNoMoreIncrease(uebung.name, newIsWeightNotIncreasable).then()
+    }
 
     return (
         <Modal visible={visible} animationType="slide">
@@ -118,6 +130,14 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
                         onPress3Monate={() => setTimeRange(ETimeRange.DREI_MONATE)}
                         onPressMonat={() => setTimeRange(ETimeRange.MONAT)}/>
                     <KraftsportLineChartListItem isNotListElement={true} uebung={uebungData}/>
+                </View>
+                <View style={[globalStyles.row, {paddingVertical: 20}]}>
+                    <Text style={globalStyles.text}>Gewicht kann nicht mehr erhöht werden</Text>
+                    <Switch
+                        trackColor={{true: primary}}
+                        thumbColor={textColorPrimary}
+                        value={isWeightNotIncreasable}
+                        onValueChange={()=> changeIncreasabilityOfWeight()}/>
                 </View>
                 <Pressable style={globalStyles.buttonPrimary} onPress={() => onCancel()}>
                     <Text style={globalStyles.buttonText}>Zurück</Text>

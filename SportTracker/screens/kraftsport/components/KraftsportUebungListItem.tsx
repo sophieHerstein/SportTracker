@@ -5,8 +5,9 @@ import TextIconButton from "../../../components/TextIconButton";
 import {MaterialIcons} from "@expo/vector-icons";
 import {hightlight, primary} from "../../../models/constants";
 import {globalStyles} from "../../../utils/global-styles";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import KraftsportUebungModal from "./KraftsportUebungModal";
+import {KraftsportService} from "../../../services/kraftsport.service";
 
 export default function KraftsportUebungListItem({
                                                      uebung,
@@ -20,11 +21,18 @@ export default function KraftsportUebungListItem({
     const [cardStyle, setCardStyle] = useState<any>(globalStyles.cards);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
+    const kraftsportService = useMemo(() => new KraftsportService(), []);
+
     useEffect(() => {
-        if (uebung.weightShouldBeIncreased) {
-            setCardStyle({...globalStyles.cards, borderColor: primary, borderWidth: 4});
-        }
-    }, []);
+        kraftsportService.getNoMoreIncrease(uebung.id).then(
+            (result) => {
+                if (uebung.weightShouldBeIncreased && result?.no_more_increase === 0) {
+                    setCardStyle({...globalStyles.cards, borderColor: primary, borderWidth: 4});
+                } else {
+                    setCardStyle(globalStyles.cards);
+                }
+            })
+    }, [modalVisible]);
 
     return (
         <View style={cardStyle}>

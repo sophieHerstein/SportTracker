@@ -6,10 +6,11 @@ import DropDownPicker from "react-native-dropdown-picker";
 import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../models/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, hightlight, textColorPrimary} from "../../models/constants";
+import {EAppPaths, hightlight, TAGESZEIT, textColorPrimary} from "../../models/constants";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
 import {AusdauerService} from "../../services/ausdauer.service";
+import {getTageszeit} from "../../utils/helper";
 
 type NeuerAusdauerEintragScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_EINTRAG>;
 
@@ -99,7 +100,8 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         const trainingsTypId: { id: number } | null = await ausdauerService.getIdForTrainingstyp(name);
 
         if (!!trainingsTypId) {
-            await ausdauerService.addAusdauerTrainingseinheit(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke ?? 0));
+            const tagesZeit = getTageszeit();
+            await ausdauerService.addAusdauerTrainingseinheit(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke ?? 0), tagesZeit);
         }
     }
 

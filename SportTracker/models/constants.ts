@@ -24,6 +24,15 @@ export enum ETimeRange {
     MONAT = 'monat'
 }
 
+export enum TAGESZEIT {
+    MORGENS = 'morgens',
+    VORMITTAGS = 'vormittags',
+    MITTAGS = 'mittags',
+    NACHMITTAGS = 'nachmittags',
+    ABENDS = 'abends',
+    NACHTS = 'nachts'
+}
+
 export const background = '#0D0D0D'
 export const secondaryBackground = '#1A1A2E'
 export const primary = '#E94560'

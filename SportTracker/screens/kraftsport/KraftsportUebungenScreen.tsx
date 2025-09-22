@@ -1,17 +1,17 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {Alert, FlatList, KeyboardAvoidingView, StyleSheet} from "react-native";
 import BigButton from "../../components/BigButton";
 import TextIconButton from "../../components/TextIconButton";
 import KraftsportUebungListItem from "./components/KraftsportUebungListItem";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, hightlight, textColorPrimary} from "../../models/constants";
-import {IGewichtUebung, ISatz, ITrainingDatabase, IUebung} from "../../models/interfaces";
+import {EAppPaths, hightlight, TAGESZEIT, textColorPrimary} from "../../models/constants";
+import {IGewichtUebung, ISatz, IUebung} from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
 import {KraftsportService} from "../../services/kraftsport.service";
-import { useRef } from "react";
-import { debounce } from "lodash";
+import {debounce} from "lodash";
+import {getTageszeit} from "../../utils/helper";
 
 type KraftsportUebungenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_UEBUNGEN>;
 
@@ -286,7 +286,8 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 await kraftsportService.deleteSatzFromTraining(trainingId!);
                 await kraftsportService.deleteTraining(trainingId!);
             } else {
-                const trainingInsert = await kraftsportService.addTraining(datum, muscleGroupId);
+                const tagesZeit = getTageszeit();
+                const trainingInsert = await kraftsportService.addTraining(datum, muscleGroupId, tagesZeit, !!options?.silent);
                 trainingId = trainingInsert.lastInsertRowId.toString();
             }
 

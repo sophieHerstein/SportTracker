@@ -163,7 +163,28 @@ export default function StartScreen() {
         setLoading(true);
         try {
             await schemaService.setUpTables();
-
+            await schemaService.addNewColumns([
+                {
+                    table: 'training',
+                    column: 'is_draft',
+                    sql: 'ALTER TABLE training ADD COLUMN is_draft INTEGER DEFAULT 0'
+                },
+                {
+                    table: 'training',
+                    column: 'tageszeit',
+                    sql: 'ALTER TABLE training ADD COLUMN tageszeit TEXT'
+                },
+                {
+                    table: 'exercise',
+                    column: 'no_more_increase',
+                    sql: 'ALTER TABLE exercise ADD COLUMN no_more_increase INTEGER DEFAULT 0'
+                },
+                {
+                   table: 'ausdauertrainingseinheit',
+                   column: 'tageszeit',
+                   sql: 'ALTER TABLE ausdauertrainingseinheit ADD COLUMN tageszeit TEXT'
+                }
+            ])
             await fetchData();
             console.log("✅ Datenbank eingerichtet");
         } catch (error) {

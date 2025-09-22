@@ -1,4 +1,5 @@
 import {DatabaseService} from "./database.service";
+import {TAGESZEIT} from "../models/constants";
 
 export class AusdauerService {
 
@@ -22,7 +23,7 @@ export class AusdauerService {
         return DatabaseService.getOne(`SELECT id FROM Trainingstyp WHERE name='${name}'`)
     }
 
-    async addAusdauerTrainingseinheit(trainingsTypId: number, datum: number, dauer: number, strecke: number) {
-        return DatabaseService.run(`INSERT INTO Ausdauertrainingseinheit (trainingstyp_id, datum, dauer_minuten, strecke_km) VALUES (${trainingsTypId},${datum},${dauer},${strecke})`)
+    async addAusdauerTrainingseinheit(trainingsTypId: number, datum: number, dauer: number, strecke: number, zeit: TAGESZEIT) {
+        return DatabaseService.run(`INSERT INTO Ausdauertrainingseinheit (trainingstyp_id, datum, dauer_minuten, strecke_km, tageszeit) VALUES (${trainingsTypId},${datum},${dauer},${strecke},'${zeit}')`)
     }
 }

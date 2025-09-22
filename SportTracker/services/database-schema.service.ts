@@ -1,4 +1,5 @@
 import {DatabaseService} from "./database.service";
+import {IColumnDefinition} from "../models/interfaces";
 
 export class DatabaseSchemaService {
     async setUpTables(): Promise<void> {
@@ -72,6 +73,10 @@ export class DatabaseSchemaService {
         } catch (error) {
             console.error("❌ Error creating database schema", error);
         }
+    }
+
+    async addNewColumns(columns: IColumnDefinition[]): Promise<void> {
+        await DatabaseService.ensureColumnsExist(columns)
     }
 
     async dropTables(): Promise<void> {

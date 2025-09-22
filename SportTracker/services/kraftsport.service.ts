@@ -1,4 +1,5 @@
 import {DatabaseService} from "./database.service";
+import {TAGESZEIT} from "../models/constants";
 
 export class KraftsportService {
     async fetchKraftsportData() {
@@ -90,8 +91,8 @@ export class KraftsportService {
         return DatabaseService.getOne(`SELECT id FROM muscle_group WHERE name='${name}'`);
     }
 
-    async addTraining(datum: number, muscleGroupId: number) {
-        return DatabaseService.run(`INSERT INTO training (datum, muscle_group_id) VALUES (${datum}, ${muscleGroupId})`)
+    async addTraining(datum: number, muscleGroupId: number, zeit: TAGESZEIT, draft: boolean) {
+        return DatabaseService.run(`INSERT INTO training (datum, muscle_group_id, tageszeit, is_draft) VALUES (${datum}, ${muscleGroupId}, '${zeit}', ${draft ? 1: 0})`)
     }
 
     async getIdForUebung(name: string) {
@@ -136,5 +137,13 @@ export class KraftsportService {
 
     async deleteTraining(trainingId: string) {
         return DatabaseService.run(`DELETE FROM exercise_training WHERE training_id = '${trainingId}'`)
+    }
+
+    async getNoMoreIncrease(id: number) {
+        return DatabaseService.getOne(`SELECT no_more_increase FROM exercise WHERE id = ${id}`)
+    }
+
+    async setNoMoreIncrease(uebungName: string, noMoreIncrease: boolean) {
+        return DatabaseService.run(`UPDATE exercise SET no_more_increase = ${noMoreIncrease ? 1 : 0} WHERE name = '${uebungName}'`)
     }
 }

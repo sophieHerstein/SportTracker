@@ -5,7 +5,7 @@
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$USER_HOME$/Desktop/training.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$USER_HOME$/Library/Developer/CoreSimulator/Devices/F9A2BB3A-FD3E-4616-94ED-5A4195BEF69D/data/Containers/Data/Application/90512D25-AD83-4559-BDC2-33D21037798F/Documents/ExponentExperienceData/@sophers/SportTracker/SQLite/training.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
