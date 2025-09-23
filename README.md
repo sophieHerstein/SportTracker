@@ -10,7 +10,6 @@
 - ~~Tageszeit mit einlesen für spätere Hinweis Analysen mit KI → Tageszeit erstmal automatisch nach Uhrzeit setzen~~
 - ~~Bei Trainingsübersichten nach Art filtern~~
 - ~~Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann~~
-- Bei Klick auf Notification Training anlegen
 
 ### Bugs
 
