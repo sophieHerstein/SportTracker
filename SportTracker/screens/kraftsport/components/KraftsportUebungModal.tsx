@@ -10,8 +10,8 @@ import {
 import {globalStyles} from "../../../utils/global-styles";
 import EmptyList from "../../../components/EmptyList";
 import {useEffect, useMemo, useState} from "react";
-import {ETimeRange, primary, secondary, textColorPrimary} from "../../../models/constants";
-import Filter from "../../../components/Filter";
+import {ETimeRange, primary, textColorPrimary} from "../../../models/constants";
+import TimeFilter from "../../../components/TimeFilter";
 import KraftsportLineChartListItem from "./KraftsportLineChartListItem";
 import {KraftsportService} from "../../../services/kraftsport.service";
 
@@ -99,7 +99,7 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
         setUebungData(transformedData);
     }
 
-    function changeIncreasabilityOfWeight(){
+    function changeIncreasabilityOfWeight() {
         const newIsWeightNotIncreasable = !isWeightNotIncreasable;
         setIsWeightNotIncreasable(newIsWeightNotIncreasable);
         kraftsportService.setNoMoreIncrease(uebung.name, newIsWeightNotIncreasable).then()
@@ -122,7 +122,7 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
                           keyExtractor={(satz) => satz.id.toString()}
                           ListEmptyComponent={EmptyList}/>
                 <View>
-                    <Filter
+                    <TimeFilter
                         timeRange={timeRange}
                         onPressGesamt={() => setTimeRange(ETimeRange.GESAMT)}
                         onPressJahr={() => setTimeRange(ETimeRange.JAHR)}
@@ -137,7 +137,7 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
                         trackColor={{true: primary}}
                         thumbColor={textColorPrimary}
                         value={isWeightNotIncreasable}
-                        onValueChange={()=> changeIncreasabilityOfWeight()}/>
+                        onValueChange={() => changeIncreasabilityOfWeight()}/>
                 </View>
                 <Pressable style={globalStyles.buttonPrimary} onPress={() => onCancel()}>
                     <Text style={globalStyles.buttonText}>Zurück</Text>

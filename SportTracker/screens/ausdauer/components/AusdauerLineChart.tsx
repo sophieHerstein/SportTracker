@@ -4,7 +4,7 @@ import {globalStyles} from "../../../utils/global-styles";
 import {Rect, VictoryAxis, VictoryChart, VictoryLine, VictoryScatter} from "victory-native";
 import {useMemo} from "react";
 import Svg, {Defs, LinearGradient, Stop} from "react-native-svg";
-import {hightlight, primary, secondary} from "../../../models/constants";
+import {highlight, primary, secondary} from "../../../models/constants";
 
 export default function AusdauerLineChart({screenwidth, items, text, dataKey}: IAusdauerLineChartProps) {
 
@@ -45,8 +45,8 @@ export default function AusdauerLineChart({screenwidth, items, text, dataKey}: I
                 >
                     <VictoryAxis
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight}
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight}
                         }}
                     />
 
@@ -54,8 +54,8 @@ export default function AusdauerLineChart({screenwidth, items, text, dataKey}: I
                         dependentAxis
                         tickFormat={(tick) => `${tick} ${einheit}`}
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight, fontSize: 10},
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight, fontSize: 10},
                         }}
                     />
 
@@ -63,13 +63,13 @@ export default function AusdauerLineChart({screenwidth, items, text, dataKey}: I
                         data={transformedData}
                         interpolation="monotoneX"
                         style={{
-                            data: {stroke: hightlight, strokeWidth: 2}
+                            data: {stroke: highlight, strokeWidth: 2}
                         }}
                     />
                     <VictoryScatter
                         data={transformedData}
                         size={5} // Punktgröße
-                        style={{data: {fill: hightlight}}}
+                        style={{data: {fill: highlight}}}
                     />
                 </VictoryChart>
             </ScrollView>

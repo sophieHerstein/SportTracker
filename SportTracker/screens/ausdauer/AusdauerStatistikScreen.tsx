@@ -7,7 +7,7 @@ import {EAppPaths, ETimeRange} from "../../models/constants";
 import {IAusdauerData} from "../../models/interfaces";
 import EmptyList from "../../components/EmptyList";
 import {globalStyles} from "../../utils/global-styles";
-import Filter from "../../components/Filter";
+import TimeFilter from "../../components/TimeFilter";
 
 type AusdauerStatistikScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_STATISTIK>;
 
@@ -61,7 +61,7 @@ export default function AusdauerStatistikScreen({route}: AusdauerStatistikScreen
     return (
         <View style={globalStyles.screenContainer}>
             <Text style={globalStyles.title}>Entwicklung Dauer & Strecke</Text>
-            <Filter
+            <TimeFilter
                 timeRange={timeRange}
                 onPressGesamt={() => setTimeRange(ETimeRange.GESAMT)}
                 onPressJahr={() => setTimeRange(ETimeRange.JAHR)}

@@ -3,7 +3,7 @@ import {Rect, VictoryAxis, VictoryChart, VictoryScatter, VictoryTheme} from "vic
 import {IAusdauerScatterPlotProps} from "../../../models/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
 import Svg, {Defs, LinearGradient, Stop} from "react-native-svg";
-import {hightlight, primary, secondary, secondaryBackground} from "../../../models/constants";
+import {highlight, primary, secondary, secondaryBackground} from "../../../models/constants";
 
 export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatterPlotProps) {
 
@@ -57,9 +57,9 @@ export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatt
                         tickValues={xTicks}
                         tickFormat={(t) => `${t} min`}
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight},
-                            axisLabel: {fill: hightlight, padding: 27.5},
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight},
+                            axisLabel: {fill: highlight, padding: 27.5},
                         }}
                     />
                     <VictoryAxis
@@ -68,9 +68,9 @@ export default function AusdauerScatterPlot({screenwidth, items}: IAusdauerScatt
                         tickValues={yTicks}
                         tickFormat={(t) => `${t} km`}
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight},
-                            axisLabel: {fill: hightlight, padding: 40},
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight},
+                            axisLabel: {fill: highlight, padding: 40},
                         }}
                     />
 

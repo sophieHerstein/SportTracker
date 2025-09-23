@@ -11,7 +11,7 @@ import KraftsportLineChart from "./components/KraftsportLineChart";
 import {globalStyles} from "../../utils/global-styles";
 import EmptyList from "../../components/EmptyList";
 import {ETimeRange} from "../../models/constants";
-import Filter from "../../components/Filter";
+import TimeFilter from "../../components/TimeFilter";
 import {StatisticsService} from "../../services/statistics.service";
 
 export default function KraftsportStatistikScreen() {
@@ -102,7 +102,7 @@ export default function KraftsportStatistikScreen() {
                     }
                     <View style={{maxHeight: '65%'}}>
                         <Text style={globalStyles.title}>Entwicklung Gewicht</Text>
-                        <Filter
+                        <TimeFilter
                             timeRange={timeRange}
                             onPressGesamt={() => setTimeRange(ETimeRange.GESAMT)}
                             onPressJahr={() => setTimeRange(ETimeRange.JAHR)}

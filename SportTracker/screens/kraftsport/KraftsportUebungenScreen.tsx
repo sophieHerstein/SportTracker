@@ -5,7 +5,7 @@ import TextIconButton from "../../components/TextIconButton";
 import KraftsportUebungListItem from "./components/KraftsportUebungListItem";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, hightlight, TAGESZEIT, textColorPrimary} from "../../models/constants";
+import {EAppPaths, highlight, textColorPrimary} from "../../models/constants";
 import {IGewichtUebung, ISatz, IUebung} from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
@@ -38,7 +38,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }, []);
 
     useEffect(() => {
-            autoSave(uebungen, originalUebungen);
+        autoSave(uebungen, originalUebungen);
     }, [uebungen]);
 
     const autoSave = useRef(
@@ -54,7 +54,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             }
 
             console.log("💾 Auto-Speichern wird ausgeführt");
-            await saveTraining(uebungenCopy, { silent: true });
+            await saveTraining(uebungenCopy, {silent: true});
             setOriginalUebungen(JSON.parse(JSON.stringify(uebungenCopy)));
         }, 2000)
     ).current;
@@ -91,9 +91,9 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             const newExercises: IUebung[] = []
 
             existingTrainings.forEach((training) => {
-                if(newExercises.some((e)=> e.id === training.exercise_id)){
-                    const existingExercise = newExercises.find((e)=> e.id === training.exercise_id);
-                    if(existingExercise){
+                if (newExercises.some((e) => e.id === training.exercise_id)) {
+                    const existingExercise = newExercises.find((e) => e.id === training.exercise_id);
+                    if (existingExercise) {
                         existingExercise.saetze.push({
                             id: training.set_id,
                             gewicht: training.weight,
@@ -264,7 +264,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
         );
     }
 
-    async function saveTraining(uebungen:IUebung[], options?: { silent?: boolean }) {
+    async function saveTraining(uebungen: IUebung[], options?: { silent?: boolean }) {
         try {
             console.log("Saving...")
             const muscleGroupIdResult: { id: number } | null = await kraftsportService.getMuscleGroupIdForName(gruppe);
@@ -317,7 +317,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
     return (
         <KeyboardAvoidingView behavior={"height"} style={globalStyles.screenContainer}>
-            <TextIconButton iconName='add' color={hightlight} onPress={() => addUebung()} iconSize={20}
+            <TextIconButton iconName='add' color={highlight} onPress={() => addUebung()} iconSize={20}
                             stylePressable={styles.addUebung} styleText={styles.addUebungText}
                             title="Übung hinzufügen"/>
             <FlatList
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     addUebungText: {
-        color: hightlight,
+        color: highlight,
         fontSize: 20,
     },
     deleteText: {

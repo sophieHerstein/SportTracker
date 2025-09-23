@@ -1,17 +1,16 @@
 # sport_tracker
 
-
 ## offene Punkte
 
 ### Features
 
 - ~~Speichern beim Schließen der App~~
-- ~~Statt höchstes Gewicht bei Satzübernahme für neues Training einfach so wie vorher übernehmen die Gewichte (bei Unklarheit Tom nochmal fragen)~~
+- ~~Statt höchstes Gewicht bei Satzübernahme für neues Training einfach so wie vorher übernehmen die Gewichte (bei
+  Unklarheit Tom nochmal fragen)~~
 - ~~Tageszeit mit einlesen für spätere Hinweis Analysen mit KI → Tageszeit erstmal automatisch nach Uhrzeit setzen~~
-- Bei Trainingsübersichten nach Art filtern
+- ~~Bei Trainingsübersichten nach Art filtern~~
 - ~~Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann~~
 - Bei Klick auf Notification Training anlegen
-- Mitteilungen ermöglichen bspw. für wird mal wieder Zeit für Training
 
 ### Bugs
 

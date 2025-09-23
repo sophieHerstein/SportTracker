@@ -6,7 +6,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../models/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, hightlight, TAGESZEIT, textColorPrimary} from "../../models/constants";
+import {EAppPaths, highlight, textColorPrimary} from "../../models/constants";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
 import {AusdauerService} from "../../services/ausdauer.service";
@@ -173,7 +173,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
 
 const styles = StyleSheet.create({
     background: {
-        backgroundColor: hightlight,
+        backgroundColor: highlight,
         borderRadius: 10
     },
     inputContainer: {

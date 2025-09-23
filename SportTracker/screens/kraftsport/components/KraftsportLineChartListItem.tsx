@@ -2,7 +2,7 @@ import {ScrollView, Text, View} from "react-native";
 import {IKraftsportLineChartListItemProps} from "../../../models/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
 import Svg, {Defs, LinearGradient, Stop} from "react-native-svg";
-import {hightlight, primary, secondary} from "../../../models/constants";
+import {highlight, primary, secondary} from "../../../models/constants";
 import {Rect, VictoryAxis, VictoryChart, VictoryLine, VictoryScatter} from "victory-native";
 import {useEffect, useState} from "react";
 
@@ -32,16 +32,16 @@ export default function KraftsportLineChartListItem({uebung, isNotListElement}: 
                     </Svg>
                     <VictoryAxis
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight}
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight}
                         }}
                     />
 
                     <VictoryAxis
                         dependentAxis
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight}
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight}
                         }}
                     />
 
@@ -49,14 +49,14 @@ export default function KraftsportLineChartListItem({uebung, isNotListElement}: 
                         data={uebung.data}
                         interpolation="monotoneX"
                         style={{
-                            data: {stroke: hightlight, strokeWidth: 2}
+                            data: {stroke: highlight, strokeWidth: 2}
                         }}
                     />
 
                     <VictoryScatter
                         data={uebung.data}
                         size={5}
-                        style={{data: {fill: hightlight}}}
+                        style={{data: {fill: highlight}}}
                     />
                 </VictoryChart>
             </ScrollView>

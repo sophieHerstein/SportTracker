@@ -1,7 +1,7 @@
 import {StyleSheet} from "react-native";
 import {
     background,
-    hightlight,
+    highlight,
     primary,
     secondary,
     secondaryBackground,
@@ -88,8 +88,8 @@ export const globalStyles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderColor: hightlight,
-        color: hightlight,
+        borderColor: highlight,
+        color: highlight,
         padding: 10,
         margin: 10,
         width: '80%',
@@ -97,7 +97,7 @@ export const globalStyles = StyleSheet.create({
         fontSize: 20
     },
     setDate: {
-        backgroundColor: hightlight,
+        backgroundColor: highlight,
         height: 30,
         width: 100,
         borderRadius: 5,

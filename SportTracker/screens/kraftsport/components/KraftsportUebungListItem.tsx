@@ -3,7 +3,7 @@ import {FlatList, StyleSheet, TextInput, View} from "react-native";
 import SatzListItem from "./SatzListItem";
 import TextIconButton from "../../../components/TextIconButton";
 import {MaterialIcons} from "@expo/vector-icons";
-import {hightlight, primary} from "../../../models/constants";
+import {highlight, primary} from "../../../models/constants";
 import {globalStyles} from "../../../utils/global-styles";
 import {useEffect, useMemo, useState} from "react";
 import KraftsportUebungModal from "./KraftsportUebungModal";
@@ -39,12 +39,12 @@ export default function KraftsportUebungListItem({
             <View style={styles.rowWithInfo}>
                 <TextInput
                     style={globalStyles.input}
-                    placeholderTextColor={hightlight}
+                    placeholderTextColor={highlight}
                     placeholder="Übungsname"
                     value={uebung.name}
                     onChangeText={(text) => updateUebungName(uebung.id, text)}
                 />
-                <MaterialIcons style={{alignSelf: "flex-start"}} name='info-outline' size={16} color={hightlight}
+                <MaterialIcons style={{alignSelf: "flex-start"}} name='info-outline' size={16} color={highlight}
                                onPress={() => setModalVisible(true)}/>
             </View>
             <KraftsportUebungModal uebung={uebung} visible={modalVisible}
@@ -63,7 +63,7 @@ export default function KraftsportUebungListItem({
                 onPress={() => addSatz(uebung.id)}
                 iconName='add'
                 stylePressable={styles.addSatz}
-                color={hightlight}
+                color={highlight}
                 iconSize={20}
                 styleText={styles.addSatzText}
                 title='Satz hinzufügen'/>
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
     },
     addSatzText: {
-        color: hightlight,
+        color: highlight,
         fontSize: 16,
     },
     rowWithInfo: {

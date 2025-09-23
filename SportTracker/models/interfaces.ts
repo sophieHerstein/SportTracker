@@ -219,13 +219,19 @@ export interface IVictoryChartProps {
     y: number
 }
 
-export interface IFilterProps {
+export interface ITimeFilterProps {
     timeRange: ETimeRange,
     onPressGesamt: () => void,
     onPressJahr: () => void,
     onPress6Monate: () => void,
     onPress3Monate: () => void,
     onPressMonat: () => void,
+}
+
+export interface ITypeFilterProps {
+    types: string[],
+    currentChosenType: string,
+    onPress: (type: string) => void,
 }
 
 export interface IKraftpsortUebungModalProps {

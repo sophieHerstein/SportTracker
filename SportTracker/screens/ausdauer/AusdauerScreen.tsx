@@ -15,13 +15,17 @@ import {
 } from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import {AusdauerService} from "../../services/ausdauer.service";
+import TypeFilter from "../../components/TypeFilter";
 
 type AusdauersportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_HOME>;
 
 export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [ausdauerData, setData] = useState<IAusdauerData[]>([]);
+    const [filteredAusdauerData, setFilteredAusdauerData] = useState<IAusdauerData[]>([]);
     const [trainingsTypen, setTrainingsTypen] = useState<ITrainingstypDatabaseResult[]>([]);
+    const [types, setTypes] = useState<string[]>(["Alle"]);
+    const [currentChosenType, setCurrentChosenType] = useState<string>('Alle');
 
     const ausdauerService = useMemo(() => new AusdauerService(), []);
 
@@ -37,6 +41,9 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
             ausdauerService.fetchAllAusdauertrainingseinheiten() as Promise<IAusdauertrainingseinheitDatabaseResult[]>
         ]);
         setTrainingsTypen(trainingsTypenRows);
+        const trainingsTypenNames = trainingsTypenRows.map((tt) => tt.name.replace('-', ' '));
+        const typesForFilter: string[] = ["Alle", ...trainingsTypenNames];
+        setTypes(typesForFilter);
         const newAusdauertrainingsDaten: IAusdauerData[] = ausdauertrainingseinheitRows.map((ad: IAusdauertrainingseinheitDatabaseResult) => {
             return {
                 datum_as_timestamp: ad.datum,
@@ -49,11 +56,12 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
                 id: ad.id,
                 strecke: ad.strecke_km,
                 geschwindigkeit: ad.strecke_km / (ad.dauer_minuten / 60),
-                name: trainingsTypenRows.filter((tt) => tt.id === ad.trainingstyp_id)[0].name
+                name: trainingsTypenRows.filter((tt) => tt.id === ad.trainingstyp_id)[0].name.replace('-', ' ')
             }
         });
         newAusdauertrainingsDaten.sort((a, b) => b.datum_as_timestamp - a.datum_as_timestamp);
         setData(newAusdauertrainingsDaten);
+        setFilteredAusdauerData(newAusdauertrainingsDaten);
         setIsLoading(false);
     }
 
@@ -66,6 +74,17 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
             newAusdauerData.splice(index, 1);
         }
         setData(newAusdauerData);
+        setFilteredAusdauerData(newAusdauerData);
+    }
+
+    function filterItems(type: string) {
+        setCurrentChosenType(type)
+        if (type === 'Alle') {
+            setFilteredAusdauerData(ausdauerData)
+        } else {
+            const filteredData = ausdauerData.filter((training) => training.name === type);
+            setFilteredAusdauerData(filteredData)
+        }
     }
 
 
@@ -82,6 +101,8 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
                 style={globalStyles.topLeft}
                 icon='bar-chart'>
             </IconButton>
+            <TypeFilter types={types} currentChosenType={currentChosenType}
+                        onPress={(type: string) => filterItems(type)}/>
             <IconButton
                 size={36}
                 color={primary}
@@ -89,7 +110,7 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
                 style={globalStyles.topRight}
                 icon='add-circle'>
             </IconButton>
-            <FlatList data={ausdauerData}
+            <FlatList data={filteredAusdauerData}
                       renderItem={({item}) => (
                           <AusdauerListItem item={item} onDelete={(id: number) => removeEintragFromList(id)}/>
                       )}

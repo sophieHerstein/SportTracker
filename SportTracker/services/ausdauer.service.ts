@@ -24,6 +24,7 @@ export class AusdauerService {
     }
 
     async addAusdauerTrainingseinheit(trainingsTypId: number, datum: number, dauer: number, strecke: number, zeit: TAGESZEIT) {
-        return DatabaseService.run(`INSERT INTO Ausdauertrainingseinheit (trainingstyp_id, datum, dauer_minuten, strecke_km, tageszeit) VALUES (${trainingsTypId},${datum},${dauer},${strecke},'${zeit}')`)
+        return DatabaseService.run(`INSERT INTO Ausdauertrainingseinheit (trainingstyp_id, datum, dauer_minuten, strecke_km, tageszeit)
+                                    VALUES (${trainingsTypId}, ${datum}, ${dauer}, ${strecke}, '${zeit}')`)
     }
 }

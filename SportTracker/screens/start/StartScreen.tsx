@@ -12,7 +12,7 @@ import {
 } from "../../models/interfaces";
 import Notifications from "./components/Notifications";
 import TrainingsBarChart from "./components/TrainingsBarChart";
-import Filter from "../../components/Filter";
+import TimeFilter from "../../components/TimeFilter";
 import {DatabaseSchemaService} from "../../services/database-schema.service";
 import {StatisticsService} from "../../services/statistics.service";
 import {NotificationsService} from "../../services/notifications.service";
@@ -180,9 +180,9 @@ export default function StartScreen() {
                     sql: 'ALTER TABLE exercise ADD COLUMN no_more_increase INTEGER DEFAULT 0'
                 },
                 {
-                   table: 'ausdauertrainingseinheit',
-                   column: 'tageszeit',
-                   sql: 'ALTER TABLE ausdauertrainingseinheit ADD COLUMN tageszeit TEXT'
+                    table: 'ausdauertrainingseinheit',
+                    column: 'tageszeit',
+                    sql: 'ALTER TABLE ausdauertrainingseinheit ADD COLUMN tageszeit TEXT'
                 }
             ])
             await fetchData();
@@ -216,7 +216,7 @@ export default function StartScreen() {
                 }
             </View>
             <Text style={globalStyles.title}>Trainingsfrequenzen</Text>
-            <Filter
+            <TimeFilter
                 timeRange={timeRange}
                 onPressGesamt={() => setTimeRange(ETimeRange.GESAMT)}
                 onPressJahr={() => setTimeRange(ETimeRange.JAHR)}

@@ -24,7 +24,7 @@ export class DatabaseService {
 
     static ensureColumnsExist(columns: IColumnDefinition[]): Promise<void> {
         return db.withTransactionAsync(async () => {
-            for (const { table, column, sql } of columns) {
+            for (const {table, column, sql} of columns) {
                 const result = await db.getAllAsync<{ name: string }>(
                     `PRAGMA table_info(${table});`
                 );

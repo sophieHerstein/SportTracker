@@ -8,7 +8,7 @@ import AusdauerScreen from "./screens/ausdauer/AusdauerScreen";
 import KraftsportGruppeWaehlenScreen from "./screens/kraftsport/KraftsportGruppeWaehlenScreen";
 import NeuerAusdauerEintragScreen from "./screens/ausdauer/NeuerAusdauerEintragScreen";
 import AusdauerStatistikScreen from "./screens/ausdauer/AusdauerStatistikScreen";
-import {EAppPaths, hightlight, secondaryBackground} from "./models/constants";
+import {EAppPaths, highlight, secondaryBackground} from "./models/constants";
 import {IAusdauerData, ITrainingstypDatabaseResult} from "./models/interfaces";
 import KraftsportStatistikScreen from "./screens/kraftsport/KraftsportStatistikScreen";
 import StartScreen from "./screens/start/StartScreen";
@@ -90,7 +90,7 @@ export default function Navigation() {
                         // @ts-ignore
                         return <Icon.Ionicons name={icon} size={size} color={color}/>
                     },
-                    tabBarActiveTintColor: hightlight,
+                    tabBarActiveTintColor: highlight,
                     tabBarStyle: {
                         backgroundColor: secondaryBackground,
                     },

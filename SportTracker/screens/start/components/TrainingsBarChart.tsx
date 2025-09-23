@@ -3,7 +3,7 @@ import {ITrainingsBarChartProps} from "../../../models/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
 import {Rect, VictoryAxis, VictoryBar, VictoryChart, VictoryLabel} from "victory-native";
 import Svg, {Defs, LinearGradient, Stop} from "react-native-svg";
-import {hightlight, primary, secondary, textColorSecondary} from "../../../models/constants";
+import {highlight, primary, secondary, textColorSecondary} from "../../../models/constants";
 import {useCallback, useState} from "react";
 import {useFocusEffect} from "@react-navigation/native";
 
@@ -47,8 +47,8 @@ export default function TrainingsBarChart({titel, data}: ITrainingsBarChartProps
                     </Svg>
                     <VictoryAxis
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight}
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight}
                         }}
                     />
 
@@ -56,8 +56,8 @@ export default function TrainingsBarChart({titel, data}: ITrainingsBarChartProps
                         dependentAxis
                         tickValues={tickValues}
                         style={{
-                            axis: {stroke: hightlight},
-                            tickLabels: {fill: hightlight},
+                            axis: {stroke: highlight},
+                            tickLabels: {fill: highlight},
                         }}
                     />
 
@@ -67,7 +67,7 @@ export default function TrainingsBarChart({titel, data}: ITrainingsBarChartProps
                         labelComponent={
                             <VictoryLabel
                                 dy={-10}
-                                style={{fill: hightlight}}
+                                style={{fill: highlight}}
                             />
                         }
                         style={{

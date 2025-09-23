@@ -4,19 +4,23 @@ import {useCallback, useMemo, useState} from 'react';
 import KraftsportListItem from "./components/KraftsportListItem";
 import {useFocusEffect} from "@react-navigation/native";
 import {EAppPaths, primary, secondary} from "../../models/constants";
-import {IKraftsportData, IKraftsportDatabaseResult, ISatz} from "../../models/interfaces";
+import {IKraftsportData, IKraftsportDatabaseResult, IMuscleGroupDatabaseResult, ISatz} from "../../models/interfaces";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
 import {NavigatorParamList} from "../../Navigation";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {globalStyles} from "../../utils/global-styles";
 import {KraftsportService} from "../../services/kraftsport.service";
+import TypeFilter from "../../components/TypeFilter";
 
 type KraftsportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_HOME>;
 
 export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     const [kraftsportData, setData] = useState<IKraftsportData[]>([]);
+    const [filteredData, setFilteredData] = useState<IKraftsportData[]>([])
     const [isLoading, setLoading] = useState<boolean>(true);
+    const [types, setTypes] = useState<string[]>(["Alle"]);
+    const [currentChosenType, setCurrentChosenType] = useState<string>('Alle');
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
@@ -99,11 +103,31 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
                 const transformedData: IKraftsportData[] = transformTrainingData(results);
                 transformedData.sort((a, b) => b.datum_as_timestamp - a.datum_as_timestamp);
                 setData(transformedData);
+                setFilteredData(transformedData);
             }
+
+            const muscleGroups: IMuscleGroupDatabaseResult[] = await kraftsportService.getMuscleGroupData();
+
+            const muscleGroupNameList = muscleGroups.map((res) => res.name)
+
+            const typeArray: string[] = ["Alle", ...muscleGroupNameList]
+
+            setTypes(typeArray)
+
         } catch (error) {
             console.error("❌ Fehler beim Abrufen der Trainings:", error);
         }
         setLoading(false);
+    }
+
+    function setFilter(type: string) {
+        setCurrentChosenType(type)
+        if (type === 'Alle') {
+            setFilteredData(kraftsportData)
+        } else {
+            const filteredData = kraftsportData.filter((training) => training.gruppe === type);
+            setFilteredData(filteredData)
+        }
     }
 
     if (isLoading) {
@@ -119,6 +143,7 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
                 style={globalStyles.topLeft}
                 icon='bar-chart'>
             </IconButton>
+            <TypeFilter types={types} currentChosenType={currentChosenType} onPress={(type) => setFilter(type)}/>
             <IconButton
                 size={36}
                 color={primary}
@@ -126,7 +151,7 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
                 style={globalStyles.topRight}
                 icon='add-circle'>
             </IconButton>
-            <FlatList data={kraftsportData}
+            <FlatList data={filteredData}
                       renderItem={({item}) => (
                           <KraftsportListItem
                               onUpdate={(id: string, gruppe: string, datum: number) => updateTraining(id, gruppe, datum)}

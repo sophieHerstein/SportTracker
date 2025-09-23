@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState} from 'react';
 import {KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 import IconButton from "../../components/IconButton";
-import {EAppPaths, hightlight, secondary} from "../../models/constants";
+import {EAppPaths, highlight, secondary} from "../../models/constants";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
 import {IMuscleGroupDatabaseResult} from "../../models/interfaces";
@@ -106,7 +106,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
             {showInput && (
                 <TextInput placeholder='Gruppe'
                            style={globalStyles.input}
-                           placeholderTextColor={hightlight}
+                           placeholderTextColor={highlight}
                            returnKeyType='done'
                            onChangeText={setAdditionalGruppe}
                            onSubmitEditing={() => addGruppeToList()}>
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     background: {
-        backgroundColor: hightlight,
+        backgroundColor: highlight,
         borderRadius: 10
     }
 })
