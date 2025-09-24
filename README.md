@@ -11,7 +11,6 @@
 - ~~Bei Trainingsübersichten nach Art filtern~~
 - ~~Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann~~
 - ~~Training teilen-Funktion~~
-- bei Eingabe von neuen Übungen namensähnlichkeit prüfen
 
 ### Bugs
 
