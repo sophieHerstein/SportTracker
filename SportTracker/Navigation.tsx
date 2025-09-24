@@ -22,6 +22,7 @@ export type NavigatorParamList = {
         gruppe: string;
         datum: number;
         id?: string;
+        uebungen?: {uebung: string}[]
     };
     [EAppPaths.KRAFTSPORT_STATISTIK]: undefined;
     [EAppPaths.AUSDAUER_HOME]: undefined;

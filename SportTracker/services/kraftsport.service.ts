@@ -271,4 +271,8 @@ export class KraftsportService {
                                     SET no_more_increase = ${noMoreIncrease ? 1 : 0}
                                     WHERE name = '${uebungName}'`)
     }
+
+    async getAllExercises(){
+        return DatabaseService.getAll(`SELECT * FROM exercise`)
+    }
 }

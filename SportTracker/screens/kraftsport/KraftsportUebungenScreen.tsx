@@ -12,6 +12,8 @@ import IconButton from "../../components/IconButton";
 import {KraftsportService} from "../../services/kraftsport.service";
 import {debounce} from "lodash";
 import {getTageszeit} from "../../utils/helper";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 type KraftsportUebungenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_UEBUNGEN>;
 
@@ -25,14 +27,18 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     useEffect(() => {
         navigation.setOptions({
             headerLeft: () =>
-                <IconButton onPress={() => showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
+                <IconButton onPress={() => showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>,
+            headerRight: () => <IconButton onPress={() => shareTraining()} icon='ios-share' color={textColorPrimary} size={24}/>,
         });
     }, [navigation, uebungen]);
 
     useEffect(() => {
         if (route.params.id) {
             loadTrainingForEditing(route.params.id);
-        } else {
+        } else if (route.params.uebungen && route.params.uebungen.length > 0) {
+            loadTrainingFromImport(route.params.uebungen);
+        }
+        else {
             loadTrainingForNewSession();
         }
     }, []);
@@ -59,6 +65,61 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
         }, 2000)
     ).current;
 
+    function normalizeName(name: string): string {
+        return name.trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function isSimilarName(a: string, b: string): boolean {
+        const na = normalizeName(a);
+        const nb = normalizeName(b);
+
+        if (na === nb) return true;
+
+        // einfache Heuristik: einer enthält den anderen
+        if (na.includes(nb) || nb.includes(na)) return true;
+
+        // optional: minimale Levenshtein-Distanz
+        const maxDistance = 4; // z. B. 2 Zeichen Abweichung erlauben
+        return levenshteinDistance(na, nb) <= maxDistance;
+    }
+
+    function levenshteinDistance(a: string, b: string): number {
+        const matrix = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+
+        for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+        for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+
+        for (let i = 1; i <= a.length; i++) {
+            for (let j = 1; j <= b.length; j++) {
+                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j] + 1,     // löschen
+                    matrix[i][j - 1] + 1,     // einfügen
+                    matrix[i - 1][j - 1] + cost // ersetzen
+                );
+            }
+        }
+
+        return matrix[a.length][b.length];
+    }
+
+    async function shareTraining() {
+        const trainingData = {
+            muscle_group: route.params.gruppe,
+            uebungen: uebungen.map((uebung) => ({uebung: uebung.name}))
+        };
+
+        const fileUri = FileSystem.cacheDirectory + "training.json";
+
+        await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(trainingData));
+
+        if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri);
+        } else {
+            alert("Teilen wird auf diesem Gerät nicht unterstützt.");
+        }
+    }
+
     function showAlert() {
         Alert.alert(
             "Training speichern?",
@@ -68,6 +129,68 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 onPress: () => saveTraining(uebungen)
             }]
         )
+    }
+
+    async function loadTrainingFromImport(importUebungen: {uebung: string}[]) {
+        try {
+            const muscleGroupIdResult = await kraftsportService.getMuscleGroupIdForName(gruppe);
+            const muscleGroupId = muscleGroupIdResult?.id;
+
+            if (!muscleGroupId) {
+                Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
+                return;
+            }
+
+            const newExercises: IUebung[] = [];
+
+            for (const imported of importUebungen) {
+                const importedName = imported.uebung;
+
+                // alle existierenden Übungen holen
+                const allExisting = await kraftsportService.getAllExercises();
+                const matchedExercise = allExisting.find(e => isSimilarName(e.name, importedName));
+
+                let exerciseId: number;
+                let displayName: string;
+                let saetze: ISatz[] = [];
+
+                if (matchedExercise) {
+                    // Falls ähnlich → DB-Namen übernehmen
+                    exerciseId = matchedExercise.id;
+                    displayName = matchedExercise.name;
+
+                    // letzte Gewichte laden
+                    const lastData: IGewichtUebung | null = await kraftsportService.getLastWeightForUebung(matchedExercise.name);
+                    if (lastData) {
+                        saetze = Array.from({ length: lastData.satz_anzahl }, (): ISatz => ({
+                            id: Date.now() + Math.random(),
+                            gewicht: lastData.weight,
+                            wiederholungen: null
+                        }));
+                    }
+                } else {
+                    // neue Übung → in DB speichern
+                    const insert = await kraftsportService.addUebungToDatabase(importedName);
+                    exerciseId = insert.lastInsertRowId;
+                    displayName = importedName; // vorerst importierter Name
+                    saetze = [];
+                }
+
+                // mit Muskelgruppe verknüpfen
+                await kraftsportService.connectMuscleGroupAndUebung(muscleGroupId, exerciseId);
+
+                newExercises.push({
+                    id: exerciseId,
+                    name: displayName,   // 👈 wichtig: hier den DB-Namen nehmen
+                    saetze
+                });
+            }
+
+            setUebungen(newExercises);
+            setOriginalUebungen(JSON.parse(JSON.stringify(newExercises)));
+        } catch (error) {
+            console.error("❌ Fehler beim Import:", error);
+        }
     }
 
     async function loadTrainingForNewSession() {

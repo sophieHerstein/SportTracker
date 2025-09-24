@@ -1,13 +1,15 @@
-import {useEffect, useMemo, useState} from 'react';
-import {KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Alert, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 import IconButton from "../../components/IconButton";
-import {EAppPaths, highlight, secondary} from "../../models/constants";
+import {EAppPaths, highlight, secondary, textColorPrimary} from "../../models/constants";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {IMuscleGroupDatabaseResult} from "../../models/interfaces";
+import {IKrafttrainingImportData, IMuscleGroupDatabaseResult} from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {KraftsportService} from "../../services/kraftsport.service";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 
 type KraftsportGruppeWaehlenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN>;
 
@@ -17,8 +19,15 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     const [additionalGruppe, setAdditionalGruppe] = useState('');
     const [gruppen, setGruppen] = useState<string[]>([]);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    const [gruppeSchonVorhanden, setGruppeSchonVorhanden] = useState<boolean>(true);
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
+
+    useEffect(() => {
+        navigation.setOptions({
+            headerRight: () => <IconButton onPress={() => importTraining()} icon='file-download' color={textColorPrimary} size={24}/>,
+        });
+    }, []);
 
     useEffect(() => {
         getMuskelgruppe();
@@ -37,6 +46,29 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
         hideDatePicker();
     };
 
+    async function importTraining() {
+        const result = await DocumentPicker.getDocumentAsync({ type: "application/json" });
+
+        if (result.assets) {
+            const fileUri = result.assets[0].uri;
+            const content = await FileSystem.readAsStringAsync(fileUri);
+            const data: IKrafttrainingImportData = JSON.parse(content);
+
+
+            await addGruppeToList(data.muscle_group);
+
+            if (!gruppeSchonVorhanden){
+               navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
+                    gruppe: data.muscle_group,
+                    datum: datum.getTime(),
+                    uebungen: data.uebungen
+                })
+            }
+
+        }
+
+    }
+
     async function getMuskelgruppe() {
         const databaseData: IMuscleGroupDatabaseResult[] = await kraftsportService.getMuscleGroupData();
         const muscleGroups = databaseData.map((row: IMuscleGroupDatabaseResult) => {
@@ -45,17 +77,39 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
         setGruppen(muscleGroups);
     }
 
-    async function addGruppeToList() {
-        if (!gruppen.includes(additionalGruppe) && additionalGruppe.trim() !== '') {
-            const neueGruppen = [...gruppen];
-            neueGruppen.push(additionalGruppe);
-            setGruppen(neueGruppen);
-            await kraftsportService.addMuscleGroup(additionalGruppe);
-            setAdditionalGruppe('');
-            setShowInput(false);
+    async function addGruppeToList(gruppe?: string) {
+        if(gruppe) {
+            if (!gruppen.includes(gruppe) && gruppe.trim() !== '') {
+                const neueGruppen = [...gruppen];
+                neueGruppen.push(gruppe);
+                setGruppen(neueGruppen);
+                await kraftsportService.addMuscleGroup(gruppe);
+                setGruppeSchonVorhanden(false);
+            } else {
+                Alert.alert(
+                    "Gruppe existiert bereits",
+                    "Eine Gruppe mit dem Namen existiert bereits und kann deshalb nicht importiert werden.",
+                    [ {
+                        text: "Okay",
+                        onPress: () => {
+                            const alteGruppen = [...gruppen];
+                            setGruppen(alteGruppen)
+                        }
+                    }]
+                )
+            }
         } else {
-            setAdditionalGruppe('');
-            setShowInput(false);
+            if (!gruppen.includes(additionalGruppe) && additionalGruppe.trim() !== '') {
+                const neueGruppen = [...gruppen];
+                neueGruppen.push(additionalGruppe);
+                setGruppen(neueGruppen);
+                await kraftsportService.addMuscleGroup(additionalGruppe);
+                setAdditionalGruppe('');
+                setShowInput(false);
+            } else {
+                setAdditionalGruppe('');
+                setShowInput(false);
+            }
         }
     }
 

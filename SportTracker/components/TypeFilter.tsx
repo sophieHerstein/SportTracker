@@ -1,4 +1,4 @@
-import {Button, View} from "react-native";
+import {Button, StyleSheet, View} from "react-native";
 import {globalStyles} from "../utils/global-styles";
 import {highlight, primary} from "../models/constants";
 import {ITypeFilterProps} from "../models/interfaces";
@@ -9,7 +9,7 @@ export default function TypeFilter({
                                        currentChosenType,
                                    }: ITypeFilterProps) {
     return (
-        <View style={globalStyles.row}>
+        <View style={styles.row}>
             {types.map((t) => (
                 <Button
                     key={t}
@@ -21,3 +21,12 @@ export default function TypeFilter({
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    row: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        flexWrap: "wrap",
+    }
+});
