@@ -195,47 +195,34 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
     async function loadTrainingForNewSession() {
         try {
-            const muscleGroupIdResult = await kraftsportService.getMuscleGroupIdForName(gruppe);
-            const muscleGroupId = muscleGroupIdResult?.id;
+            // 1. Alle Übungen für diese Muskelgruppe laden
+            const allExercises = await kraftsportService.getLastUebungDataForGruppe(gruppe);
 
-            if (!muscleGroupId) {
-                Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
-                return;
-            }
+            const newExercises: IUebung[] = [];
 
-            const existingTrainings = await kraftsportService.getLastUebungDataForGruppe(muscleGroupId);
+            for (const ex of allExercises) {
+                // 2. Letzte Daten (unabhängig von Muskelgruppe) holen
+                const lastData: IGewichtUebung | null = await kraftsportService.getLastWeightForUebung(ex.name);
 
-            if (existingTrainings.length === 0) {
-                setUebungen([]);
-                setOriginalUebungen([]);
-                return;
-            }
+                let saetze: ISatz[] = [];
 
-            const newExercises: IUebung[] = []
-
-            existingTrainings.forEach((training) => {
-                if (newExercises.some((e) => e.id === training.exercise_id)) {
-                    const existingExercise = newExercises.find((e) => e.id === training.exercise_id);
-                    if (existingExercise) {
-                        existingExercise.saetze.push({
-                            id: training.set_id,
-                            gewicht: training.weight,
-                            wiederholungen: null
-                        })
-                    }
-                } else {
-                    newExercises.push({
-                        id: training.exercise_id,
-                        name: training.exercise_name,
-                        saetze: [{
-                            id: training.set_id,
-                            gewicht: training.weight,
-                            wiederholungen: null
-                        }],
-                    })
+                if (lastData) {
+                    // 3. Vorbelegung mit letzter Satzanzahl und Gewicht
+                    saetze = Array.from({ length: lastData.satz_anzahl }, (): ISatz => ({
+                        id: Date.now() + Math.random(),
+                        gewicht: lastData.weight,
+                        wiederholungen: null
+                    }));
                 }
-            })
 
+                newExercises.push({
+                    id: ex.id,
+                    name: ex.name,
+                    saetze
+                });
+            }
+
+            // 4. Option: gleich prüfen ob Gewicht gesteigert werden sollte
             const enrichedExercises = await Promise.all(
                 newExercises.map(async (exercise) => {
                     const result = await kraftsportService.shouldWeightBeIncreased(exercise.name);
