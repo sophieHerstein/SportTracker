@@ -13,6 +13,7 @@ import {IAusdauerData, ITrainingstypDatabaseResult} from "./models/interfaces";
 import KraftsportStatistikScreen from "./screens/kraftsport/KraftsportStatistikScreen";
 import StartScreen from "./screens/start/StartScreen";
 import {globalStyles} from "./utils/global-styles";
+import SettingsScreen from "./screens/settings/SettingsScreen";
 
 export type NavigatorParamList = {
     [EAppPaths.HOME]: undefined;
@@ -34,6 +35,7 @@ export type NavigatorParamList = {
     };
     [EAppPaths.KRAFTSPORT_STACK]: undefined;
     [EAppPaths.AUSDAUER_STACK]: undefined;
+    [EAppPaths.SETTINGS]: undefined;
 };
 
 const Stack = createNativeStackNavigator<NavigatorParamList>();
@@ -88,6 +90,7 @@ export default function Navigation() {
                         if (route.name === EAppPaths.KRAFTSPORT_STACK) icon = focused ? 'barbell' : 'barbell-outline';
                         if (route.name === EAppPaths.AUSDAUER_STACK) icon = focused ? 'body' : 'body-outline';
                         if (route.name === EAppPaths.HOME) icon = focused ? 'home' : 'home-outline';
+                        if (route.name === EAppPaths.SETTINGS) icon = focused ? 'settings' : 'settings-outline';
                         // @ts-ignore
                         return <Icon.Ionicons name={icon} size={size} color={color}/>
                     },
@@ -112,6 +115,11 @@ export default function Navigation() {
                     name={EAppPaths.HOME}
                     component={StartScreen}
                     options={{headerShown: false, title: ''}}
+                />
+                <Tab.Screen
+                    name={EAppPaths.SETTINGS}
+                    component={SettingsScreen}
+                    options={{title: 'Einstellungen', headerTitleStyle: globalStyles.title}}
                 />
                 <Tab.Screen
                     name={EAppPaths.AUSDAUER_STACK}

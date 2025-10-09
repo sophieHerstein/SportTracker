@@ -99,7 +99,7 @@ export class KraftsportService {
                                        WHERE name = '${name}'`);
     }
 
-    async addTraining(datum: number, muscleGroupId: number, zeit: TAGESZEIT, draft: boolean) {
+    addTraining(datum: number, muscleGroupId: number, zeit: TAGESZEIT, draft: boolean) {
         return DatabaseService.run(`INSERT INTO training (datum, muscle_group_id, tageszeit, is_draft)
                                     VALUES (${datum}, ${muscleGroupId}, '${zeit}', ${draft ? 1 : 0})`)
     }

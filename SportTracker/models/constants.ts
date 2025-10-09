@@ -1,5 +1,6 @@
 export enum EAppPaths {
     HOME = 'startseite',
+    SETTINGS = 'einstellungen',
     KRAFTSPORT_HOME = 'kraftsport',
     KRAFTSPORT_STACK = 'kraftsportStack',
     KRAFTSPORT_GRUPPE_WAEHLEN = 'kraftsportGruppeWaehlen',

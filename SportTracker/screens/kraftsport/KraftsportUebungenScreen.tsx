@@ -22,6 +22,8 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     const [uebungen, setUebungen] = useState<IUebung[]>(() => []);
     const [originalUebungen, setOriginalUebungen] = useState<IUebung[]>([]);
 
+    const trainingIdRef = useRef<string | null>(route.params.id ?? null);
+
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
     useEffect(() => {
@@ -33,8 +35,8 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }, [navigation, uebungen]);
 
     useEffect(() => {
-        if (route.params.id) {
-            loadTrainingForEditing(route.params.id);
+        if (trainingIdRef.current) {
+            loadTrainingForEditing(trainingIdRef.current);
         } else if (route.params.uebungen && route.params.uebungen.length > 0) {
             loadTrainingFromImport(route.params.uebungen);
         }
@@ -376,8 +378,8 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
     async function saveTraining(uebungen: IUebung[], options?: { silent?: boolean }) {
         try {
-            console.log("Saving...")
-            const muscleGroupIdResult: { id: number } | null = await kraftsportService.getMuscleGroupIdForName(gruppe);
+            console.log("Saving...");
+            const muscleGroupIdResult = await kraftsportService.getMuscleGroupIdForName(gruppe);
             const muscleGroupId = muscleGroupIdResult?.id;
 
             if (!muscleGroupId) {
@@ -385,24 +387,34 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 return;
             }
 
-            const isUpdate = !!route.params.id;
-            let trainingId = route.params.id;
+            // ⚙️ Wichtige Änderung: State-Variable trainingId
+            let currentTrainingId = trainingIdRef.current;
+            const isUpdate = !!currentTrainingId;
+
+
             if (isUpdate) {
                 if (JSON.stringify(uebungen) === JSON.stringify(originalUebungen)) {
-                    if (!options?.silent) console.log('Keine Änderungen festgestellt, überspringe Speichern.');
+                    if (!options?.silent) navigation.popToTop();
                     return;
                 }
 
-                await kraftsportService.deleteSatzFromTraining(trainingId!);
-                await kraftsportService.deleteTraining(trainingId!);
+                await kraftsportService.deleteSatzFromTraining(currentTrainingId!);
+                await kraftsportService.deleteTraining(currentTrainingId!);
             } else {
                 const tagesZeit = getTageszeit();
-                const trainingInsert = await kraftsportService.addTraining(datum, muscleGroupId, tagesZeit, !!options?.silent);
-                trainingId = trainingInsert.lastInsertRowId.toString();
+                const trainingInsert = await kraftsportService.addTraining(
+                    datum,
+                    muscleGroupId,
+                    tagesZeit,
+                    !!options?.silent
+                );
+                currentTrainingId = trainingInsert.lastInsertRowId.toString();
+                trainingIdRef.current = currentTrainingId; // 👈 sofort synchron gesetzt
             }
 
+            // 💪 hier immer mit currentTrainingId arbeiten, NICHT mit State
             for (const uebung of uebungen) {
-                const existingExercise: { id: number } | null = await kraftsportService.getIdForUebung(uebung.name);
+                const existingExercise = await kraftsportService.getIdForUebung(uebung.name);
                 let exerciseId = existingExercise?.id;
 
                 if (!exerciseId) {
@@ -411,19 +423,20 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                 }
 
                 await kraftsportService.connectMuscleGroupAndUebung(muscleGroupId, exerciseId);
-                const trainingEntry = await kraftsportService.addExerciseToTraining(trainingId!, exerciseId);
+
+                // ✅ lokale Variable verwenden
+                const trainingEntry = await kraftsportService.addExerciseToTraining(currentTrainingId!, exerciseId);
                 const exerciseTrainingId = trainingEntry.lastInsertRowId;
 
                 for (const satz of uebung.saetze) {
                     await kraftsportService.addSatzToDatabase(exerciseTrainingId, satz.gewicht ?? 0, satz.wiederholungen ?? 0);
                 }
             }
-
-            if (!options?.silent) navigation.popToTop();
         } catch (error) {
             console.error("❌ Fehler beim Speichern:", error);
         }
     }
+
 
     return (
         <KeyboardAvoidingView behavior={"height"} style={globalStyles.screenContainer}>
