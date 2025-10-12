@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {Alert, FlatList, KeyboardAvoidingView, StyleSheet} from "react-native";
+import {Alert, FlatList, KeyboardAvoidingView, Platform, StyleSheet} from "react-native";
 import BigButton from "../../components/BigButton";
 import TextIconButton from "../../components/TextIconButton";
 import KraftsportUebungListItem from "./components/KraftsportUebungListItem";
@@ -439,7 +439,11 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
 
     return (
-        <KeyboardAvoidingView behavior={"height"} style={globalStyles.screenContainer}>
+        <KeyboardAvoidingView
+            style={globalStyles.screenContainer}
+            behavior={"padding"}
+            keyboardVerticalOffset={100}
+        >
             <TextIconButton iconName='add' color={highlight} onPress={() => addUebung()} iconSize={20}
                             stylePressable={styles.addUebung} styleText={styles.addUebungText}
                             title="Übung hinzufügen"/>

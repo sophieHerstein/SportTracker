@@ -90,7 +90,7 @@ export default function Navigation() {
                         if (route.name === EAppPaths.KRAFTSPORT_STACK) icon = focused ? 'barbell' : 'barbell-outline';
                         if (route.name === EAppPaths.AUSDAUER_STACK) icon = focused ? 'body' : 'body-outline';
                         if (route.name === EAppPaths.HOME) icon = focused ? 'home' : 'home-outline';
-                        if (route.name === EAppPaths.SETTINGS) icon = focused ? 'settings' : 'settings-outline';
+                        // if (route.name === EAppPaths.SETTINGS) icon = focused ? 'settings' : 'settings-outline';
                         // @ts-ignore
                         return <Icon.Ionicons name={icon} size={size} color={color}/>
                     },
@@ -116,11 +116,11 @@ export default function Navigation() {
                     component={StartScreen}
                     options={{headerShown: false, title: ''}}
                 />
-                <Tab.Screen
-                    name={EAppPaths.SETTINGS}
-                    component={SettingsScreen}
-                    options={{title: 'Einstellungen', headerTitleStyle: globalStyles.title}}
-                />
+                {/*<Tab.Screen*/}
+                {/*    name={EAppPaths.SETTINGS}*/}
+                {/*    component={SettingsScreen}*/}
+                {/*    options={{title: 'Einstellungen', headerTitleStyle: globalStyles.title}}*/}
+                {/*/>*/}
                 <Tab.Screen
                     name={EAppPaths.AUSDAUER_STACK}
                     component={AusdauerStack}
