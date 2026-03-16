@@ -209,12 +209,12 @@ export default function StartScreen() {
 
     return (
         <ScrollView style={globalStyles.screenContainer}>
-            <View>
-                {notifications.length > 0 && notifications.map((notification, index) => (
-                    <Notifications key={index} notification={notification}/>
-                ))
-                }
-            </View>
+            {/*<View>*/}
+            {/*    {notifications.length > 0 && notifications.map((notification, index) => (*/}
+            {/*        <Notifications key={index} notification={notification}/>*/}
+            {/*    ))*/}
+            {/*    }*/}
+            {/*</View>*/}
             <Text style={globalStyles.title}>Trainingsfrequenzen</Text>
             <TimeFilter
                 timeRange={timeRange}
