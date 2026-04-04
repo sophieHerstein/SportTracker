@@ -16,22 +16,23 @@
     "@react-navigation/bottom-tabs": "^7.4.4",
     "@react-navigation/native": "^7.1.16",
     "@react-navigation/native-stack": "^7.3.23",
-    "expo": "~53.0.23",
+    "expo": "~53.0.27",
     "expo-document-picker": "~13.1.6",
     "expo-file-system": "~18.1.11",
     "expo-font": "^13.3.2",
     "expo-sharing": "~13.1.5",
     "expo-sqlite": "~15.2.14",
     "expo-status-bar": "~2.2.3",
-    "lodash": "^4.17.21",
+    "lodash": "4.17.21",
     "react": "19.0.0",
-    "react-native": " 0.79.5",
-    "react-native-dropdown-picker": "^5.4.6",
+    "react-native": "0.79.6",
+    "react-native-element-dropdown": "^2.12.4",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-reanimated": "~3.17.4",
+    "react-native-reanimated-carousel": "^4.0.3",
     "react-native-safe-area-context": "5.4.0",
-    "react-native-screens": " ~4.11.1",
+    "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
     "victory-native": "^37.3.6"
   },
@@ -39,7 +40,7 @@
     "@babel/core": "^7.28.0",
     "@types/lodash": "^4.17.20",
     "@types/react": "~19.0.10",
-    "typescript": " ~5.8.3"
+    "typescript": "~5.8.3"
   },
   "private": true
 }

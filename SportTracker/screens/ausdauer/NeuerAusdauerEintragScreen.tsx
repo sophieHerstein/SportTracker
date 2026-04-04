@@ -2,7 +2,6 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {Alert, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 import BigButton from '../../components/BigButton';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import DropDownPicker from "react-native-dropdown-picker";
 import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../models/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
@@ -135,17 +134,18 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                 </View>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Sportart:</Text>
-                    <DropDownPicker style={styles.picker} dropDownContainerStyle={{}}
-                                    open={open}
-                                    value={name}
-                                    items={sportarten}
-                                    setOpen={setOpen}
-                                    setValue={setName}
-                                    setItems={setSportarten}
-                                    searchable={true}
-                                    addCustomItem={true}
-                                    searchPlaceholder="Suche ..."
-                    />
+                    //TODO: alternative einbauen
+                    {/*<DropDownPicker style={styles.picker} dropDownContainerStyle={{}}*/}
+                    {/*                open={open}*/}
+                    {/*                value={name}*/}
+                    {/*                items={sportarten}*/}
+                    {/*                setOpen={setOpen}*/}
+                    {/*                setValue={setName}*/}
+                    {/*                setItems={setSportarten}*/}
+                    {/*                searchable={true}*/}
+                    {/*                addCustomItem={true}*/}
+                    {/*                searchPlaceholder="Suche ..."*/}
+                    {/*/>*/}
                 </View>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Zeit:</Text>

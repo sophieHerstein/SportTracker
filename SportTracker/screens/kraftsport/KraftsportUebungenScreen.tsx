@@ -22,6 +22,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     const [uebungen, setUebungen] = useState<IUebung[]>(() => []);
     const [originalUebungen, setOriginalUebungen] = useState<IUebung[]>([]);
 
+    const isSavingRef = useRef(false);
     const trainingIdRef = useRef<string | null>(route.params.id ?? null);
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
@@ -30,17 +31,13 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
         navigation.setOptions({
             headerLeft: () =>
                 <IconButton onPress={() => showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>,
-            headerRight: () => <IconButton onPress={() => shareTraining()} icon='ios-share' color={textColorPrimary} size={24}/>,
         });
     }, [navigation, uebungen]);
 
     useEffect(() => {
         if (trainingIdRef.current) {
             loadTrainingForEditing(trainingIdRef.current);
-        } else if (route.params.uebungen && route.params.uebungen.length > 0) {
-            loadTrainingFromImport(route.params.uebungen);
-        }
-        else {
+        } else {
             loadTrainingForNewSession();
         }
     }, []);
@@ -51,20 +48,18 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
     const autoSave = useRef(
         debounce(async (uebungenCopy: IUebung[], originalCopy: IUebung[]) => {
-            console.log("📣 AutoSave wurde ausgelöst!");
 
             const hasChanged = JSON.stringify(uebungenCopy) !== JSON.stringify(originalCopy);
-            console.log("🧪 Vergleich uebungen vs original:", hasChanged);
 
-            if (!hasChanged || !uebungenCopy.length) {
-                console.log("ℹ️ Keine Änderungen oder Liste leer – AutoSave übersprungen");
-                return;
-            }
+            if (!hasChanged || !uebungenCopy.length) return;
 
-            console.log("💾 Auto-Speichern wird ausgeführt");
-            await saveTraining(uebungenCopy, {silent: true});
+            console.log("⚡ AutoSave läuft");
+
+            await saveTraining(uebungenCopy, { silent: true });
+
             setOriginalUebungen(JSON.parse(JSON.stringify(uebungenCopy)));
-        }, 2000)
+
+        }, 1500)
     ).current;
 
     function normalizeName(name: string): string {
@@ -105,94 +100,21 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
         return matrix[a.length][b.length];
     }
 
-    async function shareTraining() {
-        const trainingData = {
-            muscle_group: route.params.gruppe,
-            uebungen: uebungen.map((uebung) => ({uebung: uebung.name}))
-        };
-
-        const fileUri = FileSystem.cacheDirectory + "training.json";
-
-        await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(trainingData));
-
-        if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(fileUri);
-        } else {
-            alert("Teilen wird auf diesem Gerät nicht unterstützt.");
-        }
-    }
-
     function showAlert() {
         Alert.alert(
             "Training speichern?",
             "Soll das Training gespeichert werden?",
-            [{text: "Nein", onPress: () => navigation.popToTop(), style: "destructive"}, {
-                text: "Ja",
-                onPress: () => saveTraining(uebungen)
-            }]
-        )
-    }
-
-    async function loadTrainingFromImport(importUebungen: {uebung: string}[]) {
-        try {
-            const muscleGroupIdResult = await kraftsportService.getMuscleGroupIdForName(gruppe);
-            const muscleGroupId = muscleGroupIdResult?.id;
-
-            if (!muscleGroupId) {
-                Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
-                return;
-            }
-
-            const newExercises: IUebung[] = [];
-
-            for (const imported of importUebungen) {
-                const importedName = imported.uebung;
-
-                // alle existierenden Übungen holen
-                const allExisting = await kraftsportService.getAllExercises();
-                const matchedExercise = allExisting.find(e => isSimilarName(e.name, importedName));
-
-                let exerciseId: number;
-                let displayName: string;
-                let saetze: ISatz[] = [];
-
-                if (matchedExercise) {
-                    // Falls ähnlich → DB-Namen übernehmen
-                    exerciseId = matchedExercise.id;
-                    displayName = matchedExercise.name;
-
-                    // letzte Gewichte laden
-                    const lastData: IGewichtUebung | null = await kraftsportService.getLastWeightForUebung(matchedExercise.name);
-                    if (lastData) {
-                        saetze = Array.from({ length: lastData.satz_anzahl }, (): ISatz => ({
-                            id: Date.now() + Math.random(),
-                            gewicht: lastData.weight,
-                            wiederholungen: null
-                        }));
+            [
+                { text: "Nein", onPress: () => navigation.popToTop(), style: "destructive" },
+                {
+                    text: "Ja",
+                    onPress: async () => {
+                        await saveTraining(uebungen);
+                        navigation.popToTop();
                     }
-                } else {
-                    // neue Übung → in DB speichern
-                    const insert = await kraftsportService.addUebungToDatabase(importedName);
-                    exerciseId = insert.lastInsertRowId;
-                    displayName = importedName; // vorerst importierter Name
-                    saetze = [];
                 }
-
-                // mit Muskelgruppe verknüpfen
-                await kraftsportService.connectMuscleGroupAndUebung(muscleGroupId, exerciseId);
-
-                newExercises.push({
-                    id: exerciseId,
-                    name: displayName,   // 👈 wichtig: hier den DB-Namen nehmen
-                    saetze
-                });
-            }
-
-            setUebungen(newExercises);
-            setOriginalUebungen(JSON.parse(JSON.stringify(newExercises)));
-        } catch (error) {
-            console.error("❌ Fehler beim Import:", error);
-        }
+            ]
+        );
     }
 
     async function loadTrainingForNewSession() {
@@ -377,29 +299,31 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }
 
     async function saveTraining(uebungen: IUebung[], options?: { silent?: boolean }) {
+        if (isSavingRef.current) return;
+        isSavingRef.current = true;
         try {
             console.log("Saving...");
             const muscleGroupIdResult = await kraftsportService.getMuscleGroupIdForName(gruppe);
             const muscleGroupId = muscleGroupIdResult?.id;
 
             if (!muscleGroupId) {
-                if (!options?.silent) Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
+                if (!options?.silent) {
+                    Alert.alert("Fehler", "Muskelgruppe nicht gefunden!");
+                }
                 return;
             }
 
-            // ⚙️ Wichtige Änderung: State-Variable trainingId
             let currentTrainingId = trainingIdRef.current;
             const isUpdate = !!currentTrainingId;
 
 
             if (isUpdate) {
                 if (JSON.stringify(uebungen) === JSON.stringify(originalUebungen)) {
-                    if (!options?.silent) navigation.popToTop();
                     return;
                 }
 
+                // ❗️WICHTIG: Training NICHT löschen
                 await kraftsportService.deleteSatzFromTraining(currentTrainingId!);
-                await kraftsportService.deleteTraining(currentTrainingId!);
             } else {
                 const tagesZeit = getTageszeit();
                 const trainingInsert = await kraftsportService.addTraining(
@@ -434,13 +358,15 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             }
         } catch (error) {
             console.error("❌ Fehler beim Speichern:", error);
+        } finally {
+            isSavingRef.current = false;
         }
     }
 
 
     return (
         <KeyboardAvoidingView
-            style={globalStyles.screenContainer}
+            style={[globalStyles.screenContainer, {paddingTop: 0}]}
             behavior={"padding"}
             keyboardVerticalOffset={100}
         >
@@ -462,7 +388,11 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             />
             <BigButton
                 title='Fertig'
-                onPress={() => saveTraining(uebungen)}/>
+                onPress={async () => {
+                    await saveTraining(uebungen);
+                    navigation.popToTop();
+                }}
+            />
         </KeyboardAvoidingView>
     );
 };

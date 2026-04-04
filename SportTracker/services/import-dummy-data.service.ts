@@ -73,6 +73,13 @@ export class ImportDummyDataService {
 
                     const exerciseId = exerciseResult.id;
 
+                    if (muscleGroupId) {
+                        await DatabaseService.run(
+                            "INSERT OR IGNORE INTO exercise_muscle_group (exercise_id, muscle_group_id) VALUES (?, ?);",
+                            [exerciseId, muscleGroupId]
+                        );
+                    }
+
                     const existingExerciseTraining: { id: number } | null | undefined = await DatabaseService.getOne(
                         "SELECT id FROM exercise_training WHERE training_id = ? AND exercise_id = ?;",
                         [trainingId, exerciseId]

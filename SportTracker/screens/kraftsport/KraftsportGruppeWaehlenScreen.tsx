@@ -24,12 +24,6 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => <IconButton onPress={() => importTraining()} icon='file-download' color={textColorPrimary} size={24}/>,
-        });
-    }, []);
-
-    useEffect(() => {
         getMuskelgruppe();
     }, []);
 

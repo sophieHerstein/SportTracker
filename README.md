@@ -11,6 +11,8 @@
 - ~~Bei Trainingsübersichten nach Art filtern~~
 - ~~Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann~~
 - ~~Training teilen-Funktion~~
+- Vorschläge für Übungen
+- Gruppen bearbeiten & löschen
 
 ### Bugs
 
@@ -18,3 +20,5 @@
 - ~~Refactoring und Umbau gemäß Standards (oder zumindest DB Stuff in Services auslagern)~~
 - ~~Diagramme stürzen bei Tom teilweise ab~~
 - ~~Runter scrollen bei Diagrammen funktioniert nicht vollständig~~
+- ~~Speichern und Training schließen klappt nicht mehr sauber~~
+- ~~Import klappt nicht~~ <- wurde komplett entfernt
