@@ -1,25 +1,38 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Alert, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
+import {
+    Alert,
+    Dimensions,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View
+} from 'react-native';
 import IconButton from "../../components/IconButton";
-import {EAppPaths, highlight, secondary} from "../../models/constants";
+import {EAppPaths, highlight, primary, secondary} from "../../models/constants";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {IKrafttrainingImportData, IMuscleGroupDatabaseResult} from "../../models/interfaces";
+import {IKrafttrainingUndUebungData,} from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {KraftsportService} from "../../services/kraftsport.service";
-import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+import Carousel from "pinar";
 
+const width = Dimensions.get('window').width;
 type KraftsportGruppeWaehlenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN>;
 
 export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGruppeWaehlenScreenProps) {
     const [datum, setDatum] = useState(new Date());
-    const [showInput, setShowInput] = useState(false);
     const [additionalGruppe, setAdditionalGruppe] = useState('');
-    const [gruppen, setGruppen] = useState<string[]>([]);
+    const [gruppen, setGruppen] = useState<IKrafttrainingUndUebungData[]>([]);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-    const [gruppeSchonVorhanden, setGruppeSchonVorhanden] = useState<boolean>(true);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [itemForEdit, setItemForEdit] = useState<IKrafttrainingUndUebungData | null>(null);
+    const [editName, setEditName] = useState('');
+    const [editExercises, setEditExercises] = useState<{ id: number, name: string }[]>([]);
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
@@ -40,76 +53,89 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
         hideDatePicker();
     };
 
-    async function importTraining() {
-        const result = await DocumentPicker.getDocumentAsync({type: "application/json"});
-
-        if (result.assets) {
-            const fileUri = result.assets[0].uri;
-            const content = await FileSystem.readAsStringAsync(fileUri);
-            const data: IKrafttrainingImportData = JSON.parse(content);
-
-
-            await addGruppeToList(data.muscle_group);
-
-            if (!gruppeSchonVorhanden) {
-                navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
-                    gruppe: data.muscle_group,
-                    datum: datum.getTime(),
-                    uebungen: data.uebungen
-                })
-            }
-
-        }
-
-    }
-
     async function getMuskelgruppe() {
-        const databaseData: IMuscleGroupDatabaseResult[] = await kraftsportService.getMuscleGroupData();
-        const muscleGroups = databaseData.map((row: IMuscleGroupDatabaseResult) => {
-            return row.name;
-        })
-        setGruppen(muscleGroups);
+        const databaseData = await kraftsportService.getMuscleGroupsWithExercises();
+        const databaseDataWithAdditionalSlide = [
+            ...databaseData,
+            {
+                id: Date.now(),
+                name: "Neue Gruppe hinzufügen",
+                exercises: []
+            }
+        ]
+        setGruppen(databaseDataWithAdditionalSlide);
     }
 
-    async function addGruppeToList(gruppe?: string) {
-        if (gruppe) {
-            if (!gruppen.includes(gruppe) && gruppe.trim() !== '') {
-                const neueGruppen = [...gruppen];
-                neueGruppen.push(gruppe);
-                setGruppen(neueGruppen);
-                await kraftsportService.addMuscleGroup(gruppe);
-                setGruppeSchonVorhanden(false);
-            } else {
-                Alert.alert(
-                    "Gruppe existiert bereits",
-                    "Eine Gruppe mit dem Namen existiert bereits und kann deshalb nicht importiert werden.",
-                    [{
-                        text: "Okay",
-                        onPress: () => {
-                            const alteGruppen = [...gruppen];
-                            setGruppen(alteGruppen)
-                        }
-                    }]
-                )
-            }
+    async function addGruppeToList() {
+        if (!gruppen.some(g => g.name === additionalGruppe) && additionalGruppe.trim() !== '') {
+            await kraftsportService.addMuscleGroup(additionalGruppe);
+            navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
+                gruppe: additionalGruppe,
+                datum: datum.getTime()
+            })
         } else {
-            if (!gruppen.includes(additionalGruppe) && additionalGruppe.trim() !== '') {
-                const neueGruppen = [...gruppen];
-                neueGruppen.push(additionalGruppe);
-                setGruppen(neueGruppen);
-                await kraftsportService.addMuscleGroup(additionalGruppe);
-                setAdditionalGruppe('');
-                setShowInput(false);
-            } else {
-                setAdditionalGruppe('');
-                setShowInput(false);
+            setAdditionalGruppe('');
+        }
+    }
+
+    async function handleRemoveExercise(exerciseId: number) {
+        if (!itemForEdit) return;
+
+        // UI sofort updaten
+        setEditExercises(prev => prev.filter(ex => ex.id !== exerciseId));
+
+        // DB
+        await kraftsportService.deleteUebungReferenzFromGruppe(
+            exerciseId,
+            itemForEdit.name
+        );
+    }
+
+    async function handleSaveEdit() {
+        if (!itemForEdit) return;
+
+        // 1. Gruppenname updaten
+        if (editName !== itemForEdit.name && !!itemForEdit.id) {
+            await kraftsportService.updateMuscleGroup(itemForEdit.id, editName);
+        }
+
+        // 2. Übungen updaten
+        for (const ex of editExercises) {
+            const original = itemForEdit.exercises.find(e => e.id === ex.id);
+
+            if (original && original.name !== ex.name) {
+                await kraftsportService.updateExercise(ex.id, ex.name);
             }
         }
+
+        // 3. UI aktualisieren
+        await getMuskelgruppe();
+
+        setShowEditModal(false);
+    }
+
+    async function handleDeleteGroup() {
+        if (!itemForEdit) return;
+
+        Alert.alert(
+            "Gruppe löschen",
+            "Willst du diese Gruppe wirklich entfernen?",
+            [
+                {text: "Abbrechen"},
+                {
+                    text: "Löschen",
+                    onPress: async () => {
+                        await kraftsportService.deleteMuscleGroup(itemForEdit.id!);
+                        setShowEditModal(false);
+                        await getMuskelgruppe();
+                    }
+                }
+            ]
+        );
     }
 
     return (
         <KeyboardAvoidingView behavior={"height"} style={[globalStyles.screenContainer, styles.center]}>
-            <Text style={globalStyles.title}>Gruppe wählen</Text>
             <View style={[globalStyles.container, styles.paddingVertical]}>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Datum:</Text>
@@ -133,33 +159,131 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                 </View>
             </View>
             <View style={styles.paddingVertical}>
-                {gruppen.map((gruppe, index) => (
-                    <Pressable
-                        key={index}
-                        style={[globalStyles.buttonPrimary, styles.buttonWidth]}
-                        onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
-                            gruppe,
-                            datum: datum.getTime()
-                        })}>
-                        <Text style={globalStyles.buttonText}>{gruppe}</Text>
-                    </Pressable>
-                ))}
+                <Carousel
+                    key={gruppen.length}
+                    showsControls={false}
+                    showsDots={true}
+                    loop={true}
+                    autoplay={false}
+                    dotStyle={styles.dotStyle}
+                    activeDotStyle={[styles.dotStyle, styles.activeDotStyle]}
+                >
+                    {gruppen.map((item, index) => (
+                        <View
+                            key={item.id}
+                            style={styles.carousel}
+                        >
+                            {item.name != "Neue Gruppe hinzufügen" &&
+                                <IconButton
+                                    style={styles.editButton}
+                                    size={32}
+                                    color={highlight}
+                                    icon="edit"
+                                    onPress={() => {
+                                        setItemForEdit(item);
+                                        setEditName(item.name);
+                                        setEditExercises(item.exercises);
+                                        setShowEditModal(true);
+                                    }}></IconButton>}
+                            <Pressable onPress={() => {
+                                if (index != gruppen.length - 1) {
+                                    navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
+                                        gruppe: item.name,
+                                        datum: datum.getTime()
+                                    })
+                                }
+                            }}>
+                                <Text style={[globalStyles.title, {color: highlight}]}>
+                                    {item.name}
+                                </Text>
+                                {item.exercises.length > 0 &&
+                                    <View style={{marginTop: 10}}>
+                                        {item.exercises.map((ex) => (
+                                            <Text key={ex.id} style={[globalStyles.text, {color: highlight}]}>
+                                                {ex.name}
+                                            </Text>
+                                        ))}
+                                    </View>
+                                }
+                                {item.exercises.length == 0 && item.name == "Neue Gruppe hinzufügen" &&
+                                    <View style={{marginTop: 10, flexDirection: "row", alignItems: "center"}}>
+                                        <TextInput placeholder='Gruppe'
+                                                   style={globalStyles.input}
+                                                   placeholderTextColor={highlight}
+                                                   returnKeyType='done'
+                                                   onChangeText={setAdditionalGruppe}
+                                                   onSubmitEditing={() => addGruppeToList()}>
+                                        </TextInput>
+                                        <IconButton
+                                            size={36}
+                                            icon='add'
+                                            color={secondary}
+                                            onPress={() => addGruppeToList()}>
+                                        </IconButton>
+                                    </View>
+                                }
+                            </Pressable>
+                        </View>
+                    ))}
+                </Carousel>
             </View>
-            <IconButton
-                size={36}
-                icon='add'
-                color={secondary}
-                onPress={() => setShowInput(true)}>
-            </IconButton>
-            {showInput && (
-                <TextInput placeholder='Gruppe'
-                           style={globalStyles.input}
-                           placeholderTextColor={highlight}
-                           returnKeyType='done'
-                           onChangeText={setAdditionalGruppe}
-                           onSubmitEditing={() => addGruppeToList()}>
-                </TextInput>
-            )}
+            <Modal animationType="slide" visible={showEditModal}>
+                <View style={[globalStyles.screenContainer, {paddingTop: 100}]}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 30}}>
+
+                        {/* Gruppenname */}
+                        <TextInput
+                            value={editName}
+                            onChangeText={setEditName}
+                            style={[globalStyles.input, {flex: 1}]}
+                        />
+                        <IconButton
+                            size={32}
+                            icon="delete"
+                            color={primary}
+                            onPress={() => handleDeleteGroup()}
+                        />
+                    </View>
+                    <Text style={globalStyles.subtitle}>Übungen</Text>
+                    {/* Übungen */}
+                    <FlatList
+                        data={editExercises}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={({item}) => (
+                            <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 10}}>
+
+                                {/* Name bearbeiten */}
+                                <TextInput
+                                    value={item.name}
+                                    onChangeText={(text) => {
+                                        setEditExercises(prev =>
+                                            prev.map(ex =>
+                                                ex.id === item.id ? {...ex, name: text} : ex
+                                            )
+                                        );
+                                    }}
+                                    style={[globalStyles.input, {flex: 1}]}
+                                />
+
+                                {/* Entfernen */}
+                                <IconButton
+                                    size={32}
+                                    icon="delete"
+                                    color={primary}
+                                    onPress={() => handleRemoveExercise(item.id)}
+                                />
+                            </View>
+                        )}
+                    />
+
+                    {/* Buttons */}
+                    <View style={{flexDirection: 'row', justifyContent: 'space-around', marginTop: 20}}>
+                        <IconButton color={primary} size={32} icon="close" onPress={() => setShowEditModal(false)}/>
+                        <IconButton color={primary} size={32} icon="check" onPress={handleSaveEdit}/>
+                    </View>
+
+                </View>
+            </Modal>
         </KeyboardAvoidingView>
     );
 }
@@ -178,5 +302,29 @@ const styles = StyleSheet.create({
     background: {
         backgroundColor: highlight,
         borderRadius: 10
+    },
+    carousel: {
+        flex: 1,
+        backgroundColor: primary,
+        margin: 5,
+        padding: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginHorizontal: 20,
+        justifyContent: 'flex-start',
+        gap: 75
+    },
+    editButton: {
+        alignSelf: "flex-end",
+    },
+    dotStyle: {
+        backgroundColor: secondary,
+        width: 10,
+        height: 10,
+        margin: 5,
+        borderRadius: 50
+    },
+    activeDotStyle: {
+        backgroundColor: highlight
     }
 })

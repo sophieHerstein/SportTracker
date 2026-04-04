@@ -246,7 +246,17 @@ export interface IColumnDefinition {
     sql: string;
 }
 
-export interface IKrafttrainingImportData {
-    muscle_group: string,
-    uebungen: { uebung: string }[]
+export interface IKrafttrainingUndUebungData {
+    id?: number;
+    name: string;
+    exercises: {
+        id: number;
+        name: string;
+    }[];
+}
+
+export interface RawRow {
+    muscle_group_id: number;
+    muscle_group_name: string;
+    exercises: string | null;
 }

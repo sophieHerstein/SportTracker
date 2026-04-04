@@ -182,6 +182,11 @@ export default function StartScreen() {
                     table: 'ausdauertrainingseinheit',
                     column: 'tageszeit',
                     sql: 'ALTER TABLE ausdauertrainingseinheit ADD COLUMN tageszeit TEXT'
+                },
+                {
+                    table: 'muscle_group',
+                    column: 'is_deleted',
+                    sql: 'ALTER TABLE muscle_group ADD COLUMN is_deleted INTEGER DEFAULT 0'
                 }
             ])
             await fetchData();

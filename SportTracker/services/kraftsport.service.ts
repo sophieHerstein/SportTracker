@@ -1,5 +1,6 @@
 import {DatabaseService} from "./database.service";
 import {TAGESZEIT} from "../models/constants";
+import {RawRow} from "../models/interfaces";
 
 export class KraftsportService {
     async fetchKraftsportData() {
@@ -51,7 +52,8 @@ export class KraftsportService {
 
     async getMuscleGroupData() {
         return DatabaseService.getAll(`SELECT *
-                                       FROM muscle_group`)
+                                       FROM muscle_group
+                                       WHERE is_deleted = 0`)
     }
 
     async addMuscleGroup(name: string) {
@@ -267,8 +269,60 @@ export class KraftsportService {
                                     WHERE name = '${uebungName}'`)
     }
 
-    async getAllExercises() {
-        return DatabaseService.getAll(`SELECT *
-                                       FROM exercise`)
+    async getMuscleGroupsWithExercises() {
+        const result = await DatabaseService.getAll<RawRow>(`
+            SELECT mg.id                                     AS muscle_group_id,
+                   mg.name                                   AS muscle_group_name,
+                   GROUP_CONCAT(e.id || ':' || e.name, '||') AS exercises
+            FROM muscle_group mg
+                     LEFT JOIN exercise_muscle_group emg
+                               ON mg.id = emg.muscle_group_id
+                     LEFT JOIN exercise e
+                               ON e.id = emg.exercise_id
+            WHERE mg.is_deleted = 0
+            GROUP BY mg.id, mg.name
+            ORDER BY mg.name;
+        `);
+
+        return result.map(row => ({
+            id: row.muscle_group_id,
+            name: row.muscle_group_name,
+            exercises: row.exercises
+                ? row.exercises.split('||').map((ex) => {
+                    const [id, name] = ex.split(':');
+                    return {
+                        id: Number(id),
+                        name
+                    };
+                })
+                : []
+        }));
+    }
+
+    async updateMuscleGroup(id: number, name: string) {
+        return DatabaseService.run(
+            `UPDATE muscle_group
+             SET name = ?
+             WHERE id = ?`,
+            [name, id]
+        );
+    }
+
+    async updateExercise(id: number, name: string) {
+        return DatabaseService.run(
+            `UPDATE exercise
+             SET name = ?
+             WHERE id = ?`,
+            [name, id]
+        );
+    }
+
+    async deleteMuscleGroup(id: number) {
+        return DatabaseService.run(
+            `UPDATE muscle_group
+             SET is_deleted = 1
+             WHERE id = ?`,
+            [id]
+        );
     }
 }
