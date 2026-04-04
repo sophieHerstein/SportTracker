@@ -20,6 +20,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     const [uebungen, setUebungen] = useState<IUebung[]>(() => []);
     const [originalUebungen, setOriginalUebungen] = useState<IUebung[]>([]);
 
+    const flatListRef = useRef<FlatList>(null);
     const isSavingRef = useRef(false);
     const trainingIdRef = useRef<string | null>(route.params.id ?? null);
 
@@ -198,6 +199,9 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
     function addUebung() {
         setUebungen([...uebungen, {id: Date.now(), name: "", saetze: []}]);
+        setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
     }
 
     async function deleteUebung(uebungId: number) {
@@ -372,6 +376,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                             stylePressable={styles.addUebung} styleText={styles.addUebungText}
                             title="Übung hinzufügen"/>
             <FlatList
+                ref={flatListRef}
                 data={uebungen || []}
                 keyExtractor={(item, index) => (item?.id ? item.id.toString() : index.toString())}
                 renderItem={({item: uebung}) =>
