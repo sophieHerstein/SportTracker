@@ -248,5 +248,5 @@ export interface IColumnDefinition {
 
 export interface IKrafttrainingImportData {
     muscle_group: string,
-    uebungen: {uebung: string}[]
+    uebungen: { uebung: string }[]
 }

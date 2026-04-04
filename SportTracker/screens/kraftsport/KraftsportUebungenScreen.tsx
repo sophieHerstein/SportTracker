@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {Alert, FlatList, KeyboardAvoidingView, Platform, StyleSheet} from "react-native";
+import {Alert, FlatList, KeyboardAvoidingView, StyleSheet} from "react-native";
 import BigButton from "../../components/BigButton";
 import TextIconButton from "../../components/TextIconButton";
 import KraftsportUebungListItem from "./components/KraftsportUebungListItem";
@@ -12,8 +12,6 @@ import IconButton from "../../components/IconButton";
 import {KraftsportService} from "../../services/kraftsport.service";
 import {debounce} from "lodash";
 import {getTageszeit} from "../../utils/helper";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
 
 type KraftsportUebungenScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.KRAFTSPORT_UEBUNGEN>;
 
@@ -55,7 +53,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
             console.log("⚡ AutoSave läuft");
 
-            await saveTraining(uebungenCopy, { silent: true });
+            await saveTraining(uebungenCopy, {silent: true});
 
             setOriginalUebungen(JSON.parse(JSON.stringify(uebungenCopy)));
 
@@ -81,7 +79,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }
 
     function levenshteinDistance(a: string, b: string): number {
-        const matrix = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+        const matrix = Array.from({length: a.length + 1}, () => new Array(b.length + 1).fill(0));
 
         for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
         for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
@@ -105,7 +103,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
             "Training speichern?",
             "Soll das Training gespeichert werden?",
             [
-                { text: "Nein", onPress: () => navigation.popToTop(), style: "destructive" },
+                {text: "Nein", onPress: () => navigation.popToTop(), style: "destructive"},
                 {
                     text: "Ja",
                     onPress: async () => {
@@ -132,7 +130,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
                 if (lastData) {
                     // 3. Vorbelegung mit letzter Satzanzahl und Gewicht
-                    saetze = Array.from({ length: lastData.satz_anzahl }, (): ISatz => ({
+                    saetze = Array.from({length: lastData.satz_anzahl}, (): ISatz => ({
                         id: Date.now() + Math.random(),
                         gewicht: lastData.weight,
                         wiederholungen: null

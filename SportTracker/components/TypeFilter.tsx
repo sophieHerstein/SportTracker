@@ -1,5 +1,4 @@
 import {Button, StyleSheet, View} from "react-native";
-import {globalStyles} from "../utils/global-styles";
 import {highlight, primary} from "../models/constants";
 import {ITypeFilterProps} from "../models/interfaces";
 

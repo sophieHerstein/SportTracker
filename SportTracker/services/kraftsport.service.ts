@@ -83,7 +83,18 @@ export class KraftsportService {
     }
 
     async getLastUebungDataForGruppe(gruppe: string) {
-        return DatabaseService.getAll(`SELECT e.id, e.name, MAX(t.datum) AS last_training_date, (SELECT es.weight FROM exercise_set es JOIN exercise_training et2 ON es.exercise_training_id = et2.id WHERE et2.exercise_id = e.id ORDER BY et2.training_id DESC LIMIT 1) AS last_weight, (SELECT COUNT(*) FROM exercise_set es JOIN exercise_training et2 ON es.exercise_training_id = et2.id WHERE et2.exercise_id = e.id AND et2.training_id = (SELECT id FROM training WHERE datum = (SELECT MAX(datum) FROM training t JOIN exercise_training et3 ON t.id = et3.training_id WHERE et3.exercise_id = e.id))) AS last_sets FROM exercise e JOIN exercise_training et ON e.id = et.exercise_id JOIN training t ON et.training_id = t.id WHERE e.id IN (SELECT exercise_id FROM exercise_muscle_group WHERE muscle_group_id = (SELECT id FROM muscle_group WHERE name = '${gruppe}')) GROUP BY e.id, e.name`);
+        return DatabaseService.getAll(`SELECT e.id,
+                                              e.name,
+                                              MAX(t.datum) AS                last_training_date,
+                                              (SELECT es.weight
+                                               FROM exercise_set es
+                                                        JOIN exercise_training et2 ON es.exercise_training_id = et2.id
+                                               WHERE et2.exercise_id = e.id
+                                               ORDER BY et2.training_id DESC LIMIT 1) AS last_weight, (SELECT COUNT(*) FROM exercise_set es JOIN exercise_training et2 ON es.exercise_training_id = et2.id WHERE et2.exercise_id = e.id AND et2.training_id = (SELECT id FROM training WHERE datum = (SELECT MAX(datum) FROM training t JOIN exercise_training et3 ON t.id = et3.training_id WHERE et3.exercise_id = e.id))) AS last_sets
+                                       FROM exercise e JOIN exercise_training et
+                                       ON e.id = et.exercise_id JOIN training t ON et.training_id = t.id
+                                       WHERE e.id IN (SELECT exercise_id FROM exercise_muscle_group WHERE muscle_group_id = (SELECT id FROM muscle_group WHERE name = '${gruppe}'))
+                                       GROUP BY e.id, e.name`);
     }
 
     async deleteUebungReferenzFromGruppe(uebungId: number, gruppe: string) {
@@ -116,8 +127,12 @@ export class KraftsportService {
     }
 
     async connectMuscleGroupAndUebung(muscleGroupId: number, exerciseId: number) {
-        return DatabaseService.run(`INSERT OR IGNORE INTO exercise_muscle_group (muscle_group_id, exercise_id)
-                                    VALUES (${muscleGroupId}, ${exerciseId})`)
+        return DatabaseService.run(`INSERT
+        OR IGNORE INTO exercise_muscle_group (muscle_group_id, exercise_id)
+                                    VALUES (
+        ${muscleGroupId},
+        ${exerciseId}
+        )`)
     }
 
     async addExerciseToTraining(trainingId: string, exerciseId: number) {
@@ -141,10 +156,10 @@ export class KraftsportService {
                                                                         JOIN training t ON et2.training_id = t.id
                                                                WHERE et2.exercise_id = (SELECT id FROM exercise WHERE name = '${uebung}')
                                                                ORDER BY t.id DESC
-                                                               LIMIT 1)
+                                           LIMIT 1)
                                        GROUP BY es.exercise_training_id
                                        ORDER BY es.id DESC
-                                       LIMIT 1`)
+                                           LIMIT 1`)
     }
 
     async shouldExerciseAndMuscleGroupBeUnlinked(uebungId: number) {
@@ -156,46 +171,52 @@ export class KraftsportService {
                                                                                                     FROM exercise_training
                                                                                                     WHERE exercise_id = ${uebungId}))
                                                               ORDER BY datum DESC
-                                                              LIMIT 1),
-                                            previous_training AS (SELECT id
-                                                                  FROM training
-                                                                  WHERE muscle_group_id = (SELECT muscle_group_id
-                                                                                           FROM training
-                                                                                           WHERE id IN
-                                                                                                 (SELECT training_id
-                                                                                                  FROM exercise_training
-                                                                                                  WHERE exercise_id = ${uebungId}))
-                                                                    AND id < (SELECT id FROM last_training)
-                                                                  ORDER BY datum DESC
-                                                                  LIMIT 1),
-                                            last_5_trainings AS (SELECT id
-                                                                 FROM training
-                                                                 WHERE muscle_group_id = (SELECT muscle_group_id
-                                                                                          FROM training
-                                                                                          WHERE id IN
-                                                                                                (SELECT training_id
-                                                                                                 FROM exercise_training
-                                                                                                 WHERE exercise_id = ${uebungId}))
-                                                                 ORDER BY datum DESC
-                                                                 LIMIT 5),
-                                            exercise_last_training AS (SELECT 1
-                                                                       FROM exercise_training
-                                                                       WHERE exercise_id = ${uebungId}
-                                                                         AND training_id = (SELECT id FROM last_training)),
-                                            exercise_previous_training AS (SELECT 1
-                                                                           FROM exercise_training
-                                                                           WHERE exercise_id = ${uebungId}
-                                                                             AND training_id = (SELECT id FROM previous_training)),
-                                            exercise_last_5_trainings AS (SELECT COUNT(*) as count
-                                                                          FROM exercise_training
-                                                                          WHERE exercise_id = ${uebungId}
-                                                                            AND training_id IN (SELECT id FROM last_5_trainings))
-                                       SELECT CASE
-                                                  WHEN NOT EXISTS (SELECT 1 FROM last_training) THEN 0
-                                                  WHEN EXISTS (SELECT 1 FROM exercise_last_training) AND
-                                                       NOT EXISTS (SELECT 1 FROM exercise_previous_training) THEN 1
-                                                  WHEN (SELECT count FROM exercise_last_5_trainings) = 0 THEN 1
-                                                  ELSE 0 END AS should_unlink`)
+                                           LIMIT 1)
+                                          , previous_training AS (
+                                       SELECT id
+                                       FROM training
+                                       WHERE muscle_group_id = (SELECT muscle_group_id
+                                           FROM training
+                                           WHERE id IN
+                                           (SELECT training_id
+                                           FROM exercise_training
+                                           WHERE exercise_id = ${uebungId}))
+                                         AND id
+                                           < (SELECT id FROM last_training)
+                                       ORDER BY datum DESC
+                                           LIMIT 1),
+                                           last_5_trainings AS (
+                                       SELECT id
+                                       FROM training
+                                       WHERE muscle_group_id = (SELECT muscle_group_id
+                                           FROM training
+                                           WHERE id IN
+                                           (SELECT training_id
+                                           FROM exercise_training
+                                           WHERE exercise_id = ${uebungId}))
+                                       ORDER BY datum DESC
+                                           LIMIT 5),
+                                           exercise_last_training AS (
+                                       SELECT 1
+                                       FROM exercise_training
+                                       WHERE exercise_id = ${uebungId}
+                                         AND training_id = (SELECT id FROM last_training))
+                                           , exercise_previous_training AS (
+                                       SELECT 1
+                                       FROM exercise_training
+                                       WHERE exercise_id = ${uebungId}
+                                         AND training_id = (SELECT id FROM previous_training))
+                                           , exercise_last_5_trainings AS (
+                                       SELECT COUNT (*) as count
+                                       FROM exercise_training
+                                       WHERE exercise_id = ${uebungId}
+                                         AND training_id IN (SELECT id FROM last_5_trainings))
+        SELECT CASE
+                   WHEN NOT EXISTS (SELECT 1 FROM last_training) THEN 0
+                   WHEN EXISTS (SELECT 1 FROM exercise_last_training) AND
+                        NOT EXISTS (SELECT 1 FROM exercise_previous_training) THEN 1
+                   WHEN (SELECT count FROM exercise_last_5_trainings) = 0 THEN 1
+                   ELSE 0 END AS should_unlink`)
     }
 
     async shouldWeightBeIncreased(uebungName: string) {
@@ -205,12 +226,12 @@ export class KraftsportService {
                                                                       JOIN training t ON et.training_id = t.id
                                                              WHERE et.exercise_id = (SELECT id FROM exercise WHERE name = '${uebungName}')
                                                              ORDER BY t.id DESC
-                                                             LIMIT 6)
-                                       SELECT CASE
-                                                  WHEN COUNT(*) = 6 AND MIN(weight) = MAX(weight) AND AVG(repetitions) >= 12
-                                                      THEN 1
-                                                  ELSE 0 END AS increaseWeight
-                                       FROM last_weights;`)
+                                           LIMIT 6)
+        SELECT CASE
+                   WHEN COUNT(*) = 6 AND MIN(weight) = MAX(weight) AND AVG(repetitions) >= 12
+                       THEN 1
+                   ELSE 0 END AS increaseWeight
+        FROM last_weights;`)
     }
 
     async getExercisesForTraining(trainingId: string) {
@@ -234,12 +255,6 @@ export class KraftsportService {
                                           (SELECT id FROM exercise_training WHERE training_id = '${trainingId}')`);
     }
 
-    async deleteTraining(trainingId: string) {
-        return DatabaseService.run(`DELETE
-                                    FROM exercise_training
-                                    WHERE training_id = '${trainingId}'`)
-    }
-
     async getNoMoreIncrease(id: number) {
         return DatabaseService.getOne(`SELECT no_more_increase
                                        FROM exercise
@@ -252,7 +267,8 @@ export class KraftsportService {
                                     WHERE name = '${uebungName}'`)
     }
 
-    async getAllExercises(){
-        return DatabaseService.getAll(`SELECT * FROM exercise`)
+    async getAllExercises() {
+        return DatabaseService.getAll(`SELECT *
+                                       FROM exercise`)
     }
 }

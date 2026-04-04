@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Alert, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 import IconButton from "../../components/IconButton";
-import {EAppPaths, highlight, secondary, textColorPrimary} from "../../models/constants";
+import {EAppPaths, highlight, secondary} from "../../models/constants";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
 import {IKrafttrainingImportData, IMuscleGroupDatabaseResult} from "../../models/interfaces";
@@ -41,7 +41,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     };
 
     async function importTraining() {
-        const result = await DocumentPicker.getDocumentAsync({ type: "application/json" });
+        const result = await DocumentPicker.getDocumentAsync({type: "application/json"});
 
         if (result.assets) {
             const fileUri = result.assets[0].uri;
@@ -51,8 +51,8 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
 
             await addGruppeToList(data.muscle_group);
 
-            if (!gruppeSchonVorhanden){
-               navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
+            if (!gruppeSchonVorhanden) {
+                navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
                     gruppe: data.muscle_group,
                     datum: datum.getTime(),
                     uebungen: data.uebungen
@@ -72,7 +72,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     }
 
     async function addGruppeToList(gruppe?: string) {
-        if(gruppe) {
+        if (gruppe) {
             if (!gruppen.includes(gruppe) && gruppe.trim() !== '') {
                 const neueGruppen = [...gruppen];
                 neueGruppen.push(gruppe);
@@ -83,7 +83,7 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
                 Alert.alert(
                     "Gruppe existiert bereits",
                     "Eine Gruppe mit dem Namen existiert bereits und kann deshalb nicht importiert werden.",
-                    [ {
+                    [{
                         text: "Okay",
                         onPress: () => {
                             const alteGruppen = [...gruppen];

@@ -5,13 +5,7 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../models/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {
-    EAppPaths,
-    highlight,
-    secondary,
-    secondaryBackground,
-    textColorPrimary
-} from "../../models/constants";
+import {EAppPaths, highlight, secondary, secondaryBackground, textColorPrimary} from "../../models/constants";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
 import {AusdauerService} from "../../services/ausdauer.service";
@@ -50,7 +44,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         })
         const dropdownData = [
             ...trainigstypenMapping,
-            { label: '+ Neue Sportart hinzufügen', value: '__add_new__' }
+            {label: '+ Neue Sportart hinzufügen', value: '__add_new__'}
         ];
         setSportarten(dropdownData);
     }, [])
@@ -171,7 +165,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                 </View>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Sportart:</Text>
-                    <View style={{ width: '72%', marginStart: 26 }}>
+                    <View style={{width: '72%', marginStart: 26}}>
                         <Dropdown
                             style={styles.dropdown}
                             data={sportarten}
@@ -190,8 +184,8 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                                     setName(item.value);
                                 }
                             }}
-                            selectedTextStyle={{ color: highlight }}   // wichtig für Sichtbarkeit
-                            placeholderStyle={{ color: 'gray' }}
+                            selectedTextStyle={{color: highlight}}   // wichtig für Sichtbarkeit
+                            placeholderStyle={{color: 'gray'}}
                         />
                     </View>
                 </View>
@@ -227,7 +221,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                             onChangeText={setNewSportart}
                         />
 
-                        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+                        <View style={{flexDirection: 'row', marginTop: 10}}>
                             <BigButton
                                 title="Abbrechen"
                                 onPress={() => {
@@ -280,7 +274,7 @@ const styles = StyleSheet.create({
     },
     dropdown: {
         margin: 10,
-        marginStart:0,
+        marginStart: 0,
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,

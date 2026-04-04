@@ -13,7 +13,6 @@ import {IAusdauerData, ITrainingstypDatabaseResult} from "./models/interfaces";
 import KraftsportStatistikScreen from "./screens/kraftsport/KraftsportStatistikScreen";
 import StartScreen from "./screens/start/StartScreen";
 import {globalStyles} from "./utils/global-styles";
-import SettingsScreen from "./screens/settings/SettingsScreen";
 
 export type NavigatorParamList = {
     [EAppPaths.HOME]: undefined;
@@ -23,7 +22,7 @@ export type NavigatorParamList = {
         gruppe: string;
         datum: number;
         id?: string;
-        uebungen?: {uebung: string}[]
+        uebungen?: { uebung: string }[]
     };
     [EAppPaths.KRAFTSPORT_STATISTIK]: undefined;
     [EAppPaths.AUSDAUER_HOME]: undefined;

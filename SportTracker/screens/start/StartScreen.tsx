@@ -1,6 +1,6 @@
 import {useFocusEffect} from "@react-navigation/native";
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {ScrollView, Text, View} from "react-native";
+import {ScrollView, Text} from "react-native";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import {ETimeRange} from "../../models/constants";
 import {globalStyles} from "../../utils/global-styles";
@@ -10,7 +10,6 @@ import {
     ITrainingsProMonatDatabaseResult,
     ITrainingsProWocheDatabaseResult
 } from "../../models/interfaces";
-import Notifications from "./components/Notifications";
 import TrainingsBarChart from "./components/TrainingsBarChart";
 import TimeFilter from "../../components/TimeFilter";
 import {DatabaseSchemaService} from "../../services/database-schema.service";
