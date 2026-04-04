@@ -325,4 +325,10 @@ export class KraftsportService {
             [id]
         );
     }
+
+    async getAllUebungen(): Promise<{ id: number; name: string }[]> {
+        return await DatabaseService.getAll(`
+        SELECT id, name FROM exercise ORDER BY name
+    `);
+    }
 }

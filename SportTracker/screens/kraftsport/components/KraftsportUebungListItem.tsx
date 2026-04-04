@@ -1,5 +1,5 @@
 import {IKraftsportUebungListItemProps} from "../../../models/interfaces";
-import {FlatList, StyleSheet, TextInput, View} from "react-native";
+import {FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import SatzListItem from "./SatzListItem";
 import TextIconButton from "../../../components/TextIconButton";
 import {MaterialIcons} from "@expo/vector-icons";
@@ -8,6 +8,7 @@ import {globalStyles} from "../../../utils/global-styles";
 import {useEffect, useMemo, useState} from "react";
 import KraftsportUebungModal from "./KraftsportUebungModal";
 import {KraftsportService} from "../../../services/kraftsport.service";
+import BigButton from "../../../components/BigButton";
 
 export default function KraftsportUebungListItem({
                                                      uebung,
@@ -20,6 +21,8 @@ export default function KraftsportUebungListItem({
 
     const [cardStyle, setCardStyle] = useState<any>(globalStyles.cards);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [allExercises, setAllExercises] = useState<string[]>([]);
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
@@ -34,6 +37,34 @@ export default function KraftsportUebungListItem({
             })
     }, [modalVisible]);
 
+    useEffect(() => {
+        loadExercises();
+    }, []);
+
+    async function loadExercises() {
+        const result = await kraftsportService.getAllUebungen();
+        setAllExercises(result.map(e => e.name));
+    }
+
+    function normalizeName(name: string): string {
+        return name.trim().toLowerCase();
+    }
+
+    function getSuggestions(input: string): string[] {
+        if (!input || input.length < 2) return [];
+
+        const normalized = normalizeName(input);
+
+        return allExercises
+            .filter(name => normalizeName(name).includes(normalized))
+            .sort((a, b) => {
+                const aStarts = normalizeName(a).startsWith(normalized);
+                const bStarts = normalizeName(b).startsWith(normalized);
+                return Number(bStarts) - Number(aStarts);
+            })
+            .slice(0, 5);
+    }
+
     return (
         <View style={cardStyle}>
             <View style={styles.rowWithInfo}>
@@ -42,11 +73,30 @@ export default function KraftsportUebungListItem({
                     placeholderTextColor={highlight}
                     placeholder="Übungsname"
                     value={uebung.name}
-                    onChangeText={(text) => updateUebungName(uebung.id, text)}
+                    onChangeText={(text) => {
+                        updateUebungName(uebung.id, text);
+                        setSuggestions(getSuggestions(text));
+                    }}
                 />
                 <MaterialIcons style={{alignSelf: "flex-start"}} name='info-outline' size={16} color={highlight}
                                onPress={() => setModalVisible(true)}/>
             </View>
+            {suggestions.length > 0 && (
+                <View style={styles.suggestionsContainer}>
+                    {suggestions.map((s, index) => (
+                        <Pressable
+                            key={index}
+                            onPress={() => {
+                                updateUebungName(uebung.id, s);
+                                setSuggestions([]);
+                            }}
+                            style={styles.suggestionItem}
+                        >
+                            <Text>{s}</Text>
+                        </Pressable>
+                    ))}
+                </View>
+            )}
             <KraftsportUebungModal uebung={uebung} visible={modalVisible}
                                    onCancel={() => setModalVisible(false)}></KraftsportUebungModal>
             <FlatList
@@ -103,5 +153,17 @@ const styles = StyleSheet.create({
     },
     rowWithInfo: {
         flexDirection: 'row',
+    },
+    suggestionsContainer: {
+        backgroundColor: "white",
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 8,
+        marginTop: 5,
+        overflow: "hidden",
+    },
+    suggestionItem: {
+        paddingVertical: 8,
+        paddingHorizontal: 10,
     }
 });
