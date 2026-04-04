@@ -12,7 +12,7 @@
 - ~~Flag dass Gewicht einer Übung nicht mehr weiter erhöht werden kann~~
 - ~~Training teilen-Funktion~~
 - Vorschläge für Übungen
-- Gruppen bearbeiten & löschen
+- Gruppen bearbeiten & löschen - Karussel
 
 ### Bugs
 
@@ -22,3 +22,4 @@
 - ~~Runter scrollen bei Diagrammen funktioniert nicht vollständig~~
 - ~~Speichern und Training schließen klappt nicht mehr sauber~~
 - ~~Import klappt nicht~~ <- wurde komplett entfernt
+- ~~Dropdown ausdauertraining umbauen~~
