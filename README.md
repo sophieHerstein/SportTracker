@@ -11,7 +11,7 @@
 - ~~Bei Trainingsübersichten nach Art filtern~~
 - ~~Flag, dass Gewicht einer Übung nicht mehr weiter erhöht werden kann~~
 - ~~Training teilen-Funktion~~
-- Gruppen bearbeiten & löschen – Karussel
+- ~~Gruppen bearbeiten & löschen – Karussel~~
 
 ### Bugs
 
