@@ -131,4 +131,6 @@ dist
 /SportTracker/android/
 
 /.idea
+/.expo
+/ios
 .DS_Store
