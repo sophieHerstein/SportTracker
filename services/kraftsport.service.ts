@@ -77,11 +77,16 @@ export class KraftsportService {
                                        FROM exercise_set es
                                                 JOIN exercise_training et ON es.exercise_training_id = et.id
                                                 JOIN training t ON et.training_id = t.id
-                                       WHERE et.exercise_id = '${id}'
-                                         AND t.datum = (SELECT MAX(t2.datum)
-                                                        FROM exercise_training et2
-                                                                 JOIN training t2 ON et2.training_id = t2.id
-                                                        WHERE et2.exercise_id = '${id}')`)
+                                       WHERE et.exercise_id = ${id}
+                                         AND et.training_id = (
+                                           SELECT et2.training_id
+                                           FROM exercise_training et2
+                                                    JOIN exercise_set es2 ON es2.exercise_training_id = et2.id
+                                                    JOIN training t2 ON et2.training_id = t2.id
+                                           WHERE et2.exercise_id = ${id}
+                                           ORDER BY t2.datum DESC, t2.id DESC
+                                           LIMIT 1
+                                           );`)
     }
 
     async getLastUebungDataForGruppe(gruppe: string) {
@@ -168,20 +173,19 @@ export class KraftsportService {
     }
 
     async getLastWeightForUebung(uebung: string) {
-        return DatabaseService.getOne(`SELECT es.weight, COUNT(es.id) AS satz_anzahl
+        return DatabaseService.getOne(`SELECT
+                                           COUNT(es.id) AS satz_anzahl,
+                                           MAX(es.weight) AS weight
                                        FROM exercise_set es
-                                                JOIN exercise_training et ON es.exercise_training_id = et.id
-                                                JOIN exercise e ON et.exercise_id = e.id
-                                       WHERE e.name = '${uebung}'
-                                         AND et.training_id = (SELECT et2.training_id
-                                                               FROM exercise_training et2
-                                                                        JOIN training t ON et2.training_id = t.id
-                                                               WHERE et2.exercise_id = (SELECT id FROM exercise WHERE name = '${uebung}')
-                                                               ORDER BY t.id DESC
-                                           LIMIT 1)
-                                       GROUP BY es.exercise_training_id
-                                       ORDER BY es.id DESC
-                                           LIMIT 1`)
+                                       WHERE es.exercise_training_id = (
+                                           SELECT et.id
+                                           FROM exercise_training et
+                                                    JOIN exercise_set es2 ON es2.exercise_training_id = et.id
+                                                    JOIN exercise e ON et.exercise_id = e.id
+                                           WHERE e.id = ${uebung}
+                                           ORDER BY et.id DESC
+                                           LIMIT 1
+                                           );`)
     }
 
     async shouldExerciseAndMuscleGroupBeUnlinked(uebungId: number) {

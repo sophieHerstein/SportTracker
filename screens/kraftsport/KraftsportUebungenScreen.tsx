@@ -94,7 +94,7 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
 
             for (const ex of allExercises) {
                 // 2. Letzte Daten (unabhängig von Muskelgruppe) holen
-                const lastData: IGewichtUebung | null = await kraftsportService.getLastWeightForUebung(ex.name);
+                const lastData: IGewichtUebung | null = await kraftsportService.getLastWeightForUebung(ex.id);
 
                 let saetze: ISatz[] = [];
 
@@ -296,7 +296,6 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
                     return;
                 }
 
-                // ❗️WICHTIG: Training NICHT löschen
                 await kraftsportService.deleteSatzFromTraining(currentTrainingId!);
             } else {
                 const tagesZeit = getTageszeit();
