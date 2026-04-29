@@ -81,14 +81,28 @@ export default function KraftsportGruppeWaehlenScreen({navigation}: KraftsportGr
     async function handleRemoveExercise(exerciseId: number) {
         if (!itemForEdit) return;
 
-        // UI sofort updaten
         setEditExercises(prev => prev.filter(ex => ex.id !== exerciseId));
 
-        // DB
         await kraftsportService.deleteUebungReferenzFromGruppe(
             exerciseId,
             itemForEdit.name
         );
+
+        const trainingIds = await kraftsportService.getExcerciseTrainingsIdsForExerciseId(exerciseId);
+
+        if (!trainingIds) {
+            console.log("trainingIds ist null/undefined");
+            return;
+        }
+
+        for (const trainingId of trainingIds) {
+            const setIds = await kraftsportService.getExcerciseSetIdsForExcerciseTrainingsId(trainingId.id);
+
+            if (!setIds || setIds.length === 0) {
+                await kraftsportService.deleteExerciseTrainingForId(trainingId.id);
+                await kraftsportService.deleteExerciseForId(exerciseId);
+            }
+        }
     }
 
     async function handleSaveEdit() {

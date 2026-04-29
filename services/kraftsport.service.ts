@@ -106,6 +106,26 @@ export class KraftsportService {
                                       AND muscle_group_id = (SELECT id FROM muscle_group WHERE name = '${gruppe}')`);
     }
 
+    async getExcerciseTrainingsIdsForExerciseId(uebungId: number) {
+        return DatabaseService.getAll(`SELECT id FROM exercise_training WHERE exercise_id = ${uebungId}`)
+    }
+
+    async getExcerciseSetIdsForExcerciseTrainingsId(exerciseTrainingId: number) {
+        return DatabaseService.getAll(`SELECT id FROM exercise_set WHERE exercise_training_id = ${exerciseTrainingId}`)
+    }
+
+    async deleteExerciseTrainingForId(id: number) {
+        return DatabaseService.run(`DELETE
+                                    FROM exercise_training
+                                    WHERE id = ${id}`);
+    }
+
+    async deleteExerciseForId(id: number) {
+        return DatabaseService.run(`DELETE
+                                    FROM exercise
+                                    WHERE id = ${id}`);
+    }
+
     async getMuscleGroupIdForName(name: string) {
         return DatabaseService.getOne(`SELECT id
                                        FROM muscle_group
