@@ -21,6 +21,6 @@
 - ~~Import klappt nicht,~~ ← wurde komplett entfernt
 - ~~Dropdown ausdauertraining umbauen~~
 - seit letzter Änderung werden die letzten Trainings nicht immer geladen
-- durch Autovervollständigung werden falsche Übungsnamen bzw. unvollständige Übungsnamen gespeichert -> Datenmüll
+- ~~durch Autovervollständigung werden falsche Übungsnamen bzw. unvollständige Übungsnamen gespeichert -> Datenmüll~~
   - ~~Datenmüll muss entfernt werden können~~
-  - die falschen Übungsnamen müssen vermieden werden
+  - ~~die falschen Übungsnamen müssen vermieden werden~~
