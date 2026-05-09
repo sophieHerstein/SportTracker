@@ -172,7 +172,7 @@ export class KraftsportService {
                                     VALUES (${exerciseTrainingId}, ${weight}, ${repetitions})`)
     }
 
-    async getLastWeightForUebung(uebung: string) {
+    async getLastWeightForUebung(uebungId: string) {
         return DatabaseService.getOne(`SELECT
                                            COUNT(es.id) AS satz_anzahl,
                                            MAX(es.weight) AS weight
@@ -182,7 +182,7 @@ export class KraftsportService {
                                            FROM exercise_training et
                                                     JOIN exercise_set es2 ON es2.exercise_training_id = et.id
                                                     JOIN exercise e ON et.exercise_id = e.id
-                                           WHERE e.id = ${uebung}
+                                           WHERE e.id = ${uebungId}
                                            ORDER BY et.id DESC
                                            LIMIT 1
                                            );`)

@@ -199,31 +199,44 @@ export default function KraftsportUebungenScreen({navigation, route}: Kraftsport
     }
 
     async function updateUebungName(uebungId: number, newName: string) {
-        const uebungData: IGewichtUebung | null = await kraftsportService.getLastWeightForUebung(newName)
-        if (!!uebungData) {
-            setUebungen(
-                uebungen.map((uebung) =>
-                    uebung.id === uebungId
-                        ? {
-                            ...uebung,
-                            name: newName,
-                            saetze: Array.from({length: uebungData.satz_anzahl},
-                                (): ISatz => ({
-                                    gewicht: uebungData.weight,
-                                    wiederholungen: null,
-                                    id: new Date().getTime() + Math.random() * 1000  // Temporäre ID für die UI
-                                })),
-                        }
-                        : uebung
-                )
-            );
-        } else {
-            setUebungen(
-                uebungen.map((uebung) =>
-                    uebung.id === uebungId ? {...uebung, name: newName} : uebung
-                )
-            );
-        }
+        // Eingabe sofort anzeigen
+        setUebungen(prev =>
+            prev.map(uebung =>
+                uebung.id === uebungId
+                    ? { ...uebung, name: newName }
+                    : uebung
+            )
+        );
+
+        const trimmedName = newName.trim();
+        if (trimmedName.length < 2) return;
+        const existingExercise = await kraftsportService.getIdForUebung(trimmedName);
+        if (!existingExercise?.id) return;
+        const uebungData: IGewichtUebung | null =
+            await kraftsportService.getLastWeightForUebung(existingExercise.id);
+
+        if (!uebungData) return;
+
+        setUebungen(prev =>
+            prev.map(uebung => {
+                if (uebung.id !== uebungId) return uebung;
+                if (uebung.name.trim() !== trimmedName) return uebung;
+
+                return {
+                    ...uebung,
+                    id: existingExercise.id,
+                    name: trimmedName,
+                    saetze: Array.from(
+                        { length: uebungData.satz_anzahl },
+                        (): ISatz => ({
+                            id: Date.now() + Math.random(),
+                            gewicht: uebungData.weight,
+                            wiederholungen: null
+                        })
+                    )
+                };
+            })
+        );
     }
 
     function addSatz(uebungId: number) {
