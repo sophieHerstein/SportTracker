@@ -7,6 +7,7 @@
         "android": "expo run:android",
         "ios": "expo run:ios",
         "web": "expo start --web",
+        "build:private_iphone": "npx eas build --profile development --platform ios",
         "force-install": "yarn install --force",
         "typecheck": "tsc --noEmit",
         "lint": "eslint . --max-warnings=0",
