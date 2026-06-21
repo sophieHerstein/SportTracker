@@ -4,19 +4,23 @@ import React from "react";
 import {ITextIconButtonProps} from "../models/interfaces";
 
 export default function TextIconButton({
-                                           stylePressable,
-                                           styleText,
-                                           onPress,
-                                           iconName,
-                                           color,
-                                           iconSize,
-                                           title
-                                       }: ITextIconButtonProps) {
+    stylePressable,
+    styleText,
+    onPress,
+    iconName,
+    color,
+    iconSize,
+    title,
+}: ITextIconButtonProps) {
     return (
-        <Pressable style={stylePressable} onPress={onPress}>
+        <Pressable
+            style={({pressed}) => [stylePressable, pressed && {opacity: 0.65}]}
+            onPress={onPress}
+            hitSlop={6}
+        >
             {/*@ts-ignore*/}
             <MaterialIcons name={iconName} color={color} size={iconSize}></MaterialIcons>
             <Text style={styleText}>{title}</Text>
         </Pressable>
-    )
+    );
 }

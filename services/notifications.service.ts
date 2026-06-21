@@ -22,7 +22,7 @@ export class NotificationsService {
         const result = await this.statisticsService.fetchLastKrafttraining();
         const notifications: INotification[] = [];
 
-        const vernachlaessigte = result.filter(entry => {
+        const vernachlaessigte = result.filter((entry) => {
             const last = entry.last_training;
             return !last || now - last > DAYS_THRESHOLD * 24 * 60 * 60 * 1000;
         });
@@ -30,7 +30,7 @@ export class NotificationsService {
         for (const entry of vernachlaessigte) {
             notifications.push({
                 typ: ENotifications.MUSKELGRUPPE_TRAINIEREN,
-                additionalData: entry.name
+                additionalData: entry.name,
             });
         }
 
@@ -42,9 +42,11 @@ export class NotificationsService {
         const result = await this.statisticsService.fetchLastAusdauertraining();
 
         if (!result || now - result.last_training > DAYS_THRESHOLD * 24 * 60 * 60 * 1000) {
-            return [{
-                typ: ENotifications.ZEIT_FUER_AUSDAUER
-            }];
+            return [
+                {
+                    typ: ENotifications.ZEIT_FUER_AUSDAUER,
+                },
+            ];
         }
 
         return [];

@@ -1,0 +1,20 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "Node16",
+        "moduleResolution": "Node16",
+        "target": "ES2022",
+        "outDir": ".phase7-test-build",
+        "rootDir": ".",
+        "noEmit": false,
+        "declaration": false,
+        "sourceMap": false
+    },
+    "include": [
+        "models/interfaces.ts",
+        "models/constants.ts",
+        "utils/training-validation.ts",
+        "utils/endurance-validation.ts",
+        "utils/statistics-utils.ts"
+    ]
+}

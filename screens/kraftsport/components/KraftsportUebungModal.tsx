@@ -5,7 +5,7 @@ import {
     IKraftpsortUebungModalProps,
     ISatz,
     ISatzDB,
-    IVictoryKraftsportChartProps
+    IVictoryKraftsportChartProps,
 } from "../../../models/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
 import EmptyList from "../../../components/EmptyList";
@@ -15,11 +15,14 @@ import TimeFilter from "../../../components/TimeFilter";
 import KraftsportLineChartListItem from "./KraftsportLineChartListItem";
 import {KraftsportService} from "../../../services/kraftsport.service";
 
-export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraftpsortUebungModalProps) {
-
+export default function KraftsportUebungModal({
+    visible,
+    onCancel,
+    uebung,
+}: IKraftpsortUebungModalProps) {
     const [uebungData, setUebungData] = useState<IVictoryKraftsportChartProps>({
         name: uebung.name,
-        data: []
+        data: [],
     });
     const [timeRange, setTimeRange] = useState<ETimeRange>(ETimeRange.GESAMT);
     const [lastUebungData, setLastUebungData] = useState<ISatz[]>([]);
@@ -28,54 +31,42 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
     useEffect(() => {
-        fetchData();
-    }, [])
-
-    useEffect(() => {
-        fetchData();
-    }, [timeRange]);
+        if (visible) void fetchData();
+    }, [timeRange, visible, uebung.exerciseId]);
 
     async function fetchData() {
-        const lastUebung: ISatzDB[] = await kraftsportService.getLastSatzDataForUebung(uebung.id);
-        const canWeightNotBeIncreased = await kraftsportService.getNoMoreIncrease(uebung.id);
-        setIsWeightNotIncreasable(canWeightNotBeIncreased.no_more_increase === 1);
-
-        setLastUebungData(lastUebung.map((satz) => {
-            return {
-                id: satz.satz_id,
-                gewicht: satz.weight,
-                wiederholungen: satz.repetitions,
-            }
-        }))
-
-        const entwicklungGewichtResults: IEntwicklungGewichtDatabaseResult[] = await kraftsportService.getEntwicklungGewichtDataForUebung(uebung.id);
-
-        let filteredResults = [...entwicklungGewichtResults]
-
-        if (timeRange !== ETimeRange.GESAMT) {
-            let timeRangeInNumbers: number;
-            switch (timeRange) {
-                case ETimeRange.JAHR:
-                    timeRangeInNumbers = 365
-                    break;
-                case ETimeRange.SECHS_MONATE:
-                    timeRangeInNumbers = 183
-                    break;
-                case ETimeRange.DREI_MONATE:
-                    timeRangeInNumbers = 93
-                    break;
-                case ETimeRange.MONAT:
-                    timeRangeInNumbers = 30
-                    break;
-            }
-            filteredResults = entwicklungGewichtResults.filter(row =>
-                new Date(row.datum) >= new Date(new Date().setDate(new Date().getDate() - timeRangeInNumbers))
-            );
+        if (!uebung.exerciseId) {
+            setLastUebungData([]);
+            setUebungData({name: uebung.name, data: []});
+            setIsWeightNotIncreasable(false);
+            return;
         }
 
-        const groupedData: Record<string, { datum: string; gewicht: number }[]> = {};
+        const lastUebung: ISatzDB[] = await kraftsportService.getLastSatzDataForUebung(
+            uebung.exerciseId
+        );
+        const canWeightNotBeIncreased = await kraftsportService.getNoMoreIncrease(
+            uebung.exerciseId
+        );
+        setIsWeightNotIncreasable(canWeightNotBeIncreased?.no_more_increase === 1);
 
-        filteredResults.forEach(row => {
+        setLastUebungData(
+            lastUebung.map((satz) => {
+                return {
+                    id: satz.satz_id,
+                    gewicht: satz.weight,
+                    wiederholungen: satz.repetitions,
+                };
+            })
+        );
+
+        const cutoff = getCutoffTimestamp(timeRange);
+        const entwicklungGewichtResults: IEntwicklungGewichtDatabaseResult[] =
+            await kraftsportService.getEntwicklungGewichtDataForUebung(uebung.exerciseId, cutoff);
+
+        const groupedData: Record<string, {datum: string; gewicht: number}[]> = {};
+
+        entwicklungGewichtResults.forEach((row) => {
             const datum = new Date(row.datum).toLocaleDateString("de-DE");
             const gewicht = row.max_weight;
 
@@ -89,38 +80,60 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
 
         const transformedData: IVictoryKraftsportChartProps = {
             name: uebung.name,
-            data: chartData.map((item: IEntwicklungGewichtData) => ({
-                x: item.datum,
-                y: Number(item.gewicht) || 0
-            }))
-                .filter(d => !isNaN(d.y))
+            data: chartData
+                .map((item: IEntwicklungGewichtData) => ({
+                    x: item.datum,
+                    y: Number(item.gewicht) || 0,
+                }))
+                .filter((d) => !isNaN(d.y)),
         };
 
         setUebungData(transformedData);
     }
 
+    function getCutoffTimestamp(range: ETimeRange): number {
+        const days =
+            range === ETimeRange.MONAT
+                ? 30
+                : range === ETimeRange.DREI_MONATE
+                  ? 93
+                  : range === ETimeRange.SECHS_MONATE
+                    ? 183
+                    : range === ETimeRange.JAHR
+                      ? 365
+                      : null;
+        if (days === null) return 0;
+        return Date.now() - days * 24 * 60 * 60 * 1000;
+    }
+
     function changeIncreasabilityOfWeight() {
         const newIsWeightNotIncreasable = !isWeightNotIncreasable;
         setIsWeightNotIncreasable(newIsWeightNotIncreasable);
-        kraftsportService.setNoMoreIncrease(uebung.name, newIsWeightNotIncreasable).then()
+        kraftsportService.setNoMoreIncrease(uebung.name, newIsWeightNotIncreasable).then();
     }
 
     return (
         <Modal visible={visible} animationType="slide">
             <View style={[globalStyles.screenContainer, {paddingTop: 100}]}>
-                <Text style={[globalStyles.title, {alignSelf: "center", paddingBottom: 25}]}>{uebung.name}</Text>
-                <Text style={[globalStyles.text, {paddingBottom: 10}]}>Gewicht und Wiederholung der letzten
-                    Durchführung:</Text>
-                <FlatList style={{maxHeight: 100}}
-                          data={lastUebungData}
-                          renderItem={({item, index}) => {
-                              return (
-                                  <Text
-                                      style={[globalStyles.text, {alignSelf: "center"}]}>Satz {index + 1}: {item.gewicht} x {item.wiederholungen}</Text>
-                              )
-                          }}
-                          keyExtractor={(satz) => satz.id.toString()}
-                          ListEmptyComponent={EmptyList}/>
+                <Text style={[globalStyles.title, {alignSelf: "center", paddingBottom: 25}]}>
+                    {uebung.name}
+                </Text>
+                <Text style={[globalStyles.text, {paddingBottom: 10}]}>
+                    Gewicht und Wiederholung der letzten Durchführung:
+                </Text>
+                <FlatList
+                    style={{maxHeight: 100}}
+                    data={lastUebungData}
+                    renderItem={({item, index}) => {
+                        return (
+                            <Text style={[globalStyles.text, {alignSelf: "center"}]}>
+                                Satz {index + 1}: {item.gewicht} x {item.wiederholungen}
+                            </Text>
+                        );
+                    }}
+                    keyExtractor={(satz) => satz.id.toString()}
+                    ListEmptyComponent={EmptyList}
+                />
                 <View>
                     <TimeFilter
                         timeRange={timeRange}
@@ -128,8 +141,9 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
                         onPressJahr={() => setTimeRange(ETimeRange.JAHR)}
                         onPress6Monate={() => setTimeRange(ETimeRange.SECHS_MONATE)}
                         onPress3Monate={() => setTimeRange(ETimeRange.DREI_MONATE)}
-                        onPressMonat={() => setTimeRange(ETimeRange.MONAT)}/>
-                    <KraftsportLineChartListItem isNotListElement={true} uebung={uebungData}/>
+                        onPressMonat={() => setTimeRange(ETimeRange.MONAT)}
+                    />
+                    <KraftsportLineChartListItem isNotListElement={true} uebung={uebungData} />
                 </View>
                 <View style={[globalStyles.row, {paddingVertical: 20}]}>
                     <Text style={globalStyles.text}>Gewicht kann nicht mehr erhöht werden</Text>
@@ -137,7 +151,8 @@ export default function KraftsportUebungModal({visible, onCancel, uebung}: IKraf
                         trackColor={{true: primary}}
                         thumbColor={textColorPrimary}
                         value={isWeightNotIncreasable}
-                        onValueChange={() => changeIncreasabilityOfWeight()}/>
+                        onValueChange={() => changeIncreasabilityOfWeight()}
+                    />
                 </View>
                 <Pressable style={globalStyles.buttonPrimary} onPress={() => onCancel()}>
                     <Text style={globalStyles.buttonText}>Zurück</Text>

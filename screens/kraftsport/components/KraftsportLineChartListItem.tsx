@@ -1,64 +1,66 @@
-import {ScrollView, Text, View} from "react-native";
+import {StyleSheet, Text, View, useWindowDimensions} from "react-native";
 import {IKraftsportLineChartListItemProps} from "../../../models/interfaces";
 import {globalStyles} from "../../../utils/global-styles";
-import Svg, {Defs, LinearGradient, Stop} from "react-native-svg";
-import {highlight, primary, secondary} from "../../../models/constants";
-import {Rect, VictoryAxis, VictoryChart, VictoryLine, VictoryScatter} from "victory-native";
-import {useEffect, useState} from "react";
+import {VictoryAxis, VictoryChart, VictoryLine, VictoryScatter} from "victory-native";
+import {borderColor, primary, textColorMuted} from "../../../models/constants";
 
-export default function KraftsportLineChartListItem({uebung, isNotListElement}: IKraftsportLineChartListItemProps) {
-    const [maxYValue, setMaxYValue] = useState<number>(0);
-    useEffect(() => {
-        if (uebung.data.length > 0) {
-            setMaxYValue(Math.max(...uebung.data.map(d => d.y)));
-        }
-    }, []);
+export default function KraftsportLineChartListItem({
+    uebung,
+    isNotListElement,
+}: IKraftsportLineChartListItemProps) {
+    const {width} = useWindowDimensions();
+    const data = uebung.data
+        .filter((point) => Number.isFinite(point.y))
+        .slice(-30)
+        .map((point, index) => ({x: index + 1, y: point.y, label: point.x}));
+
+    if (data.length === 0) {
+        return <Text style={styles.empty}>Noch keine Daten im Zeitraum.</Text>;
+    }
+
+    const values = data.map((point) => point.y);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const padding = Math.max((max - min) * 0.15, 2);
+    const tickIndexes = Array.from(new Set([1, Math.ceil(data.length / 2), data.length]));
 
     return (
-        <View style={{marginBottom: 20}}>
-            {!isNotListElement && <Text style={[globalStyles.subtitle, globalStyles.centerText]}>{uebung.name}</Text>}
-            <ScrollView horizontal={true}>
-                <VictoryChart width={Math.max(360, uebung.data.length * 75)} height={220}
-                              domain={{y: [0, Math.max(8, maxYValue) + 2]}}>
-                    <Svg height="100%" width={Math.max(360, uebung.data.length * 75)} style={{position: "absolute"}}>
-                        <Defs>
-                            <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <Stop offset="0%" stopColor={primary} stopOpacity="1"/>
-                                <Stop offset="100%" stopColor={secondary} stopOpacity="1"/>
-                            </LinearGradient>
-                        </Defs>
-                        <Rect width={Math.max(360, uebung.data.length * 75)} height="100%" fill="url(#grad)" rx="20"
-                              ry="20"/>
-                    </Svg>
-                    <VictoryAxis
-                        style={{
-                            axis: {stroke: highlight},
-                            tickLabels: {fill: highlight}
-                        }}
-                    />
-
-                    <VictoryAxis
-                        dependentAxis
-                        style={{
-                            axis: {stroke: highlight},
-                            tickLabels: {fill: highlight}
-                        }}
-                    />
-
-                    <VictoryLine
-                        data={uebung.data}
-                        interpolation="monotoneX"
-                        style={{
-                            data: {stroke: highlight, strokeWidth: 2}
-                        }}
-                    />
-
-                    <VictoryScatter
-                        data={uebung.data}
-                        size={5}
-                        style={{data: {fill: highlight}}}
-                    />
-                </VictoryChart>
-            </ScrollView>
-        </View>)
+        <View style={styles.container}>
+            {!isNotListElement && <Text style={globalStyles.subtitle}>{uebung.name}</Text>}
+            <VictoryChart
+                width={Math.max(280, width - 48)}
+                height={210}
+                padding={{top: 18, bottom: 42, left: 50, right: 18}}
+                domain={{y: [Math.max(0, min - padding), max + padding]}}
+            >
+                <VictoryAxis
+                    tickValues={tickIndexes}
+                    tickFormat={(tick) => data[tick - 1]?.label ?? ""}
+                    style={axisStyle}
+                />
+                <VictoryAxis dependentAxis style={axisStyle} />
+                <VictoryLine data={data} style={{data: {stroke: primary, strokeWidth: 3}}} />
+                <VictoryScatter data={data} size={3.5} style={{data: {fill: primary}}} />
+            </VictoryChart>
+        </View>
+    );
 }
+
+const axisStyle = {
+    axis: {stroke: borderColor},
+    grid: {stroke: borderColor, strokeOpacity: 0.35},
+    tickLabels: {fill: textColorMuted, fontSize: 9, padding: 5},
+    ticks: {stroke: borderColor},
+};
+
+const styles = StyleSheet.create({
+    container: {
+        marginVertical: 10,
+        overflow: "hidden",
+    },
+    empty: {
+        color: textColorMuted,
+        textAlign: "center",
+        marginVertical: 24,
+    },
+});

@@ -1,11 +1,11 @@
 {
-  "compilerOptions": {
-    "jsx": "react-native",
-    "strict": true,
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "allowJs": true,
-    "skipLibCheck": true
-  },
-  "extends": "expo/tsconfig.base"
+    "compilerOptions": {
+        "jsx": "react-native",
+        "strict": true,
+        "moduleResolution": "bundler",
+        "noImplicitAny": true,
+        "allowJs": true,
+        "skipLibCheck": true
+    },
+    "extends": "expo/tsconfig.base"
 }

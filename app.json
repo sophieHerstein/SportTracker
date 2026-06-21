@@ -1,43 +1,45 @@
 {
-  "expo": {
-    "name": "SportTracker",
-    "slug": "SportTracker",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/appicon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "bundleIdentifier": "com.sophers.sporttracker",
-      "supportsTablet": true,
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "UIFileSharingEnabled": true,
-        "LSSupportsOpeningDocumentsInPlace": true
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.sophers.sporttracker"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-sqlite"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "65ec7f95-cf83-42ce-8008-18932f3cc4b6"
-      }
+    "expo": {
+        "name": "SportTracker",
+        "slug": "SportTracker",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/appicon.png",
+        "userInterfaceStyle": "dark",
+        "newArchEnabled": true,
+        "splash": {
+            "image": "./assets/splash-icon.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#0A0F1E"
+        },
+        "ios": {
+            "bundleIdentifier": "com.sophers.sporttracker",
+            "supportsTablet": true,
+            "infoPlist": {
+                "ITSAppUsesNonExemptEncryption": false,
+                "UIFileSharingEnabled": true,
+                "LSSupportsOpeningDocumentsInPlace": true
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#0A0F1E"
+            },
+            "package": "com.sophers.sporttracker"
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "plugins": ["expo-sqlite"],
+        "androidStatusBar": {
+            "backgroundColor": "#0A0F1E",
+            "barStyle": "light-content"
+        },
+        "extra": {
+            "eas": {
+                "projectId": "65ec7f95-cf83-42ce-8008-18932f3cc4b6"
+            }
+        }
     }
-  }
 }

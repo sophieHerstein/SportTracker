@@ -1,63 +1,91 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Alert, Modal, Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
-import BigButton from '../../components/BigButton';
+import React, {useEffect, useMemo, useState} from "react";
+import {Alert, Modal, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import BigButton from "../../components/BigButton";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {ITrainingstypDatabaseResult, ITrainingstypDropdown} from "../../models/interfaces";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import {NavigatorParamList} from "../../Navigation";
-import {EAppPaths, highlight, secondary, secondaryBackground, textColorPrimary} from "../../models/constants";
+import {
+    EAppPaths,
+    highlight,
+    secondary,
+    secondaryBackground,
+    textColorPrimary,
+} from "../../models/constants";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
 import {AusdauerService} from "../../services/ausdauer.service";
 import {getTageszeit} from "../../utils/helper";
 import {Dropdown} from "react-native-element-dropdown";
+import {validateEnduranceInput} from "../../utils/endurance-validation";
 
-type NeuerAusdauerEintragScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPaths.AUSDAUER_EINTRAG>;
+type NeuerAusdauerEintragScreenProps = NativeStackScreenProps<
+    NavigatorParamList,
+    EAppPaths.AUSDAUER_EINTRAG
+>;
 
-export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAusdauerEintragScreenProps) {
-    const [datum, setDatum] = useState(new Date());
-    const [name, setName] = useState('');
-    const [strecke, setStrecke] = useState('');
-    const [dauer, setDauer] = useState('');
+export default function NeuerAusdauerEintragScreen({
+    navigation,
+    route,
+}: NeuerAusdauerEintragScreenProps) {
+    const existingItem = route.params.item;
+    const [datum, setDatum] = useState(
+        existingItem ? new Date(existingItem.datum_as_timestamp) : new Date()
+    );
+    const [name, setName] = useState(
+        existingItem
+            ? (route.params.trainingsTypen.find((type) => type.id === existingItem.trainingstypId)
+                  ?.name ?? existingItem.name)
+            : ""
+    );
+    const [strecke, setStrecke] = useState(existingItem ? String(existingItem.strecke) : "");
+    const [dauer, setDauer] = useState(existingItem ? String(existingItem.dauer) : "");
     const [sportarten, setSportarten] = useState<ITrainingstypDropdown[]>([]);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [isModalVisible, setModalVisible] = useState(false);
-    const [newSportart, setNewSportart] = useState('');
+    const [newSportart, setNewSportart] = useState("");
 
     const ausdauerService = useMemo(() => new AusdauerService(), []);
 
     useEffect(() => {
         navigation.setOptions({
-            headerLeft: () =>
-                <IconButton onPress={() => showAlert()} icon='arrow-back-ios-new' color={textColorPrimary} size={24}/>
+            headerLeft: () => (
+                <IconButton
+                    onPress={() => showAlert()}
+                    icon="arrow-back-ios-new"
+                    color={textColorPrimary}
+                    size={24}
+                />
+            ),
         });
-    }, [navigation,
-        datum,
-        name,
-        strecke,
-        dauer]);
+    }, [navigation, datum, name, strecke, dauer]);
 
     useEffect(() => {
         const trainingsTypen = route.params.trainingsTypen;
-        const trainigstypenMapping: ITrainingstypDropdown[] = trainingsTypen.map((tt: ITrainingstypDatabaseResult) => {
-            return {label: tt.name, value: tt.name}
-        })
+        const trainigstypenMapping: ITrainingstypDropdown[] = trainingsTypen.map(
+            (tt: ITrainingstypDatabaseResult) => {
+                return {label: tt.name, value: tt.name};
+            }
+        );
         const dropdownData = [
             ...trainigstypenMapping,
-            {label: '+ Neue Sportart hinzufügen', value: '__add_new__'}
+            {label: "+ Neue Sportart hinzufügen", value: "__add_new__"},
         ];
         setSportarten(dropdownData);
-    }, [])
+    }, []);
 
     function showAlert() {
         Alert.alert(
-            "Training speichern?",
-            "Soll das Training gespeichert werden?",
-            [{text: "Nein", onPress: () => navigation.goBack(), style: "destructive"}, {
-                text: "Ja",
-                onPress: () => saveEintrag()
-            }]
-        )
+            existingItem ? "Änderungen speichern?" : "Training speichern?",
+            existingItem
+                ? "Sollen die Änderungen vor dem Schließen gespeichert werden?"
+                : "Soll das Training vor dem Schließen gespeichert werden?",
+            [
+                {text: "Verwerfen", onPress: () => navigation.goBack(), style: "destructive"},
+                {text: "Weiter bearbeiten", style: "cancel"},
+                {text: "Speichern", onPress: () => void saveEintrag()},
+            ]
+        );
     }
 
     const showDatePicker = () => {
@@ -73,54 +101,78 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
         hideDatePicker();
     };
 
-    function isStringValidNumber(value: string) {
-        return !Number.isNaN(parseFloat(value));
-    }
-
-    function isDauerValid() {
-        return isStringValidNumber(dauer) && parseFloat(dauer) > 0;
-    }
-
     async function saveEintrag() {
-        if (!isDauerValid()) {
-            alert('Bitte die Dauer überprüfen');
+        let validated;
+        try {
+            validated = validateEnduranceInput({name, duration: dauer, distance: strecke});
+        } catch (error) {
+            Alert.alert(
+                "Eingaben prüfen",
+                error instanceof Error ? error.message : "Ungültige Eingabe"
+            );
             return;
-        }
-        if (!strecke) {
-            setStrecke('0');
         }
 
         try {
-            await saveEintragInDB()
+            await saveEintragInDB(validated.name, validated.duration, validated.distance);
             navigation.goBack();
         } catch (error) {
             console.error("❌ Fehler beim Speichern: ", error);
+            Alert.alert(
+                "Training nicht gespeichert",
+                error instanceof Error ? error.message : "Unbekannter Fehler"
+            );
         }
     }
 
-    async function saveEintragInDB() {
-        if (!trainingsTypExists(name)) {
-            await ausdauerService.addTrainingstyp(name)
+    async function saveEintragInDB(
+        normalizedName: string,
+        parsedDuration: number,
+        parsedDistance: number
+    ) {
+        if (!trainingsTypExists(normalizedName)) {
+            await ausdauerService.addTrainingstyp(normalizedName);
         }
-        const trainingsTypId: { id: number } | null = await ausdauerService.getIdForTrainingstyp(name);
+        const trainingsTypId: {id: number} | null =
+            await ausdauerService.getIdForTrainingstyp(normalizedName);
 
         if (!!trainingsTypId) {
-            const tagesZeit = getTageszeit();
-            await ausdauerService.addAusdauerTrainingseinheit(trainingsTypId.id, datum.getTime(), parseFloat(dauer), parseFloat(strecke ?? 0), tagesZeit);
+            if (existingItem) {
+                await ausdauerService.updateAusdauerTrainingseinheit(
+                    existingItem.id,
+                    trainingsTypId.id,
+                    datum.getTime(),
+                    parsedDuration,
+                    parsedDistance
+                );
+            } else {
+                await ausdauerService.addAusdauerTrainingseinheit(
+                    trainingsTypId.id,
+                    datum.getTime(),
+                    parsedDuration,
+                    parsedDistance,
+                    getTageszeit()
+                );
+            }
+        } else {
+            throw new Error("Die gewählte Sportart konnte nicht gespeichert werden.");
         }
     }
 
     function trainingsTypExists(trainingstypName: string) {
-        return route.params.trainingsTypen.filter((tt: ITrainingstypDatabaseResult) => tt.name === trainingstypName).length > 0;
+        return sportarten.some(
+            (sportart) =>
+                sportart.value !== "__add_new__" &&
+                sportart.value.trim().toLocaleLowerCase("de-DE") ===
+                    trainingstypName.trim().toLocaleLowerCase("de-DE")
+        );
     }
 
     function handleAddSportart() {
         const trimmed = newSportart.trim();
         if (!trimmed) return;
 
-        const exists = sportarten.some(
-            (s) => s.value.toLowerCase() === trimmed.toLowerCase()
-        );
+        const exists = sportarten.some((s) => s.value.toLowerCase() === trimmed.toLowerCase());
 
         if (exists) {
             Alert.alert("Existiert bereits");
@@ -132,25 +184,29 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
             value: trimmed,
         };
 
-        setSportarten(prev => [...prev, newEntry]);
+        setSportarten((prev) => [...prev, newEntry]);
         setName(trimmed);
 
-        setNewSportart('');
+        setNewSportart("");
         setModalVisible(false);
     }
 
     return (
         <View style={[globalStyles.screenContainer, styles.center]}>
-            <Text style={globalStyles.title}>Neuen Eintrag hinzufügen</Text>
+            <Text style={globalStyles.title}>
+                {existingItem ? "Ausdauertraining bearbeiten" : "Neuen Eintrag hinzufügen"}
+            </Text>
             <View style={styles.inputContainer}>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Datum:</Text>
                     <Pressable style={globalStyles.setDate} onPress={showDatePicker}>
-                        <Text style={globalStyles.setDateText}>{datum.toLocaleDateString('de-DE', {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric"
-                        })}</Text>
+                        <Text style={globalStyles.setDateText}>
+                            {datum.toLocaleDateString("de-DE", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                            })}
+                        </Text>
                     </Pressable>
                     <DateTimePickerModal
                         locale="de-DE"
@@ -165,7 +221,7 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                 </View>
                 <View style={globalStyles.row}>
                     <Text style={globalStyles.text}>Sportart:</Text>
-                    <View style={{width: '72%', marginStart: 26}}>
+                    <View style={{width: "72%", marginStart: 26}}>
                         <Dropdown
                             style={styles.dropdown}
                             data={sportarten}
@@ -176,16 +232,16 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                             searchPlaceholder="Suche ..."
                             value={name}
                             onChange={(item) => {
-                                if (item.value === '__add_new__') {
+                                if (item.value === "__add_new__") {
                                     setModalVisible(true);
                                     return;
                                 }
-                                if (item.value !== '__add_new__') {
+                                if (item.value !== "__add_new__") {
                                     setName(item.value);
                                 }
                             }}
-                            selectedTextStyle={{color: highlight}}   // wichtig für Sichtbarkeit
-                            placeholderStyle={{color: 'gray'}}
+                            selectedTextStyle={{color: highlight}} // wichtig für Sichtbarkeit
+                            placeholderStyle={{color: "gray"}}
                         />
                     </View>
                 </View>
@@ -194,7 +250,10 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                     <View style={styles.input}>
                         <TextInput
                             style={globalStyles.input}
-                            onChangeText={setDauer}/>
+                            value={dauer}
+                            keyboardType="decimal-pad"
+                            onChangeText={setDauer}
+                        />
                         <Text style={globalStyles.text}>min</Text>
                     </View>
                 </View>
@@ -203,12 +262,18 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                     <View style={styles.input}>
                         <TextInput
                             style={globalStyles.input}
-                            onChangeText={setStrecke}/>
+                            value={strecke}
+                            keyboardType="decimal-pad"
+                            onChangeText={setStrecke}
+                        />
                         <Text style={globalStyles.text}>km</Text>
                     </View>
                 </View>
             </View>
-            <BigButton title='Speichern' onPress={() => saveEintrag()}></BigButton>
+            <BigButton
+                title={existingItem ? "Änderungen speichern" : "Speichern"}
+                onPress={() => void saveEintrag()}
+            />
             <Modal visible={isModalVisible} transparent animationType="slide">
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
@@ -221,19 +286,16 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
                             onChangeText={setNewSportart}
                         />
 
-                        <View style={{flexDirection: 'row', marginTop: 10}}>
+                        <View style={{flexDirection: "row", marginTop: 10}}>
                             <BigButton
                                 title="Abbrechen"
                                 onPress={() => {
                                     setModalVisible(false);
-                                    setName('');
-                                    setNewSportart('');
+                                    setName("");
+                                    setNewSportart("");
                                 }}
                             />
-                            <BigButton
-                                title="Hinzufügen"
-                                onPress={handleAddSportart}
-                            />
+                            <BigButton title="Hinzufügen" onPress={handleAddSportart} />
                         </View>
                     </View>
                 </View>
@@ -245,32 +307,32 @@ export default function NeuerAusdauerEintragScreen({navigation, route}: NeuerAus
 const styles = StyleSheet.create({
     background: {
         backgroundColor: highlight,
-        borderRadius: 10
+        borderRadius: 10,
     },
     inputContainer: {
-        justifyContent: 'center',
-        width: '80%',
+        justifyContent: "center",
+        width: "80%",
         paddingTop: 10,
-        paddingBottom: 10
+        paddingBottom: 10,
     },
     picker: {
         borderWidth: 1,
-        borderColor: 'lightsteelblue',
+        borderColor: "lightsteelblue",
         padding: 10,
         margin: 10,
-        width: '72%',
+        width: "72%",
         borderRadius: 5,
         fontSize: 20,
-        marginStart: 26
+        marginStart: 26,
     },
     input: {
-        width: '75%',
-        flexDirection: 'row',
-        alignItems: 'center'
+        width: "75%",
+        flexDirection: "row",
+        alignItems: "center",
     },
     center: {
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
     },
     dropdown: {
         margin: 10,
@@ -284,15 +346,15 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0,0,0,0.5)",
     },
     modalContent: {
-        width: '80%',
+        width: "80%",
         backgroundColor: secondaryBackground,
         padding: 20,
         borderRadius: 10,
         borderColor: secondary,
-    }
-})
+    },
+});

@@ -1,0 +1,5 @@
+.expo
+.phase7-test-build
+node_modules
+assets
+package-lock.json

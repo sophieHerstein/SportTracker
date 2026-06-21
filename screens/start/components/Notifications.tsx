@@ -4,22 +4,22 @@ import {ENotifications, primary} from "../../../models/constants";
 import {globalStyles} from "../../../utils/global-styles";
 
 export default function Notifications({notification}: INotificationProps) {
-
     let content = "DIES IST EINE NOTIFICATION";
 
     switch (notification.typ) {
         case ENotifications.MUSKELGRUPPE_TRAINIEREN:
-            content = `Es ist mal wieder Zeit ${notification.additionalData} zu trainieren.`
+            content = `Es ist mal wieder Zeit ${notification.additionalData} zu trainieren.`;
             break;
         case ENotifications.ZEIT_FUER_AUSDAUER:
-            content = "Es ist mal wieder Zeit für ein Ausdauertraining."
+            content = "Es ist mal wieder Zeit für ein Ausdauertraining.";
             break;
     }
 
     return (
         <View style={styles.container}>
             <Text style={[globalStyles.title, globalStyles.centerText]}>{content}</Text>
-        </View>)
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         width: Dimensions.get("window").width * 0.9,
         height: 100,
         marginBottom: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-    }
-})
+        justifyContent: "center",
+        alignItems: "center",
+    },
+});

@@ -1,9 +1,9 @@
-import {FlatList, View} from 'react-native';
+import {FlatList, StyleSheet, Text, View} from "react-native";
 import AusdauerListItem from "./components/AusdauerListItem";
 import IconButton from "../../components/IconButton";
-import {useCallback, useMemo, useState} from 'react';
+import {useCallback, useMemo, useState} from "react";
 import {useFocusEffect} from "@react-navigation/native";
-import {EAppPaths, primary, secondary} from "../../models/constants";
+import {EAppPaths, primary, secondary, textColorMuted} from "../../models/constants";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
@@ -11,7 +11,7 @@ import {NavigatorParamList} from "../../Navigation";
 import {
     IAusdauerData,
     IAusdauertrainingseinheitDatabaseResult,
-    ITrainingstypDatabaseResult
+    ITrainingstypDatabaseResult,
 } from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import {AusdauerService} from "../../services/ausdauer.service";
@@ -25,40 +25,48 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
     const [filteredAusdauerData, setFilteredAusdauerData] = useState<IAusdauerData[]>([]);
     const [trainingsTypen, setTrainingsTypen] = useState<ITrainingstypDatabaseResult[]>([]);
     const [types, setTypes] = useState<string[]>(["Alle"]);
-    const [currentChosenType, setCurrentChosenType] = useState<string>('Alle');
+    const [currentChosenType, setCurrentChosenType] = useState<string>("Alle");
 
     const ausdauerService = useMemo(() => new AusdauerService(), []);
 
-    useFocusEffect(useCallback(() => {
-        initDB();
-    }, []));
-
+    useFocusEffect(
+        useCallback(() => {
+            initDB();
+        }, [])
+    );
 
     async function initDB() {
         setIsLoading(true);
         const [trainingsTypenRows, ausdauertrainingseinheitRows] = await Promise.all([
             ausdauerService.fetchAllTrainingstypen() as Promise<ITrainingstypDatabaseResult[]>,
-            ausdauerService.fetchAllAusdauertrainingseinheiten() as Promise<IAusdauertrainingseinheitDatabaseResult[]>
+            ausdauerService.fetchAllAusdauertrainingseinheiten() as Promise<
+                IAusdauertrainingseinheitDatabaseResult[]
+            >,
         ]);
         setTrainingsTypen(trainingsTypenRows);
-        const trainingsTypenNames = trainingsTypenRows.map((tt) => tt.name.replace('-', ' '));
+        const trainingsTypenNames = trainingsTypenRows.map((tt) => tt.name.replace("-", " "));
         const typesForFilter: string[] = ["Alle", ...trainingsTypenNames];
         setTypes(typesForFilter);
-        const newAusdauertrainingsDaten: IAusdauerData[] = ausdauertrainingseinheitRows.map((ad: IAusdauertrainingseinheitDatabaseResult) => {
-            return {
-                datum_as_timestamp: ad.datum,
-                datum: new Date(ad.datum).toLocaleDateString('de-DE', {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric"
-                }),
-                dauer: ad.dauer_minuten,
-                id: ad.id,
-                strecke: ad.strecke_km,
-                geschwindigkeit: ad.strecke_km / (ad.dauer_minuten / 60),
-                name: trainingsTypenRows.filter((tt) => tt.id === ad.trainingstyp_id)[0].name.replace('-', ' ')
+        const newAusdauertrainingsDaten: IAusdauerData[] = ausdauertrainingseinheitRows.map(
+            (ad: IAusdauertrainingseinheitDatabaseResult) => {
+                return {
+                    datum_as_timestamp: ad.datum,
+                    datum: new Date(ad.datum).toLocaleDateString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                    }),
+                    dauer: ad.dauer_minuten,
+                    id: ad.id,
+                    strecke: ad.strecke_km,
+                    trainingstypId: ad.trainingstyp_id,
+                    geschwindigkeit: ad.strecke_km / (ad.dauer_minuten / 60),
+                    name: trainingsTypenRows
+                        .filter((tt) => tt.id === ad.trainingstyp_id)[0]
+                        .name.replace("-", " "),
+                };
             }
-        });
+        );
         newAusdauertrainingsDaten.sort((a, b) => b.datum_as_timestamp - a.datum_as_timestamp);
         setData(newAusdauertrainingsDaten);
         setFilteredAusdauerData(newAusdauertrainingsDaten);
@@ -68,7 +76,7 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
     async function removeEintragFromList(id: number) {
         const newAusdauerData: IAusdauerData[] = [...ausdauerData];
         await ausdauerService.deleteAusdauerTrainingseinheitWithId(id);
-        const deletedAusdauerEntry = newAusdauerData.find(item => item.id === id);
+        const deletedAusdauerEntry = newAusdauerData.find((item) => item.id === id);
         if (!!deletedAusdauerEntry) {
             const index = newAusdauerData.indexOf(deletedAusdauerEntry);
             newAusdauerData.splice(index, 1);
@@ -77,46 +85,90 @@ export default function AusdauerScreen({navigation}: AusdauersportScreenProps) {
         setFilteredAusdauerData(newAusdauerData);
     }
 
+    function updateEintrag(item: IAusdauerData) {
+        navigation.navigate(EAppPaths.AUSDAUER_EINTRAG, {trainingsTypen, item});
+    }
+
     function filterItems(type: string) {
-        setCurrentChosenType(type)
-        if (type === 'Alle') {
-            setFilteredAusdauerData(ausdauerData)
+        setCurrentChosenType(type);
+        if (type === "Alle") {
+            setFilteredAusdauerData(ausdauerData);
         } else {
             const filteredData = ausdauerData.filter((training) => training.name === type);
-            setFilteredAusdauerData(filteredData)
+            setFilteredAusdauerData(filteredData);
         }
     }
 
-
     if (isLoading) {
-        return <LoadingSpinner/>
+        return <LoadingSpinner />;
     }
 
     return (
         <View style={globalStyles.screenContainer}>
-            <IconButton
-                size={36}
-                color={secondary}
-                onPress={() => navigation.navigate(EAppPaths.AUSDAUER_STATISTIK, {ausdauerData})}
-                style={globalStyles.topLeft}
-                icon='bar-chart'>
-            </IconButton>
-            <TypeFilter types={types} currentChosenType={currentChosenType}
-                        onPress={(type: string) => filterItems(type)}/>
-            <IconButton
-                size={36}
-                color={primary}
-                onPress={() => navigation.navigate(EAppPaths.AUSDAUER_EINTRAG, {trainingsTypen})}
-                style={globalStyles.topRight}
-                icon='add-circle'>
-            </IconButton>
-            <FlatList data={filteredAusdauerData}
-                      renderItem={({item}) => (
-                          <AusdauerListItem item={item} onDelete={(id: number) => removeEintragFromList(id)}/>
-                      )}
-                      keyExtractor={(item) => item.id.toString()}
-                      ListEmptyComponent={EmptyList}
+            <View style={styles.header}>
+                <View>
+                    <Text style={globalStyles.title}>Ausdauer</Text>
+                    <Text style={styles.caption}>{filteredAusdauerData.length} Einträge</Text>
+                </View>
+                <View style={styles.actions}>
+                    <IconButton
+                        size={26}
+                        color={secondary}
+                        onPress={() =>
+                            navigation.navigate(EAppPaths.AUSDAUER_STATISTIK, {ausdauerData})
+                        }
+                        icon="bar-chart"
+                    />
+                    <IconButton
+                        size={30}
+                        color={primary}
+                        onPress={() =>
+                            navigation.navigate(EAppPaths.AUSDAUER_EINTRAG, {trainingsTypen})
+                        }
+                        icon="add-circle"
+                    />
+                </View>
+            </View>
+            <TypeFilter
+                compact
+                types={types}
+                currentChosenType={currentChosenType}
+                onPress={(type: string) => filterItems(type)}
+            />
+            <FlatList
+                data={filteredAusdauerData}
+                contentContainerStyle={styles.list}
+                renderItem={({item}) => (
+                    <AusdauerListItem
+                        item={item}
+                        onUpdate={updateEintrag}
+                        onDelete={(id: number) => removeEintragFromList(id)}
+                    />
+                )}
+                keyExtractor={(item) => item.id.toString()}
+                ListEmptyComponent={EmptyList}
             />
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    actions: {
+        flexDirection: "row",
+        gap: 4,
+    },
+    caption: {
+        color: textColorMuted,
+        marginTop: -8,
+        marginBottom: 4,
+    },
+    list: {
+        paddingTop: 8,
+        paddingBottom: 24,
+    },
+});

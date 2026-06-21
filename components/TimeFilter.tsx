@@ -1,31 +1,88 @@
-import {Button, Text, View} from "react-native";
-import {globalStyles} from "../utils/global-styles";
-import {ETimeRange, highlight, primary} from "../models/constants";
+import {Pressable, ScrollView, StyleSheet, Text} from "react-native";
+import {
+    borderColor,
+    ETimeRange,
+    primary,
+    primaryMuted,
+    surfaceElevated,
+    textColorMuted,
+    textColorPrimary,
+} from "../models/constants";
 import {ITimeFilterProps} from "../models/interfaces";
 
 export default function TimeFilter({
-                                       timeRange,
-                                       onPressGesamt,
-                                       onPressJahr,
-                                       onPress6Monate,
-                                       onPress3Monate,
-                                       onPressMonat
-                                   }: ITimeFilterProps) {
+    timeRange,
+    onPressGesamt,
+    onPressJahr,
+    onPress6Monate,
+    onPress3Monate,
+    onPressMonat,
+}: ITimeFilterProps) {
+    const options = [
+        {value: ETimeRange.GESAMT, label: "Gesamt", onPress: onPressGesamt},
+        {value: ETimeRange.JAHR, label: "Jahr", onPress: onPressJahr},
+        {value: ETimeRange.SECHS_MONATE, label: "6 Monate", onPress: onPress6Monate},
+        {value: ETimeRange.DREI_MONATE, label: "3 Monate", onPress: onPress3Monate},
+        {value: ETimeRange.MONAT, label: "Monat", onPress: onPressMonat},
+    ];
+
     return (
-        <View>
-            <Text style={[globalStyles.text, globalStyles.light]}>Filter: </Text>
-            <View style={globalStyles.row}>
-                <Button color={timeRange === ETimeRange.GESAMT ? primary : highlight} title={"Gesamt"}
-                        onPress={onPressGesamt}/>
-                <Button color={timeRange === ETimeRange.JAHR ? primary : highlight} title={"Jahr"}
-                        onPress={onPressJahr}/>
-                <Button color={timeRange === ETimeRange.SECHS_MONATE ? primary : highlight} title={"6 Monate"}
-                        onPress={onPress6Monate}/>
-                <Button color={timeRange === ETimeRange.DREI_MONATE ? primary : highlight} title={"3 Monate"}
-                        onPress={onPress3Monate}/>
-                <Button color={timeRange === ETimeRange.MONAT ? primary : highlight} title={"Monat"}
-                        onPress={onPressMonat}/>
-            </View>
-        </View>
-    )
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.container}
+        >
+            {options.map((option) => {
+                const selected = timeRange === option.value;
+                return (
+                    <Pressable
+                        key={option.value}
+                        onPress={option.onPress}
+                        style={({pressed}) => [
+                            styles.chip,
+                            selected && styles.selectedChip,
+                            pressed && styles.pressed,
+                        ]}
+                    >
+                        <Text style={[styles.text, selected && styles.selectedText]}>
+                            {option.label}
+                        </Text>
+                    </Pressable>
+                );
+            })}
+        </ScrollView>
+    );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        gap: 8,
+        paddingVertical: 8,
+        paddingRight: 24,
+    },
+    chip: {
+        minHeight: 36,
+        paddingHorizontal: 14,
+        borderRadius: 18,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: surfaceElevated,
+        borderWidth: 1,
+        borderColor,
+    },
+    selectedChip: {
+        backgroundColor: primaryMuted,
+        borderColor: primary,
+    },
+    text: {
+        color: textColorMuted,
+        fontSize: 13,
+        fontWeight: "600",
+    },
+    selectedText: {
+        color: textColorPrimary,
+    },
+    pressed: {
+        opacity: 0.7,
+    },
+});

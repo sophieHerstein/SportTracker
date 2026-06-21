@@ -1,5 +1,4 @@
-import db from '../db/db'
-import {IColumnDefinition} from "../models/interfaces";
+import db from "../db/db";
 
 export class DatabaseService {
     static run(query: string, params: any[] = []) {
@@ -14,28 +13,16 @@ export class DatabaseService {
         return db.getAllAsync(query, params);
     }
 
-    static runBatch(queries: { query: string; params?: any[] }[]): Promise<void> {
-        return db.withTransactionAsync(async () => {
+    static runBatch(queries: {query: string; params?: any[]}[]): Promise<void> {
+        return db.withExclusiveTransactionAsync(async (txn) => {
             for (const {query, params = []} of queries) {
-                await db.runAsync(query, params);
+                await txn.runAsync(query, params);
             }
         });
     }
 
-    static ensureColumnsExist(columns: IColumnDefinition[]): Promise<void> {
-        return db.withTransactionAsync(async () => {
-            for (const {table, column, sql} of columns) {
-                const result = await db.getAllAsync<{ name: string }>(
-                    `PRAGMA table_info(${table});`
-                );
-                const exists = result.some(row => row.name === column);
-                if (!exists) {
-                    console.log(`🛠️ Spalte '${column}' in Tabelle '${table}' wird hinzugefügt...`);
-                    await db.runAsync(sql);
-                } else {
-                    console.log(`✅ Spalte '${column}' in Tabelle '${table}' ist bereits vorhanden.`);
-                }
-            }
-        });
+    static async getUserVersion(): Promise<number> {
+        const result = await db.getFirstAsync<{user_version: number}>("PRAGMA user_version");
+        return result?.user_version ?? 0;
     }
 }

@@ -1,10 +1,15 @@
-import {FlatList, View} from 'react-native';
+import {FlatList, StyleSheet, Text, View} from "react-native";
 import IconButton from "../../components/IconButton";
-import {useCallback, useMemo, useState} from 'react';
+import {useCallback, useMemo, useState} from "react";
 import KraftsportListItem from "./components/KraftsportListItem";
 import {useFocusEffect} from "@react-navigation/native";
-import {EAppPaths, primary, secondary} from "../../models/constants";
-import {IKraftsportData, IKraftsportDatabaseResult, IMuscleGroupDatabaseResult, ISatz} from "../../models/interfaces";
+import {EAppPaths, primary, secondary, textColorMuted} from "../../models/constants";
+import {
+    IKraftsportData,
+    IKraftsportDatabaseResult,
+    IMuscleGroupDatabaseResult,
+    ISatz,
+} from "../../models/interfaces";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import EmptyList from "../../components/EmptyList";
 import {NavigatorParamList} from "../../Navigation";
@@ -17,25 +22,29 @@ type KraftsportScreenProps = NativeStackScreenProps<NavigatorParamList, EAppPath
 
 export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     const [kraftsportData, setData] = useState<IKraftsportData[]>([]);
-    const [filteredData, setFilteredData] = useState<IKraftsportData[]>([])
+    const [filteredData, setFilteredData] = useState<IKraftsportData[]>([]);
     const [isLoading, setLoading] = useState<boolean>(true);
     const [types, setTypes] = useState<string[]>(["Alle"]);
-    const [currentChosenType, setCurrentChosenType] = useState<string>('Alle');
+    const [currentChosenType, setCurrentChosenType] = useState<string>("Alle");
 
     const kraftsportService = useMemo(() => new KraftsportService(), []);
 
-    useFocusEffect(useCallback(() => {
+    useFocusEffect(
+        useCallback(() => {
             fetchTrainings();
-        }, []
-    ));
+        }, [])
+    );
 
     function transformTrainingData(dataBaseData: IKraftsportDatabaseResult[]): IKraftsportData[] {
-        const transformedData: Record<string, {
-            id: number;
-            datum: number;
-            gruppe: string;
-            uebungen: Record<string, ISatz[]>;
-        }> = {};
+        const transformedData: Record<
+            string,
+            {
+                id: number;
+                datum: number;
+                gruppe: string;
+                uebungen: Record<string, ISatz[]>;
+            }
+        > = {};
 
         dataBaseData.forEach((entry: IKraftsportDatabaseResult) => {
             const key = `${entry.training_id}`;
@@ -45,7 +54,7 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
                     id: entry.training_id,
                     datum: entry.datum,
                     gruppe: entry.muscle_group,
-                    uebungen: {}
+                    uebungen: {},
                 };
             }
 
@@ -56,26 +65,25 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
             transformedData[key].uebungen[entry.exercise].push({
                 id: entry.exercise_set_id,
                 gewicht: entry.weight,
-                wiederholungen: entry.repetitions
+                wiederholungen: entry.repetitions,
             });
         });
 
         return Object.values(transformedData).map((training) => ({
             training_id: training.id,
-            datum: new Date(training.datum).toLocaleDateString('de-DE', {
+            datum: new Date(training.datum).toLocaleDateString("de-DE", {
                 day: "2-digit",
                 month: "2-digit",
-                year: "numeric"
+                year: "numeric",
             }),
             datum_as_timestamp: training.datum,
             gruppe: training.gruppe,
             uebungen: Object.entries(training.uebungen).map(([name, saetze]) => ({
                 name,
-                saetze
-            }))
+                saetze,
+            })),
         })) as IKraftsportData[];
     }
-
 
     async function deleteTraining(id: string) {
         try {
@@ -90,30 +98,34 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
         navigation.navigate(EAppPaths.KRAFTSPORT_UEBUNGEN, {
             gruppe,
             datum,
-            id
-        })
+            id,
+        });
     }
 
     async function fetchTrainings() {
         setLoading(true);
         try {
-            const results: IKraftsportDatabaseResult[] = await kraftsportService.fetchKraftsportData();
+            const results: IKraftsportDatabaseResult[] =
+                await kraftsportService.fetchKraftsportData();
 
             if (results.length > 0) {
                 const transformedData: IKraftsportData[] = transformTrainingData(results);
                 transformedData.sort((a, b) => b.datum_as_timestamp - a.datum_as_timestamp);
                 setData(transformedData);
                 setFilteredData(transformedData);
+            } else {
+                setData([]);
+                setFilteredData([]);
             }
 
-            const muscleGroups: IMuscleGroupDatabaseResult[] = await kraftsportService.getMuscleGroupData();
+            const muscleGroups: IMuscleGroupDatabaseResult[] =
+                await kraftsportService.getMuscleGroupData();
 
-            const muscleGroupNameList = muscleGroups.map((res) => res.name)
+            const muscleGroupNameList = muscleGroups.map((res) => res.name);
 
-            const typeArray: string[] = ["Alle", ...muscleGroupNameList]
+            const typeArray: string[] = ["Alle", ...muscleGroupNameList];
 
-            setTypes(typeArray)
-
+            setTypes(typeArray);
         } catch (error) {
             console.error("❌ Fehler beim Abrufen der Trainings:", error);
         }
@@ -121,45 +133,82 @@ export default function KraftsportScreen({navigation}: KraftsportScreenProps) {
     }
 
     function setFilter(type: string) {
-        setCurrentChosenType(type)
-        if (type === 'Alle') {
-            setFilteredData(kraftsportData)
+        setCurrentChosenType(type);
+        if (type === "Alle") {
+            setFilteredData(kraftsportData);
         } else {
             const filteredData = kraftsportData.filter((training) => training.gruppe === type);
-            setFilteredData(filteredData)
+            setFilteredData(filteredData);
         }
     }
 
     if (isLoading) {
-        return <LoadingSpinner/>
+        return <LoadingSpinner />;
     }
 
     return (
         <View style={globalStyles.screenContainer}>
-            <IconButton
-                size={36}
-                color={secondary}
-                onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_STATISTIK)}
-                style={globalStyles.topLeft}
-                icon='bar-chart'>
-            </IconButton>
-            <TypeFilter types={types} currentChosenType={currentChosenType} onPress={(type) => setFilter(type)}/>
-            <IconButton
-                size={36}
-                color={primary}
-                onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN)}
-                style={globalStyles.topRight}
-                icon='add-circle'>
-            </IconButton>
-            <FlatList data={filteredData}
-                      renderItem={({item}) => (
-                          <KraftsportListItem
-                              onUpdate={(id: string, gruppe: string, datum: number) => updateTraining(id, gruppe, datum)}
-                              item={item} onDelete={(id: string) => deleteTraining(id)}/>
-                      )}
-                      keyExtractor={(item) => item.training_id.toString()}
-                      ListEmptyComponent={EmptyList}
+            <View style={styles.header}>
+                <View>
+                    <Text style={globalStyles.title}>Deine Trainings</Text>
+                    <Text style={styles.caption}>{filteredData.length} Einträge</Text>
+                </View>
+                <View style={styles.actions}>
+                    <IconButton
+                        size={26}
+                        color={secondary}
+                        onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_STATISTIK)}
+                        icon="bar-chart"
+                    />
+                    <IconButton
+                        size={30}
+                        color={primary}
+                        onPress={() => navigation.navigate(EAppPaths.KRAFTSPORT_GRUPPE_WAEHLEN)}
+                        icon="add-circle"
+                    />
+                </View>
+            </View>
+            <TypeFilter
+                types={types}
+                currentChosenType={currentChosenType}
+                onPress={(type) => setFilter(type)}
+            />
+            <FlatList
+                data={filteredData}
+                contentContainerStyle={styles.list}
+                renderItem={({item}) => (
+                    <KraftsportListItem
+                        onUpdate={(id: string, gruppe: string, datum: number) =>
+                            updateTraining(id, gruppe, datum)
+                        }
+                        item={item}
+                        onDelete={(id: string) => deleteTraining(id)}
+                    />
+                )}
+                keyExtractor={(item) => item.training_id.toString()}
+                ListEmptyComponent={EmptyList}
             />
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    actions: {
+        flexDirection: "row",
+        gap: 4,
+    },
+    caption: {
+        color: textColorMuted,
+        marginTop: -8,
+        marginBottom: 4,
+    },
+    list: {
+        paddingTop: 8,
+        paddingBottom: 24,
+    },
+});

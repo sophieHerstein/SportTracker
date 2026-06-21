@@ -13,31 +13,31 @@ Die App wird aktiv im Alltag genutzt sowie kontinuierlich weiterentwickelt.
 
 ### Kraftsport
 
-* Trainingsgruppen verwalten
-* Übungen pro Trainingseinheit erfassen (z. B. Sätze, Wiederholungen, Gewicht)
-* Trainingsdaten bearbeiten und historisch einsehen
-* Statistische Auswertung von Fortschritten
+- Trainingsgruppen verwalten
+- Übungen pro Trainingseinheit erfassen (z. B. Sätze, Wiederholungen, Gewicht)
+- Trainingsdaten bearbeiten und historisch einsehen
+- Statistische Auswertung von Fortschritten
 
 ### Ausdauer
 
-* Ausdauer-Einträge anlegen
-* Trainingsarten auswählen (z. B. Laufen, Radfahren)
-* Dauer und weitere Daten erfassen
-* Statistiken zur Entwicklung anzeigen
+- Ausdauer-Einträge anlegen
+- Trainingsarten auswählen (z. B. Laufen, Radfahren)
+- Dauer und weitere Daten erfassen
+- Statistiken zur Entwicklung anzeigen
 
 ### Allgemein
 
-* Modernes Navigationskonzept mit Tabs und Stacks
-* Lokale Speicherung aller Daten (Offline-Nutzung möglich)
-* Plattformübergreifend für iOS und Android
+- Modernes Navigationskonzept mit Tabs und Stacks
+- Lokale Speicherung aller Daten (Offline-Nutzung möglich)
+- Plattformübergreifend für iOS und Android
 
 ## Technologien
 
-* React Native
-* Expo
-* TypeScript
-* React Navigation
-* Expo SQLite
+- React Native
+- Expo
+- TypeScript
+- React Navigation
+- Expo SQLite
 
 ## Motivation
 
@@ -45,9 +45,9 @@ Ziel war es, eine individuell angepasste Tracking-App zu entwickeln, die genau u
 
 Dieses Projekt legt bewusst den Fokus auf:
 
-* einfache Bedienbarkeit im Alltag
-* volle Kontrolle über die eigenen Daten
-* iterative Weiterentwicklung basierend auf echter Nutzung
+- einfache Bedienbarkeit im Alltag
+- volle Kontrolle über die eigenen Daten
+- iterative Weiterentwicklung basierend auf echter Nutzung
 
 ## Status
 
@@ -56,17 +56,14 @@ Neue Features und Bugfixes entstehen direkt aus der praktischen Nutzung.
 
 ## Learnings
 
-* Entwicklung plattformübergreifender Mobile Apps mit React Native
-* Strukturierung und persistente Speicherung von Daten mit SQLite
-* Gestaltung von UI/UX für regelmäßige Nutzung im Alltag
-* Umsetzung von Datenvisualisierung in mobilen Anwendungen
-* Iterative Weiterentwicklung basierend auf realem Nutzerfeedback
+- Entwicklung plattformübergreifender Mobile Apps mit React Native
+- Strukturierung und persistente Speicherung von Daten mit SQLite
+- Gestaltung von UI/UX für regelmäßige Nutzung im Alltag
+- Umsetzung von Datenvisualisierung in mobilen Anwendungen
+- Iterative Weiterentwicklung basierend auf realem Nutzerfeedback
+
 ## Hinweise
 
-* Die App ist vollständig auf lokale Speicherung ausgelegt
-* Kein Backend / keine Cloud-Anbindung
+- Die App ist vollständig auf lokale Speicherung ausgelegt
+- Kein Backend / keine Cloud-Anbindung
 
-## Bekannte offene Punkte
-
-Für bekannte Bugs und geplante Features siehe:
-- `FeaturesAndBugs.md`

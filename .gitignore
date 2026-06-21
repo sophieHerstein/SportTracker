@@ -132,5 +132,6 @@ dist
 
 /.idea
 /.expo
+/.phase7-test-build
 /ios
 .DS_Store

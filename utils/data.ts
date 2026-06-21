@@ -531,4 +531,4 @@ Butterfly (30 - 15, 30 - 15, 30 - 12)
 Bankdrücken (10 - 11, 10 - 7, 10 - 9)
 Kurzhantelflys (12 - 14, 12 - 12, 12 - 12)
 Schrägbank drücken (12 - 9, 12 - 9, 12 - 10)
-`
+`;

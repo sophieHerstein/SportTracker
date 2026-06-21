@@ -1,76 +1,95 @@
 import {StyleSheet} from "react-native";
 import {
     background,
-    highlight,
+    borderColor,
     primary,
-    secondary,
     secondaryBackground,
+    surfaceElevated,
     textColorPrimary,
-    textColorSecondary
+    textColorMuted,
 } from "../models/constants";
 
 export const globalStyles = StyleSheet.create({
     screenContainer: {
         flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 60,
-        paddingBottom: 20,
+        paddingHorizontal: 16,
+        paddingTop: 20,
+        paddingBottom: 24,
         backgroundColor: background,
     },
     title: {
-        fontSize: 18,
-        fontWeight: "bold",
+        fontSize: 22,
+        fontWeight: "700",
         color: textColorPrimary,
-        paddingBottom: 10
+        paddingBottom: 12,
+        letterSpacing: -0.3,
     },
     subtitle: {
         fontSize: 16,
+        fontWeight: "600",
         color: textColorPrimary,
-        paddingBottom: 5
+        paddingBottom: 6,
     },
     cards: {
         backgroundColor: secondaryBackground,
-        borderRadius: 10,
-        padding: 10,
-        marginBottom: 10
+        borderRadius: 18,
+        padding: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor,
     },
     text: {
         color: textColorPrimary,
+        fontSize: 15,
+        lineHeight: 21,
+    },
+    mutedText: {
+        color: textColorMuted,
+        fontSize: 13,
+        lineHeight: 18,
     },
     centerText: {
-        textAlign: "center"
+        textAlign: "center",
     },
     topLeft: {
         position: "absolute",
         top: 20,
-        left: 30
+        left: 30,
     },
     topRight: {
         position: "absolute",
         top: 20,
-        right: 30
+        right: 30,
     },
     light: {
-        fontWeight: "100"
+        fontWeight: "100",
     },
     buttonPrimary: {
         backgroundColor: primary,
-        margin: 5,
-        fontSize: 20,
-        padding: 10,
-        borderRadius: 10,
-        alignItems: 'center',
+        marginVertical: 6,
+        minHeight: 50,
+        paddingHorizontal: 18,
+        paddingVertical: 13,
+        borderRadius: 14,
+        alignItems: "center",
+        justifyContent: "center",
     },
     buttonSecondary: {
-        backgroundColor: secondary,
-        margin: 5,
-        fontSize: 20,
-        padding: 10,
-        borderRadius: 10,
-        alignItems: 'center',
+        backgroundColor: surfaceElevated,
+        marginVertical: 6,
+        minHeight: 50,
+        paddingHorizontal: 18,
+        paddingVertical: 13,
+        borderRadius: 14,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderColor,
     },
     buttonText: {
         color: textColorPrimary,
+        fontSize: 16,
+        fontWeight: "700",
     },
     row: {
         flexDirection: "row",
@@ -84,27 +103,33 @@ export const globalStyles = StyleSheet.create({
     },
     container: {
         justifyContent: "center",
-        width: "80%"
+        width: "80%",
     },
     input: {
         borderWidth: 1,
-        borderColor: highlight,
-        color: highlight,
-        padding: 10,
-        margin: 10,
-        width: '80%',
-        borderRadius: 5,
-        fontSize: 20
+        borderColor,
+        backgroundColor: surfaceElevated,
+        color: textColorPrimary,
+        paddingHorizontal: 14,
+        paddingVertical: 11,
+        marginVertical: 6,
+        width: "80%",
+        borderRadius: 12,
+        fontSize: 17,
     },
     setDate: {
-        backgroundColor: highlight,
-        height: 30,
-        width: 100,
-        borderRadius: 5,
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: surfaceElevated,
+        minHeight: 42,
+        minWidth: 116,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 1,
+        borderColor,
     },
     setDateText: {
-        color: textColorSecondary
-    }
+        color: textColorPrimary,
+        fontWeight: "600",
+    },
 });

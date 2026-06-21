@@ -2,41 +2,97 @@ import {StyleSheet, Text, TextInput, View} from "react-native";
 import {ISatzListItemProps} from "../../../models/interfaces";
 import IconButton from "../../../components/IconButton";
 import {globalStyles} from "../../../utils/global-styles";
-import {highlight} from "../../../models/constants";
+import {
+    borderColor,
+    highlight,
+    primary,
+    surfaceElevated,
+    textColorMuted,
+} from "../../../models/constants";
 
-export default function SatzListItem({satz, uebungId, updateSatz, deleteSatz}: ISatzListItemProps) {
+export default function SatzListItem({
+    satz,
+    uebungId,
+    updateSatz,
+    deleteSatz,
+    duplicateSatz,
+}: ISatzListItemProps) {
     return (
-        <View style={globalStyles.row}>
-            <View style={globalStyles.row}>
+        <View style={styles.row}>
+            <View style={styles.inputGroup}>
                 <TextInput
                     style={[globalStyles.input, styles.input]}
                     placeholderTextColor={highlight}
                     placeholder="Gewicht"
-                    keyboardType="numeric"
-                    value={satz.gewicht ? satz.gewicht.toString() : ''}
+                    keyboardType="decimal-pad"
+                    selectTextOnFocus
+                    value={satz.gewicht === null ? "" : satz.gewicht.toString()}
                     onChangeText={(text) => updateSatz(uebungId, satz.id, "gewicht", text)}
                 />
-                <Text style={globalStyles.text}>kg</Text>
+                <Text style={styles.unit}>kg</Text>
             </View>
-            <Text style={globalStyles.text}>X</Text>
+            <Text style={styles.multiply}>×</Text>
             <TextInput
                 style={[globalStyles.input, styles.input]}
                 placeholderTextColor={highlight}
                 placeholder="Wdh"
-                keyboardType="numeric"
-                value={satz.wiederholungen ? satz.wiederholungen.toString() : ''}
+                keyboardType="number-pad"
+                selectTextOnFocus
+                value={
+                    satz.wiederholungen === null || satz.wiederholungen === 0
+                        ? ""
+                        : satz.wiederholungen.toString()
+                }
                 onChangeText={(text) => updateSatz(uebungId, satz.id, "wiederholungen", text)}
             />
-            <IconButton onPress={() => deleteSatz(uebungId, satz.id)} icon='delete' color='red' size={24}/>
+            <IconButton
+                onPress={() => duplicateSatz(uebungId, satz.id)}
+                icon="content-copy"
+                color={textColorMuted}
+                size={20}
+            />
+            <IconButton
+                onPress={() => deleteSatz(uebungId, satz.id)}
+                icon="close"
+                color={primary}
+                size={21}
+            />
         </View>
-    )
+    );
 }
-
 
 const styles = StyleSheet.create({
     input: {
-        width: 75,
-        height: 35,
-        fontSize: 16
-    }
+        width: 74,
+        height: 42,
+        fontSize: 16,
+        marginVertical: 0,
+        textAlign: "center",
+    },
+    row: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        backgroundColor: surfaceElevated,
+        borderRadius: 13,
+        borderWidth: 1,
+        borderColor,
+        paddingHorizontal: 6,
+        paddingVertical: 6,
+        marginBottom: 8,
+    },
+    inputGroup: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    unit: {
+        color: textColorMuted,
+        fontSize: 12,
+        marginLeft: -2,
+    },
+    multiply: {
+        color: textColorMuted,
+        fontSize: 18,
+        fontWeight: "700",
+    },
 });
