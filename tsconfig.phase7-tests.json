@@ -14,6 +14,7 @@
         "models/interfaces.ts",
         "models/constants.ts",
         "utils/training-validation.ts",
+        "utils/debounce.ts",
         "utils/endurance-validation.ts",
         "utils/statistics-utils.ts"
     ]

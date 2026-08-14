@@ -26,7 +26,7 @@ import {ISatz, IUebung} from "../../models/interfaces";
 import {globalStyles} from "../../utils/global-styles";
 import IconButton from "../../components/IconButton";
 import {KraftsportService} from "../../services/kraftsport.service";
-import {debounce} from "lodash";
+import {debounce} from "../../utils/debounce";
 import {getTageszeit} from "../../utils/helper";
 
 type KraftsportUebungenScreenProps = NativeStackScreenProps<

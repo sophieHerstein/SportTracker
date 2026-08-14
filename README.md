@@ -66,4 +66,3 @@ Neue Features und Bugfixes entstehen direkt aus der praktischen Nutzung.
 
 - Die App ist vollständig auf lokale Speicherung ausgelegt
 - Kein Backend / keine Cloud-Anbindung
-
